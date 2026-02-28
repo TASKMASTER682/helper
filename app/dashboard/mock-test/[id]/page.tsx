@@ -229,11 +229,11 @@ export default function ExamPage() {
 
         {/* Right Panel / Sidebar same as your code */}
         <div className={clsx(
-          "fixed md:relative inset-y-0 right-0 z-100 w-72 md:w-80 bg-ink-950 border-l border-ink-800 transform transition-transform duration-300 ease-in-out md:translate-x-0 shadow-2xl md:shadow-none",
+          "fixed md:relative inset-y-0 right-0 z-100 w-96 md:w-80 bg-ink-950 border-l border-ink-800 transform transition-transform duration-300 ease-in-out md:translate-x-0 shadow-2xl md:shadow-none",
           isPanelOpen ? "translate-x-0" : "translate-x-full"
         )}>
           {/* ... (Your OMR panel logic) */}
-          <div className="h-full flex flex-col pt-14 md:pt-0">
+          <div className="h-full flex flex-col pt-14 md:pt-0 bg-black">
              <div className="p-4 border-b border-ink-800 bg-ink-900/50">
                <div className="bg-ink-950 p-4 rounded-xl border border-ink-800 shadow-inner">
                  <p className="text-[10px] text-ink-500 mb-3 font-bold uppercase tracking-widest text-center">Active Question: {currentQ}</p>
