@@ -1,0 +1,37 @@
+# Robots.txt for Student Mentor UPSC Platform
+
+# Allow all robots to index the main site
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://student-mentor.vercel.app/sitemap.xml
+
+# Crawl delay to be respectful to servers
+Crawl-delay: 1
+
+# Disallow crawling of sensitive areas
+Disallow: /api/
+Disallow: /_next/
+Disallow: /login
+Disallow: /dashboard/profile
+
+# Allow specific search engines to crawl more aggressively
+User-agent: Googlebot
+Crawl-delay: 0.5
+
+User-agent: Bingbot
+Crawl-delay: 0.5
+
+User-agent: YandexBot
+Crawl-delay: 1
+
+# Allow indexing of public pages
+Allow: /$
+Allow: /dashboard
+Allow: /dashboard/library
+Allow: /dashboard/mock-test
+Allow: /dashboard/tests
+Allow: /dashboard/missions
+Allow: /dashboard/tracker
+Allow: /dashboard/mentor

@@ -1,0 +1,185 @@
+@import "tailwindcss";
+@layer base {
+  :root {
+    --scrollbar-width: 6px;
+    --scrollbar-track: #130f0a;
+    --scrollbar-thumb: #3d3124;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  }
+
+  *::-webkit-scrollbar {
+    width: var(--scrollbar-width);
+  }
+
+  *::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 3px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: #705c3f;
+  }
+
+  html {
+    font-size: 15px;
+  }
+
+  body {
+    min-height: 100vh;
+    background: #1b1510;
+    color: #e8e3d8;
+  }
+}
+@layer components {
+  .glass-card {
+    background: rgba(19, 15, 10, 0.6);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(42, 33, 24, 0.5);
+    border-radius: 0.75rem;
+  }
+.custom-pdf-viewer .rpv-core__viewer {
+    background-color: #0c0c0e !important; /* Your ink-950 color */
+}
+.rpv-default-layout__toolbar {
+    background-color: #16161a !important; /* Your ink-900 color */
+    border-bottom: 1px solid #222226 !important;
+}
+  .saffron-card {
+    background: linear-gradient(135deg, rgba(58, 30, 5, 0.2), rgba(90, 45, 7, 0.1));
+    border: 1px solid rgba(122, 60, 9, 0.3);
+    border-radius: 0.75rem;
+  }
+
+  .jade-card {
+    background: linear-gradient(135deg, rgba(4, 38, 31, 0.2), rgba(6, 56, 46, 0.1));
+    border: 1px solid rgba(11, 91, 73, 0.3);
+    border-radius: 0.75rem;
+  }
+
+  .deep-card {
+    background: linear-gradient(135deg, rgba(12, 16, 36, 0.2), rgba(21, 26, 58, 0.1));
+    border: 1px solid rgba(32, 34, 90, 0.3);
+    border-radius: 0.75rem;
+  }
+
+  .btn-primary {
+    background-color: rgb(255, 124, 10);
+    color: rgb(11, 9, 7);
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+  }
+
+  .btn-primary:hover {
+    background-color: rgb(255, 154, 58);
+  }
+
+  .btn-primary:active {
+    transform: scale(0.95);
+  }
+
+  .btn-ghost {
+    background-color: transparent;
+    color: rgb(201, 182, 147);
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(42, 33, 24, 0.5);
+    transition: all 0.2s;
+  }
+
+  .btn-ghost:hover {
+    background-color: rgb(27, 21, 16);
+    color: rgb(232, 227, 216);
+    border-color: rgba(61, 49, 36, 1);
+  }
+
+  .btn-jade {
+    background-color: rgb(15, 122, 98);
+    color: white;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+  }
+
+  .btn-jade:hover {
+    background-color: rgb(23, 184, 144);
+  }
+
+  .btn-jade:active {
+    transform: scale(0.95);
+  }
+
+  .input-field {
+    background-color: rgb(19, 15, 10);
+    border: 1px solid rgb(61, 49, 36);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    color: rgb(242, 237, 224);
+    font-weight: 500;
+  }
+
+  .input-field::placeholder {
+    color: rgb(159, 138, 103);
+  }
+
+  .input-field:focus {
+    outline: none;
+    border-color: rgb(255, 124, 10);
+    box-shadow: 0 0 0 1px rgba(255, 124, 10, 0.3);
+  }
+
+  .label-text {
+    color: rgb(201, 182, 147);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+    display: block;
+    font-weight: 600;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: rgb(232, 227, 216);
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    background-color: rgb(27, 21, 16);
+    color: rgb(201, 182, 147);
+    border: 1px solid rgb(42, 33, 24);
+  }
+}
+@layer utilities {
+  .text-gradient-saffron {
+    background: linear-gradient(90deg, rgb(255, 154, 58), rgb(255, 124, 10));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .text-gradient-jade {
+    background: linear-gradient(90deg, rgb(63, 211, 170), rgb(17, 184, 144));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+}
+
+
