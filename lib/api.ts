@@ -103,7 +103,7 @@ export const mockTestAPI = {
     api.post('/mock-tests/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
-pollStatus: (id: string) => api.get(`/mock-tests/${id}`), 
+  pollStatus: (id: string) => api.get(`/mock-tests/${id}`), 
   submitAttempt: (
     id: string,
     data: { userAnswers: Record<string, string | null>; timeTakenMinutes: number }
@@ -111,6 +111,8 @@ pollStatus: (id: string) => api.get(`/mock-tests/${id}`),
   getAttempt: (attemptId: string) => api.get(`/mock-tests/attempts/${attemptId}`),
   getAllAttempts: (params?: { limit?: number }) => api.get('/mock-tests/attempts/all/list', { params }),
   deleteTest: (id: string) => api.delete(`/mock-tests/${id}`),
+  updateAnswerKey: (id: string, answerKey: Map<string, string>) => 
+    api.put(`/mock-tests/${id}/answer-key`, Object.fromEntries(answerKey)),
 };
 export const ddayAPI = {
   getAll: () => api.get('/d-day'),

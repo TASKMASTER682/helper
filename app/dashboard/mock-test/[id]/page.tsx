@@ -45,7 +45,7 @@ export default function ExamPage() {
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
-  const submitExamRef = useRef<() => void>(() => {});
+  const submitExamRef = useRef<() => void>(() => { });
 
   const startTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -112,7 +112,7 @@ export default function ExamPage() {
       setLoading(true);
       const { data: testData } = await mockTestAPI.getOne(id);
       setTest(testData);
-      
+
       // Attempt logic same as your code...
       if (viewAttemptId) {
         const { data: allAttempts } = await mockTestAPI.getAllAttempts();
@@ -129,13 +129,13 @@ export default function ExamPage() {
           return;
         }
       }
-      
+
       const finalMinutes = customTimeParam ? parseInt(customTimeParam) : (testData.durationMinutes || 120);
       const initialTime = finalMinutes * 60;
       console.log('Setting timeLeft to:', initialTime, 'minutes:', finalMinutes);
       setTimeLeft(initialTime);
       setExamState('exam');
-      
+
       // Start timer immediately
       console.log('Starting timer with timeLeft:', initialTime);
       startTimer();
@@ -194,7 +194,15 @@ export default function ExamPage() {
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-ink-950"><Loader2 className="animate-spin text-yellow-400 w-10 h-10" /></div>;
 
   if (examState === 'result') return (
-    <ResultScreen result={attemptResult} aiFeedback={aiFeedback} deepAnalysis={deepAnalysis} onBack={() => router.push('/dashboard/mock-test')} onReattempt={() => router.push('/dashboard/mock-test')} pollingAI={pollingAI} />
+    <ResultScreen
+      result={attemptResult}
+      aiFeedback={aiFeedback}
+      deepAnalysis={deepAnalysis}
+      onBack={() => router.push('/dashboard/mock-test')}
+      onReattempt={() => router.push('/dashboard/mock-test')}
+      pollingAI={pollingAI}
+      testId={id as string}
+    />
   );
 
   if (examState === 'submitting') return (
@@ -212,7 +220,7 @@ export default function ExamPage() {
           <span className="font-bold text-ink-100 truncate text-sm md:text-base">{test?.name}</span>
         </div>
         <div className="flex items-center gap-3 md:gap-6">
-          <div className={clsx('px-3 py-1 rounded-full border font-mono font-bold text-xs md:text-sm flex items-center gap-2', 
+          <div className={clsx('px-3 py-1 rounded-full border font-mono font-bold text-xs md:text-sm flex items-center gap-2',
             timeLeft < 300 ? 'border-red-500 bg-red-500/10 text-red-400 animate-pulse' : 'border-yellow-500 bg-yellow-500/10 text-yellow-400')}>
             <Clock className="w-3 h-3" />
             {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, '0')}
@@ -234,24 +242,24 @@ export default function ExamPage() {
         )}>
           {/* ... (Your OMR panel logic) */}
           <div className="h-full flex flex-col pt-14 md:pt-0 bg-black">
-             <div className="p-4 border-b border-ink-800 bg-ink-900/50">
-               <div className="bg-ink-950 p-4 rounded-xl border border-ink-800 shadow-inner">
-                 <p className="text-[10px] text-ink-500 mb-3 font-bold uppercase tracking-widest text-center">Active Question: {currentQ}</p>
-                 <div className="grid grid-cols-2 gap-2">
-                   {['A', 'B', 'C', 'D'].map(opt => (
-                     <button key={opt} onClick={() => setAnswers(prev => ({ ...prev, [currentQ]: prev[currentQ] === opt ? null : opt as Answer }))}
-                       className={clsx('py-3 rounded-lg border-2 font-bold transition-all', answers[currentQ] === opt ? 'border-blue-500 bg-blue-600 text-white' : 'border-ink-800 text-ink-400 hover:border-ink-600')}
-                     > {opt} </button>
-                   ))}                 </div>
-               </div>
-             </div>
-             <div className="flex-1 overflow-y-auto p-4 grid grid-cols-5 gap-2 content-start custom-scrollbar">
-               {Array.from({ length: test?.totalQuestions || 100 }, (_, i) => i + 1).map(qNum => (
-                 <button key={qNum} onClick={() => setCurrentQ(qNum)}
-                   className={clsx('aspect-square rounded-lg text-xs font-mono border-2 transition-all', currentQ === qNum ? 'border-white bg-ink-800 text-white scale-110 z-10' : !!answers[qNum] ? 'border-yellow-500 bg-yellow-500 text-ink-950 font-bold' : 'border-ink-800 text-ink-600 hover:border-ink-700')}
-                 > {qNum} </button>
-               ))}
-             </div>
+            <div className="p-4 border-b border-ink-800 bg-ink-900/50">
+              <div className="bg-ink-950 p-4 rounded-xl border border-ink-800 shadow-inner">
+                <p className="text-[10px] text-ink-500 mb-3 font-bold uppercase tracking-widest text-center">Active Question: {currentQ}</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {['A', 'B', 'C', 'D'].map(opt => (
+                    <button key={opt} onClick={() => setAnswers(prev => ({ ...prev, [currentQ]: prev[currentQ] === opt ? null : opt as Answer }))}
+                      className={clsx('py-3 rounded-lg border-2 font-bold transition-all', answers[currentQ] === opt ? 'border-blue-500 bg-blue-600 text-white' : 'border-ink-800 text-ink-400 hover:border-ink-600')}
+                    > {opt} </button>
+                  ))}                 </div>
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 grid grid-cols-5 gap-2 content-start custom-scrollbar">
+              {Array.from({ length: test?.totalQuestions || 100 }, (_, i) => i + 1).map(qNum => (
+                <button key={qNum} onClick={() => setCurrentQ(qNum)}
+                  className={clsx('aspect-square rounded-lg text-xs font-mono border-2 transition-all', currentQ === qNum ? 'border-white bg-ink-800 text-white scale-110 z-10' : !!answers[qNum] ? 'border-yellow-500 bg-yellow-500 text-ink-950 font-bold' : 'border-ink-800 text-ink-600 hover:border-ink-700')}
+                > {qNum} </button>
+              ))}
+            </div>
           </div>
         </div>
 
