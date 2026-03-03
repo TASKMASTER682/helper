@@ -73,7 +73,8 @@ export const missionsAPI = {
   updateProgress: (id: string, data: any) => api.patch(`/missions/${id}/progress`, data),
   rebalance: (id: string) => api.post(`/missions/${id}/rebalance`),
   deleteMission: (id: string) => api.delete(`/missions/${id}`),
-toggleTask: (id: string, date: string) => api.patch(`/missions/${id}/toggle-task`, { date }),};
+  toggleTask: (id: string, date: string) => api.patch(`/missions/${id}/toggle-task`, { date }),
+};
 export const trackerAPI = {
   getEntries: (days?: number) => api.get(`/tracker${days ? `?days=${days}` : ''}`),
   submitDaily: (data: any) => api.post('/tracker', data),
@@ -81,8 +82,8 @@ export const trackerAPI = {
 export const scheduleAPI = {
   getToday: () => api.get('/schedule/today'),
   getDate: (date: string) => api.get(`/schedule/date/${date}`),
-  generate: () => api.post('/schedule/generate'),
-  refine: (instruction: string) => api.post('/schedule/refine', { instruction }),
+  generate: (date?: string) => api.post('/schedule/generate', { date }),
+  refine: (instruction: string, date?: string) => api.post('/schedule/refine', { instruction, date }),
 };
 export const mentorAPI = {
   chat: (data: { message: string; conversationHistory: any[] }) => api.post('/mentor/chat', data),
@@ -94,7 +95,7 @@ export const testsAPI = {
   addSeries: (data: any) => api.post('/tests', data),
   addAttempt: (id: string, data: any) => api.post(`/tests/${id}/attempt`, data),
   deleteSeries: (id: string) => api.delete(`/tests/${id}`), // Naya method
-  
+
 };
 export const mockTestAPI = {
   getAll: () => api.get('/mock-tests'),
@@ -103,7 +104,7 @@ export const mockTestAPI = {
     api.post('/mock-tests/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
-  pollStatus: (id: string) => api.get(`/mock-tests/${id}`), 
+  pollStatus: (id: string) => api.get(`/mock-tests/${id}`),
   submitAttempt: (
     id: string,
     data: { userAnswers: Record<string, string | null>; timeTakenMinutes: number }
@@ -111,7 +112,7 @@ export const mockTestAPI = {
   getAttempt: (attemptId: string) => api.get(`/mock-tests/attempts/${attemptId}`),
   getAllAttempts: (params?: { limit?: number }) => api.get('/mock-tests/attempts/all/list', { params }),
   deleteTest: (id: string) => api.delete(`/mock-tests/${id}`),
-  updateAnswerKey: (id: string, answerKey: Map<string, string>) => 
+  updateAnswerKey: (id: string, answerKey: Map<string, string>) =>
     api.put(`/mock-tests/${id}/answer-key`, Object.fromEntries(answerKey)),
 };
 export const ddayAPI = {

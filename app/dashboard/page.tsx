@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { scheduleAPI, trackerAPI, missionsAPI, userAPI, ddayAPI } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
-import CountdownCalendar from '../../componets/CountdownCalender'; 
+import CountdownCalendar from '../../componets/CountdownCalender';
 import {
   Calendar, Clock, Flame, Trophy, BarChart3, Target, AlertTriangle,
   CheckCircle2, BookOpen, Brain, ChevronLeft, ChevronRight, Zap, TrendingUp
@@ -76,8 +76,8 @@ export default function DashboardPage() {
         const entries = trackerRes.value.data;
         setTrackerData([...entries].reverse());
 
-        const todayStr = new Date().toDateString();
-        const submitted = entries.some((e: any) => new Date(e.date).toDateString() === todayStr);
+        const todayISOStr = new Date().toISOString().slice(0, 10);
+        const submitted = entries.some((e: any) => new Date(e.date).toISOString().slice(0, 10) === todayISOStr);
         setIsSubmittedToday(submitted);
       }
       if (dDayRes.status === 'fulfilled') {
@@ -104,7 +104,8 @@ export default function DashboardPage() {
   const handleGenerateSchedule = async () => {
     setLoading(true);
     try {
-      const res = await scheduleAPI.generate();
+      const todayISO = format(new Date(), 'yyyy-MM-dd');
+      const res = await scheduleAPI.generate(todayISO);
       setSchedule(res.data);
     } catch (err) {
       console.error("Generation Error:", err);
@@ -113,7 +114,7 @@ export default function DashboardPage() {
     }
   };
 
-  
+
   const chartData = trackerData.map((entry: any) => ({
     date: format(new Date(entry.date), 'MM/dd'),
     completion: entry.completionRate,
@@ -150,7 +151,8 @@ export default function DashboardPage() {
 
     setRefiningSchedule(true);
     try {
-      const { data } = await scheduleAPI.refine(instruction);
+      const todayISO = format(new Date(), 'yyyy-MM-dd');
+      const { data } = await scheduleAPI.refine(instruction, todayISO);
       setSchedule(data);
       setScheduleRefineInput('');
       toast.success('Schedule updated with your instruction');
@@ -209,7 +211,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-<div className="flex items-start justify-between">
+      <div className="flex items-start justify-between">
         <div>
           <p className="text-ink-500 font-mono text-sm">{format(new Date(), 'EEEE, d MMMM yyyy')}</p>
           <h1 className="font-display text-3xl font-bold text-ink-100 mt-1">
@@ -226,14 +228,14 @@ export default function DashboardPage() {
           </Link>
         )}
       </div>
-<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <StatCard icon={<Flame className="w-5 h-5 text-saffron-400" />} label="Study Streak" value={stats?.studyStreak || 0} suffix="days" color="saffron" />
         <StatCard icon={<Trophy className="w-5 h-5 text-jade-400" />} label="Confidence" value={stats?.confidenceScore || 50} suffix="/100" color="jade" />
         <StatCard icon={<BarChart3 className="w-5 h-5 text-deep-400" />} label="Weekly Avg" value={stats?.weeklyProductivity || 0} suffix="%" color="deep" />
         <StatCard icon={<Target className="w-5 h-5 text-purple-400" />} label="Missions" value={activeMissions.length} suffix="active" color="purple" />
       </div>
-<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-<div className="lg:col-span-2 glass-card p-5 relative overflow-hidden h-fit">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 glass-card p-5 relative overflow-hidden h-fit">
           <div className="flex items-center justify-between mb-4 border-b border-ink-800 pb-4">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-saffron-400" />
@@ -330,9 +332,9 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
-<div className="space-y-4">
-{calendarTargetDate ? (
-            <CountdownCalendar 
+        <div className="space-y-4">
+          {calendarTargetDate ? (
+            <CountdownCalendar
               targetDate={calendarTargetDate}
               examName={calendarExamName}
             />
@@ -413,8 +415,8 @@ export default function DashboardPage() {
                   <AreaChart data={chartData}>
                     <defs>
                       <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#ff7c0a" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#ff7c0a" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#ff7c0a" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#ff7c0a" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <Area type="monotone" dataKey="completion" stroke="#ff7c0a" fill="url(#chartGrad)" strokeWidth={2} dot={false} />

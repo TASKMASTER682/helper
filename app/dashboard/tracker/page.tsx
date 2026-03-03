@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { trackerAPI, scheduleAPI } from '@/lib/api';
 import { CheckCircle2, XCircle, MinusCircle, Brain, TrendingUp, Calendar, Flame } from 'lucide-react';
 import { format } from 'date-fns';
-import { BarChart, Bar, XAxis, YAxis,TooltipProps, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, TooltipProps, Tooltip, ResponsiveContainer } from 'recharts';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
 
@@ -61,10 +61,9 @@ export default function TrackerPage() {
       if (entriesRes.status === 'fulfilled') setEntries(entriesRes.value.data);
       if (schedRes.status === 'fulfilled') {
         setTodaySchedule(schedRes.value.data);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const todayISO = new Date().toISOString().slice(0, 10);
         const todayEntry = entriesRes.status === 'fulfilled'
-          ? entriesRes.value.data.find((e: any) => new Date(e.date).toDateString() === today.toDateString())
+          ? entriesRes.value.data.find((e: any) => new Date(e.date).toISOString().slice(0, 10) === todayISO)
           : null;
         if (todayEntry) setSubmitted(true);
       }
@@ -130,7 +129,8 @@ export default function TrackerPage() {
       await trackerAPI.submitDaily({
         tasks, focusScore, energyLevel, mood, notesPrepared,
         topicsNotUnderstood: topicsNotUnderstood.split(',').map(t => t.trim()).filter(Boolean),
-        notes, totalStudyHours: totalHours
+        notes, totalStudyHours: totalHours,
+        date: new Date().toISOString().slice(0, 10)
       });
 
       toast.success('Daily report submitted! 🎯');
@@ -150,10 +150,10 @@ export default function TrackerPage() {
     focus: (e.focusScore || 5) * 10
   }));
 
-    const tasks = todaySchedule?.blocks?.filter((b: any) => {
-      const type = b?.taskType || 'learning';
-      return type !== 'break' && type !== 'fitness';
-    }) || [];
+  const tasks = todaySchedule?.blocks?.filter((b: any) => {
+    const type = b?.taskType || 'learning';
+    return type !== 'break' && type !== 'fitness';
+  }) || [];
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" /></div>;
 
@@ -165,14 +165,14 @@ export default function TrackerPage() {
       </div>
 
       <div className="grid grid-cols-3 gap-6">
-<div className="col-span-2 space-y-4">
+        <div className="col-span-2 space-y-4">
           {submitted && (
             <div className="teal-card p-4 flex items-center gap-3">
               <CheckCircle2 className="w-5 h-5 text-teal-400" />
               <span className="text-teal-300 text-sm font-semibold">Today's report submitted! ARJUN is analyzing your performance.</span>
             </div>
           )}
-{tasks.length > 0 && (
+          {tasks.length > 0 && (
             <div className="glass-card p-5">
               <h3 className="font-display text-base font-semibold text-ink-200 mb-4">Today's Tasks</h3>
               <div className="space-y-2">
@@ -220,24 +220,24 @@ export default function TrackerPage() {
               </div>
             </div>
           )}
-<div className="glass-card p-5">
+          <div className="glass-card p-5">
             <h3 className="font-display text-base font-semibold text-ink-200 mb-4">Daily Metrics</h3>
             <div className="grid grid-cols-2 gap-4">
-<div>
+              <div>
                 <label className="label-text">Focus Score: {focusScore}/10</label>
                 <input type="range" min="1" max="10" value={focusScore} onChange={e => setFocusScore(parseInt(e.target.value))} className="w-full accent-yellow-500 mt-2" />
                 <div className="flex justify-between text-[10px] font-mono text-ink-600 mt-1">
                   <span>Distracted</span><span>Flow State</span>
                 </div>
               </div>
-<div>
+              <div>
                 <label className="label-text">Total Study Hours: {totalHours}h</label>
                 <input type="range" min="1" max="16" step="0.5" value={totalHours} onChange={e => setTotalHours(parseFloat(e.target.value))} className="w-full accent-deep-500 mt-2" />
                 <div className="flex justify-between text-[10px] font-mono text-ink-600 mt-1">
                   <span>1h</span><span>16h</span>
                 </div>
               </div>
-<div>
+              <div>
                 <label className="label-text">Mood</label>
                 <div className="flex flex-wrap gap-1.5 mt-1">
                   {MOOD_OPTIONS.map(m => (
@@ -247,7 +247,7 @@ export default function TrackerPage() {
                   ))}
                 </div>
               </div>
-<div>
+              <div>
                 <label className="label-text">Energy Level</label>
                 <div className="flex gap-2 mt-1">
                   {ENERGY_OPTIONS.map(e => (
@@ -284,7 +284,7 @@ export default function TrackerPage() {
             {submitted ? 'Report Submitted ✓' : submitting ? 'ARJUN Analyzing...' : 'Submit Daily Report'}
           </button>
         </div>
-<div className="space-y-4">
+        <div className="space-y-4">
           <div className="glass-card p-4">
             <div className="flex items-center gap-2 mb-3">
               <TrendingUp className="w-4 h-4 text-teal-400" />
@@ -305,7 +305,7 @@ export default function TrackerPage() {
               </ResponsiveContainer>
             ) : <div className="h-40 flex items-center justify-center text-ink-600 text-xs">No data yet</div>}
           </div>
-<div className="glass-card p-4">
+          <div className="glass-card p-4">
             <div className="flex items-center gap-2 mb-3">
               <Calendar className="w-4 h-4 text-deep-400" />
               <h3 className="font-semibold text-sm text-ink-200">Recent Days</h3>
@@ -329,7 +329,7 @@ export default function TrackerPage() {
               ))}
             </div>
           </div>
-{entries[0]?.aiInsight && (
+          {entries[0]?.aiInsight && (
             <div className="deep-card p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Brain className="w-3.5 h-3.5 text-deep-400" />
