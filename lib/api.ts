@@ -98,12 +98,14 @@ export const testsAPI = {
 
 };
 export const mockTestAPI = {
-  getAll: () => api.get('/mock-tests'),
+  getAll: (params?: any) => api.get('/mock-tests', { params }),
   getOne: (id: string) => api.get(`/mock-tests/${id}`),
   upload: (formData: FormData) =>
     api.post('/mock-tests/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
+  uploadStructured: (data: any) => api.post('/mock-tests/upload-structured', data),
+  getFilters: () => api.get('/mock-tests/metadata/filters'),
   pollStatus: (id: string) => api.get(`/mock-tests/${id}`),
   submitAttempt: (
     id: string,

@@ -13,7 +13,7 @@ const PDFViewerComponent = dynamic(() => import('@/componets/PDFViewerComponent'
   ssr: false,
   loading: () => (
     <div className="h-full w-full flex items-center justify-center bg-ink-900 border border-ink-800 rounded-2xl">
-      <Loader2 className="animate-spin text-saffron-500 w-6 h-6 mr-2" />
+      <Loader2 className="animate-spin text-yellow-500 w-6 h-6 mr-2" />
       <span className="text-ink-500 font-mono text-xs uppercase">Loading PDF...</span>
     </div>
   )
@@ -21,6 +21,7 @@ const PDFViewerComponent = dynamic(() => import('@/componets/PDFViewerComponent'
 
 interface ResultScreenProps {
   result: any;
+  testMode?: string;
   aiFeedback: any;
   deepAnalysis: any;
   pollingAI: boolean;
@@ -113,11 +114,14 @@ const getPieData = (result: any) => {
 };
 
 export default function ResultScreen({
-  result, aiFeedback, deepAnalysis, pollingAI, testId, onBack, onReattempt
+  result, testMode, aiFeedback, deepAnalysis, pollingAI, testId, onBack, onReattempt
 }: ResultScreenProps) {
   const [localAiFeedback, setLocalAiFeedback] = useState(aiFeedback);
   const [localDeepAnalysis, setLocalDeepAnalysis] = useState(deepAnalysis);
   const [localPollingAI, setLocalPollingAI] = useState(pollingAI);
+  const [filterMode, setFilterMode] = useState<'all' | 'wrong' | 'correct' | 'skipped'>('wrong');
+
+  const isStructured = testMode === 'structured';
 
   // Update local state when props change
   useEffect(() => {
@@ -171,6 +175,14 @@ export default function ResultScreen({
     : '0.0';
   const pieData = getPieData(result);
 
+  const filteredAnswers = result?.userAnswers?.filter((a: any) => {
+    if (filterMode === 'all') return true;
+    if (filterMode === 'correct') return a.isCorrect;
+    if (filterMode === 'wrong') return !a.isCorrect && a.answer;
+    if (filterMode === 'skipped') return !a.answer;
+    return true;
+  }) || [];
+
   return (
     <div className="min-h-screen bg-ink-950 overflow-y-auto p-4 md:p-8 pb-32 custom-scrollbar">
       <div className="max-w-[1500px] mx-auto">
@@ -182,32 +194,32 @@ export default function ResultScreen({
           <div className="flex items-center gap-3">
             {localPollingAI && (
               <div className="flex items-center gap-2 px-3 py-1.5 bg-ink-900 rounded-lg border border-ink-800">
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-saffron-500" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-yellow-500" />
                 <span className="text-[10px] text-ink-400 font-bold uppercase tracking-wider">ARJUN is analyzing...</span>
               </div>
             )}
-            <button onClick={onReattempt} className="flex items-center gap-2 px-6 py-2.5 bg-saffron-500 hover:bg-saffron-600 text-ink-950 font-bold rounded-xl transition-all shadow-lg shadow-saffron-500/20">
-              <RefreshCcw className="w-4 h-4" /> Re-attempt Test
+            <button onClick={onReattempt} className="flex items-center text-black gap-2 px-6 py-2.5 bg-yellow-500 hover:bg-yellow-600 text-ink-950 font-bold rounded-xl transition-all shadow-lg shadow-yellow-500/20">
+              <RefreshCcw className="w-4 h-4 text-teal-600" /> Re-attempt Test
             </button>
           </div>
         </div>
 
         {/* Top Row: Score Highlights */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-          <div className="lg:col-span-1 glass-card p-8 text-center border border-ink-800 bg-ink-900/40 relative overflow-hidden rounded-2xl">
-            <div className="absolute top-0 left-0 w-full h-1 bg-saffron-500" />
-            <p className="text-[10px] uppercase text-ink-500 font-bold tracking-widest">Net Score</p>
-            <h1 className={clsx("text-6xl font-black my-2", displayScore < 0 ? "text-red-500" : "text-saffron-400")}>
+          <div className="lg:col-span-1 glass-card p-8 text-center border border-teal-800 bg-ink-900/40 relative overflow-hidden rounded-2xl">
+            <div className="absolute top-0 left-0 w-full h-1 bg-yellow-500" />
+            <p className="text-[10px] uppercase text-teal-500 font-bold tracking-widest">Net Score</p>
+            <h1 className={clsx("text-6xl font-black my-2", displayScore < 0 ? "text-red-500" : "text-yellow-400")}>
               {scoreText}
             </h1>
             <div className="flex justify-between border-t border-ink-800/50 pt-4 mt-2">
-              <div><p className="text-[8px] text-ink-600 font-bold uppercase mb-1">Correct</p><p className="text-jade-400 font-black">{Number(result?.correctCount) || 0}</p></div>
+              <div><p className="text-[8px] text-ink-600 font-bold uppercase mb-1">Correct</p><p className="text-teal-400 font-black">{Number(result?.correctCount) || 0}</p></div>
               <div><p className="text-[8px] text-ink-600 font-bold uppercase mb-1">Wrong</p><p className="text-red-400 font-black">{Number(result?.wrongCount) || 0}</p></div>
               <div><p className="text-[8px] text-ink-600 font-bold uppercase mb-1">Accuracy</p><p className="text-white font-black">{displayAccuracy}%</p></div>
             </div>
           </div>
 
-          <div className="lg:col-span-3 glass-card p-6 border border-ink-800 bg-ink-900/40 rounded-2xl flex items-center justify-center">
+          <div className="lg:col-span-3 glass-card p-6 border border-teal-800 bg-ink-900/40 rounded-2xl flex items-center justify-center">
             <div className="w-full h-32">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -231,79 +243,131 @@ export default function ResultScreen({
 
         {/* Main Body Grid: Paper vs Analysis */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12 items-start">
-          {/* Left Column: PDF Viewer (Wide) */}
-          <div className="lg:col-span-7 sticky top-4">
-            <div className="glass-card border border-ink-800 bg-ink-900/40 rounded-3xl overflow-hidden">
-              <div className="p-4 bg-ink-900/60 border-b border-ink-800 flex items-center justify-between">
-                <h3 className="text-[10px] font-bold text-ink-400 uppercase tracking-[0.2em]">Question Paper Paper</h3>
-                <span className="text-[9px] text-ink-600 font-mono">Reference View</span>
-              </div>
-              <div className="h-[750px] w-full bg-black">
-                <PDFViewerComponent testId={testId} />
-              </div>
-            </div>
-            <div className="mt-6 bg-ink-950/50 p-6 rounded-2xl border border-ink-800">
-              <div className="flex items-center gap-2 mb-3 text-saffron-400 text-xs font-bold uppercase"><Lightbulb className="w-4 h-4" /> Mentor Strategy</div>
-              {recommendations.map((text: string, idx: number) => (
-                <p key={idx} className="text-[13px] text-ink-300 leading-relaxed italic mb-1">"{text}"</p>
-              ))}
-            </div>
-            <p className="mt-3 text-[10px] text-ink-600 italic text-center">You can scroll internaly to cross-check questions</p>
-          </div>
 
-          {/* Right Column: AI Analysis */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="glass-card p-8 border border-ink-800 bg-ink-900/40 rounded-3xl">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="p-3 bg-saffron-500/10 rounded-2xl border border-saffron-500/20"><Brain className="w-6 h-6 text-saffron-400" /></div>
-                <div>
-                  <h2 className="text-xl font-bold text-ink-100 tracking-tight leading-tight">{localAiFeedback?.headline || "ARJUN Analysis"}</h2>
-                  <p className="text-[10px] text-ink-500 uppercase font-bold tracking-widest mt-1">AI-Driven Insights</p>
+          {/* Left Column: PDF Viewer (Only if NOT structured) */}
+          {!isStructured && (
+            <div className="lg:col-span-10 lg:col-start-2 sticky top-4">
+              <div className="glass-card border border-ink-800 bg-ink-900/40 rounded-3xl overflow-hidden shadow-2xl">
+                <div className="p-4 bg-ink-900/60 border-b border-ink-800 flex items-center justify-between">
+                  <h3 className="text-[10px] font-bold text-teal-400 uppercase tracking-[0.2em]">Question Paper</h3>
+                  <span className="text-[9px] text-ink-600 font-mono">Reference View</span>
+                </div>
+                <div className="h-[800px] w-full bg-black">
+                  <PDFViewerComponent testId={testId} />
                 </div>
               </div>
+              <p className="mt-4 text-[11px] text-teal-500 font-bold tracking-widest uppercase text-center">Refer to the PDF above to cross-check your mistakes</p>
+            </div>
+          )}
 
-              <div className="space-y-8">
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="bg-jade-500/5 border border-jade-500/10 p-5 rounded-2xl">
-                    <div className="flex items-center gap-2 mb-3 text-jade-400 text-xs font-bold uppercase"><CheckCircle2 className="w-4 h-4" /> Strengths</div>
-                    <div className="space-y-2">
-                      {strengths.length > 0 ? strengths.map((s: string, i: number) => (
-                        <p key={i} className="text-[11px] text-ink-200">• {s}</p>
-                      )) : <p className="text-[11px] text-ink-600 italic">Identifying your strong points...</p>}
-                    </div>
-                  </div>
-                  <div className="bg-red-500/5 border border-red-500/10 p-5 rounded-2xl">
-                    <div className="flex items-center gap-2 mb-3 text-red-400 text-xs font-bold uppercase"><AlertTriangle className="w-4 h-4" /> Weak Areas</div>
-                    <div className="space-y-2">
-                      {weakAreas.length > 0 ? weakAreas.map((w: string, i: number) => (
-                        <p key={i} className="text-[11px] text-ink-200">• {w}</p>
-                      )) : <p className="text-[11px] text-ink-600 italic">No major weak areas found.</p>}
-                    </div>
-                  </div>
-                </div>
-
-                {finalDeepAnalysis.length > 0 && (
+          {/* Right Column: Detailed Solutions & AI Analysis (Only if structured) */}
+          {isStructured && (
+            <div className="lg:col-span-12 space-y-6">
+              <div className="glass-card p-6 md:p-8 border border-teal-800 bg-ink-900/40 rounded-3xl">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 bg-yellow-500/10 rounded-2xl border border-yellow-500/20"><Brain className="w-6 h-6 text-yellow-400" /></div>
                   <div>
-                    <h3 className="text-saffron-400 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 mb-4">
-                      <Sparkles className="w-4 h-4" /> Specific Corrections
-                    </h3>
-                    <div className="grid gap-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-                      {finalDeepAnalysis.map((item: any, idx: number) => (
-                        <div key={idx} className="p-4 bg-ink-950/50 rounded-xl border border-ink-800 hover:border-saffron-500/30 transition-all group">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-[10px] font-bold px-2 py-0.5 bg-red-500/20 text-red-400 rounded">Q.{item.qNo}</span>
-                            <span className="text-[10px] text-ink-500 font-mono group-hover:text-saffron-400 transition-colors">{item.topic}</span>
-                          </div>
-                          <p className="text-[11px] text-ink-200/60 leading-tight mb-2 line-clamp-2">{item.questionText}</p>
-                          <p className="text-[13px] text-ink-300 leading-relaxed border-l-2 border-saffron-500/20 pl-3">{item.analysis}</p>
-                        </div>
-                      ))}
-                    </div>
+                    <h2 className="text-xl font-bold text-teal-500 tracking-tight leading-tight">Digital Evaluation Report</h2>
+                    <p className="text-[10px] text-teal-100 uppercase font-bold tracking-widest mt-1">Detailed Solutions & Analysis</p>
                   </div>
-                )}
+                </div>
+
+                {/* Filter Tabs */}
+                <div className="flex gap-2 mb-6 bg-ink-950 p-1.5 rounded-xl border border-teal-800 flex-wrap">
+                  {(['all', 'wrong', 'correct', 'skipped'] as const).map(tab => (
+                    <button
+                      key={tab}
+                      onClick={() => setFilterMode(tab)}
+                      className={clsx(
+                        "flex-1 py-2 text-xs font-bold rounded-lg capitalize transition-all",
+                        filterMode === tab
+                          ? (tab === 'wrong' ? 'bg-red-500 text-white' : tab === 'correct' ? 'bg-teal-500 text-white' : tab === 'skipped' ? 'bg-blue-600 text-white' : 'bg-yellow-500 text-ink-950')
+                          : "text-ink-500 hover:text-ink-300 hover:bg-ink-900"
+                      )}
+                    >
+                      {tab}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Questions List */}
+                <div className="space-y-6">
+                  <div className={clsx(
+                    "grid gap-4 overflow-y-auto pr-2 custom-scrollbar",
+                    isStructured ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-2 max-h-250" : "grid-cols-1 max-h-[800px]"
+                  )}>
+                    {filteredAnswers.map((item: any, idx: number) => {
+                      const isSkipped = !item.answer;
+                      const isCorrect = item.isCorrect;
+
+                      const statusColor = isSkipped ? 'blue' : isCorrect ? 'teal' : 'red';
+
+                      return (
+                        <div key={idx} className={clsx(
+                          "p-5 bg-ink-950/50 rounded-2xl border transition-all relative overflow-hidden flex flex-col",
+                          `border-${statusColor}-500/20 hover:border-${statusColor}-500/40`
+                        )}>
+                          {/* Status bar top */}
+                          <div className={`absolute top-0 left-0 w-full h-1 bg-${statusColor}-500/50`} />
+
+                          <div className="flex items-start justify-between mb-4 mt-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className={clsx("text-[10px] font-bold px-2.5 py-1 rounded-md", `bg-${statusColor}-500/10 text-${statusColor}-400 border border-${statusColor}-500/20`)}>
+                                Q.{item.questionNumber}
+                              </span>
+
+                              {isSkipped ? (
+                                <span className="text-[10px] font-bold px-2.5 py-1 bg-ink-800 text-ink-400 rounded-md">SKIPPED</span>
+                              ) : (
+                                <>
+                                  <span className={clsx("text-[10px] font-bold px-2.5 py-1 rounded-md flex items-center gap-1",
+                                    isCorrect ? "bg-teal-500/10 text-teal-400" : "bg-red-500/10 text-red-400"
+                                  )}>
+                                    Marked: <strong className="text-white ml-1">{item.answer}</strong>
+                                  </span>
+                                </>
+                              )}
+
+                              <span className="text-[10px] font-bold px-2.5 py-1 bg-ink-800 text-teal-400 rounded-md flex items-center gap-1 border border-ink-700">
+                                Correct: <strong className="text-white ml-1">{item.correctAnswer}</strong>
+                              </span>
+                            </div>
+                          </div>
+
+                          {item.questionText && (
+                            <div className="mb-4 p-4 bg-ink-900/30 rounded-xl border-2 border-yellow-800/50">
+                              {/<[a-z][\s\S]*>/i.test(item.questionText) ? (
+                                <div className="text-[14px] text-ink-200 leading-relaxed font-medium ai-content" dangerouslySetInnerHTML={{ __html: item.questionText }} />
+                              ) : (
+                                <p className="text-[14px] text-ink-200 leading-relaxed font-medium whitespace-pre-wrap">{item.questionText}</p>
+                              )}
+                            </div>
+                          )}
+
+                          <div className="mt-auto pt-4 border-t border-ink-800/50 flex flex-col gap-2 relative">
+                            <div className="flex items-center gap-2 px-1">
+                              <Sparkles className="w-3.5 h-3.5 text-yellow-500" />
+                              <p className="text-[10px] text-yellow-500 font-bold uppercase tracking-widest">Detailed Solution</p>
+                            </div>
+                            <div className="text-[13px] text-ink-200 leading-relaxed bg-black/40 p-4 rounded-xl border border-ink-800/60 whitespace-pre-wrap overflow-y-auto custom-scrollbar shadow-inner" style={{ maxHeight: '180px' }}>
+                              {item.explanation || <span className="text-ink-600 italic">No detailed explanation available.</span>}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {filteredAnswers.length === 0 && (
+                      <div className={clsx("text-center py-16 border border-dashed border-ink-800 rounded-3xl", isStructured && "col-span-full")}>
+                        <Lightbulb className="w-12 h-12 text-ink-600 mx-auto mb-4 opacity-50" />
+                        <p className="text-ink-400 font-bold text-sm">No questions in this category</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Bottom Section: Question Grid */}

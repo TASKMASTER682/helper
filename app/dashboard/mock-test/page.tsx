@@ -14,6 +14,12 @@ import {
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
 
+const SUBJECTS_LIST = [
+  'History', 'Geography', 'Polity', 'Economy', 'Environment',
+  'Science & Technology', 'Current Affairs', 'Internal Security',
+  'Ethics', 'CSAT', 'International Relations', 'Social Issues'
+];
+
 type Status = 'uploading' | 'processing' | 'ready' | 'error';
 
 const STATUS_CFG: Record<Status, { label: string; color: string; bg: string; icon: any }> = {
@@ -31,6 +37,13 @@ const TEST_TYPES = [
 ];
 
 const PIE_COLORS = ['#12b97a', '#ef4444', '#4b5563'];
+
+const scrollbarStyle = `
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: #332b21; border-radius: 10px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #4a3f31; }
+`;
 
 export default function MockTestPage() {
   const router = useRouter();
@@ -53,12 +66,27 @@ export default function MockTestPage() {
     durationMinutes: '120', markCorrect: '2.0', markWrong: '-0.66',
     subject: '',
     topics: '',
+    year: new Date().getFullYear().toString(),
   });
+  const [uploadMode, setUploadMode] = useState<'pdf' | 'structured'>('structured');
+  const [solutionText, setSolutionText] = useState('');
   const [uploading, setUploading] = useState(false);
+
+  // Filters
+  const [filters, setFilters] = useState({ subject: '', year: '', mode: '' });
+  const [availableFilters, setAvailableFilters] = useState({ subjects: [] as string[], years: [] as number[] });
 
   useEffect(() => {
     loadAll();
-  }, []);
+    loadFilters();
+  }, [filters]);
+
+  const loadFilters = async () => {
+    try {
+      const { data } = await mockTestAPI.getFilters();
+      setAvailableFilters(data);
+    } catch { }
+  };
 
   useEffect(() => {
     const processing = tests.filter(t => t.status === 'processing' || t.status === 'uploading');
@@ -109,8 +137,9 @@ export default function MockTestPage() {
 
   const loadAll = async () => {
     try {
+      const { subject, year, mode } = filters;
       const [testsRes, attemptsRes, seriesRes] = await Promise.allSettled([
-        mockTestAPI.getAll(),
+        mockTestAPI.getAll({ subject, year, mode }),
         mockTestAPI.getAllAttempts(),
         testsAPI.getSeries()
       ]);
@@ -123,7 +152,7 @@ export default function MockTestPage() {
   };
 
   const handleUpload = async () => {
-    if (!testPdf) {
+    if (uploadMode === 'pdf' && !testPdf) {
       toast.error('Upload Test PDF');
       return;
     }
@@ -131,34 +160,65 @@ export default function MockTestPage() {
       toast.error('Paste answer key text');
       return;
     }
+    if (uploadMode === 'structured' && !solutionText.trim()) {
+      toast.error('Paste solution text for structured mode');
+      return;
+    }
+
     setUploading(true);
     try {
-      const fd = new FormData();
-      fd.append('testPdf', testPdf);
-      fd.append('answerKeyText', answerKeyText);
-      fd.append('name', formData.name || testPdf.name.replace(/\.pdf$/i, ''));
-      fd.append('testType', formData.testType);
-      fd.append('totalQuestions', formData.totalQuestions);
-      fd.append('durationMinutes', formData.durationMinutes);
-      fd.append('markCorrect', formData.markCorrect);
-      fd.append('markWrong', formData.markWrong);
-      fd.append('subject', formData.subject);
-      fd.append('topics', formData.topics);
-      fd.append('testSeriesId', selectedSeriesId);
+      let data;
+      if (uploadMode === 'pdf') {
+        const fd = new FormData();
+        fd.append('testPdf', testPdf!);
+        fd.append('answerKeyText', answerKeyText);
+        fd.append('name', formData.name || testPdf!.name.replace(/\.pdf$/i, ''));
+        fd.append('testType', formData.testType);
+        fd.append('totalQuestions', formData.totalQuestions);
+        fd.append('durationMinutes', formData.durationMinutes);
+        fd.append('markCorrect', formData.markCorrect);
+        fd.append('markWrong', formData.markWrong);
+        fd.append('subject', formData.subject);
+        fd.append('topics', formData.topics);
+        fd.append('year', formData.year);
+        fd.append('testSeriesId', selectedSeriesId);
+        const res = await mockTestAPI.upload(fd);
+        data = res.data;
+      } else {
+        const payload = {
+          ...formData,
+          year: parseInt(formData.year),
+          totalQuestions: parseInt(formData.totalQuestions),
+          durationMinutes: parseInt(formData.durationMinutes),
+          markCorrect: parseFloat(formData.markCorrect),
+          markWrong: parseFloat(formData.markWrong),
+          questionPaperText: answerKeyText,
+          solutionText: solutionText,
+          testSeriesId: selectedSeriesId
+        };
+        const res = await mockTestAPI.uploadStructured(payload);
+        data = res.data;
+      }
 
-      const { data } = await mockTestAPI.upload(fd);
-      toast.success('Test uploaded! Processing questions...');
+      toast.success(uploadMode === 'pdf' ? 'Test uploaded! Processing...' : 'Structured test saved!');
 
       setTests(prev => [{
-        _id: data.mockTestId, name: data.name, status: 'processing', createdAt: new Date(),
+        _id: data.mockTestId,
+        name: data.name || formData.name,
+        status: uploadMode === 'pdf' ? 'processing' : 'ready',
+        createdAt: new Date(),
         totalQuestions: parseInt(formData.totalQuestions),
         durationMinutes: parseInt(formData.durationMinutes),
         testType: formData.testType,
+        mode: uploadMode
       }, ...prev]);
 
       setShowUpload(false);
-      setTestPdf(null); setAnswerKeyText('');
-      setFormData({ name: '', testType: 'prelims_gs', totalQuestions: '100', durationMinutes: '120', markCorrect: '2.0', markWrong: '-0.66', subject: '', topics: '' });
+      setTestPdf(null);
+      setAnswerKeyText('');
+      setSolutionText('');
+      setFormData({ name: '', testType: 'prelims_gs', totalQuestions: '100', durationMinutes: '120', markCorrect: '2.0', markWrong: '-0.66', subject: '', topics: '', year: new Date().getFullYear().toString() });
+      loadFilters();
     } catch (err: any) {
       toast.error(err.response?.data?.error || 'Upload failed');
     } finally {
@@ -204,6 +264,7 @@ export default function MockTestPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      <style>{scrollbarStyle}</style>
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="section-title flex items-center gap-2">
@@ -234,12 +295,44 @@ export default function MockTestPage() {
         ))}
       </div>
 
-      <div className="flex gap-1 p-1 bg-ink-900 rounded-xl border border-ink-800 w-fit">
-        {(['tests', 'analytics'] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)} className={clsx('px-5 py-2 rounded-lg text-sm font-semibold capitalize transition-all', tab === t ? 'bg-yellow-500 text-ink-950' : 'text-ink-500')}>
-            {t}
-          </button>
-        ))}
+      <div className="flex flex-wrap gap-2 items-center justify-between">
+        <div className="flex gap-1 p-1 bg-ink-900 rounded-xl border border-ink-800 w-fit">
+          {(['tests', 'analytics'] as const).map(t => (
+            <button key={t} onClick={() => setTab(t)} className={clsx('px-5 py-2 rounded-lg text-sm font-semibold capitalize transition-all', tab === t ? 'bg-yellow-500 text-ink-950' : 'text-ink-500')}>
+              {t}
+            </button>
+          ))}
+        </div>
+
+        {tab === 'tests' && (
+          <div className="flex gap-2 items-center">
+            <select
+              className="bg-ink-900 border border-ink-800 rounded-lg px-3 py-1.5 text-xs text-ink-300 outline-none"
+              value={filters.subject}
+              onChange={e => setFilters({ ...filters, subject: e.target.value })}
+            >
+              <option value="">All Subjects</option>
+              {availableFilters.subjects.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <select
+              className="bg-ink-900 border border-ink-800 rounded-lg px-3 py-1.5 text-xs text-ink-300 outline-none"
+              value={filters.year}
+              onChange={e => setFilters({ ...filters, year: e.target.value })}
+            >
+              <option value="">All Years</option>
+              {availableFilters.years.map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
+            {(filters.subject || filters.year) && (
+              <button
+                onClick={() => setFilters({ subject: '', year: '', mode: '' })}
+                className="p-1.5 text-ink-500 hover:text-white transition-colors"
+                title="Clear Filters"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {tab === 'tests' && (
@@ -379,60 +472,111 @@ export default function MockTestPage() {
               <X className="cursor-pointer text-ink-400 hover:text-white" onClick={() => setShowUpload(false)} />
             </div>
 
-            <div className="space-y-4 mb-4">
-              <DropZone label="Test PDF" file={testPdf} onChange={setTestPdf} hint="Question Paper" />
+            <div className="flex p-1 bg-ink-900 rounded-lg border border-ink-800 mb-6 w-full">
+              <button
+                className={clsx('flex-1 py-2 text-xs font-bold rounded-md transition-all', uploadMode === 'structured' ? 'bg-teal-500 text-ink-950' : 'text-ink-500')}
+                onClick={() => setUploadMode('structured')}
+              >
+                Structured Bank
+              </button>
+              <button
+                className={clsx('flex-1 py-2 text-xs font-bold rounded-md transition-all', uploadMode === 'pdf' ? 'bg-yellow-500 text-ink-950' : 'text-ink-500')}
+                onClick={() => setUploadMode('pdf')}
+              >
+                PDF Paper (Fallback)
+              </button>
+            </div>
+
+            <div className="space-y-4 mb-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+              {uploadMode === 'pdf' && (
+                <DropZone label="Test PDF" file={testPdf} onChange={setTestPdf} hint="Question Paper" />
+              )}
 
               <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold text-ink-500">Answer Key (Raw Text)</label>
+                <label className="text-[10px] uppercase font-bold text-ink-500">
+                  {uploadMode === 'pdf' ? 'Answer Key (Raw Text)' : 'Question Paper (Raw Text)'}
+                </label>
                 <textarea
                   className="input-field w-full h-32 resize-none font-mono text-xs"
-                  placeholder="Paste answer key here...&#10;Examples:&#10;1 A 2 B 3 C 4 D&#10;or: Q1-A, Q2-B, Q3-C"
+                  placeholder={uploadMode === 'pdf' ? "Paste answer key here..." : "Paste full question paper text here..."}
                   value={answerKeyText}
                   onChange={(e) => setAnswerKeyText(e.target.value)}
                 />
-                <p className="text-[10px] text-ink-600">AI will convert to key-value format</p>
+                <p className="text-[10px] text-ink-600">
+                  {uploadMode === 'pdf' ? 'Simplified regex will be used' : 'Intelligent AI will structure this bank'}
+                </p>
+              </div>
+
+              {uploadMode === 'structured' && (
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase font-bold text-ink-500">Solutions & Answers (Raw Text)</label>
+                  <textarea
+                    className="input-field w-full h-32 resize-none font-mono text-xs"
+                    placeholder="Paste solutions/answers text here..."
+                    value={solutionText}
+                    onChange={(e) => setSolutionText(e.target.value)}
+                  />
+                </div>
+              )}
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-ink-500">Link to Test Series</label>
+                  <select
+                    className="input-field w-full mt-1"
+                    value={selectedSeriesId}
+                    onChange={e => setSelectedSeriesId(e.target.value)}
+                  >
+                    <option value="">Standalone Test (No Series)</option>
+                    {allSeries.map(s => (
+                      <option key={s._id} value={s._id}>{s.name} - {s.provider}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <input placeholder="Test Name" className="input-field w-full" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <select className="input-field" value={formData.testType} onChange={e => setFormData({ ...formData, testType: e.target.value })}>
+                    {TEST_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  </select>
+                  <input type="number" placeholder="Total Questions" className="input-field" value={formData.totalQuestions} onChange={e => setFormData({ ...formData, totalQuestions: e.target.value })} />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase font-bold text-ink-500">Subject</label>
+                    <select
+                      className="input-field w-full"
+                      value={formData.subject}
+                      onChange={e => setFormData({ ...formData, subject: e.target.value })}
+                    >
+                      <option value="">Select Subject</option>
+                      {SUBJECTS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase font-bold text-ink-500">Year</label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 2024"
+                      className="input-field w-full"
+                      value={formData.year}
+                      onChange={e => setFormData({ ...formData, year: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase font-bold text-ink-500">Specific Topics</label>
+                  <input placeholder="e.g. Parliament, Governor" className="input-field w-full" value={formData.topics} onChange={e => setFormData({ ...formData, topics: e.target.value })} />
+                </div>
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="text-[10px] uppercase font-bold text-ink-500">Link to Test Series</label>
-                <select
-                  className="input-field w-full mt-1"
-                  value={selectedSeriesId}
-                  onChange={e => setSelectedSeriesId(e.target.value)}
-                >
-                  <option value="">Standalone Test (No Series)</option>
-                  {allSeries.map(s => (
-                    <option key={s._id} value={s._id}>{s.name} - {s.provider}</option>
-                  ))}
-                </select>
-              </div>
-
-              <input placeholder="Test Name" className="input-field w-full" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
-
-              <div className="grid grid-cols-2 gap-4">
-                <select className="input-field" value={formData.testType} onChange={e => setFormData({ ...formData, testType: e.target.value })}>
-                  {TEST_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                </select>
-                <input type="number" placeholder="Total Questions" className="input-field" value={formData.totalQuestions} onChange={e => setFormData({ ...formData, totalQuestions: e.target.value })} />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-ink-500">Subject</label>
-                  <input placeholder="e.g. Polity" className="input-field w-full" value={formData.subject} onChange={e => setFormData({ ...formData, subject: e.target.value })} />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-ink-500">Topics</label>
-                  <input placeholder="e.g. Parliament" className="input-field w-full" value={formData.topics} onChange={e => setFormData({ ...formData, topics: e.target.value })} />
-                </div>
-              </div>
-
-              <button disabled={uploading} onClick={handleUpload} className="btn-primary w-full py-3 flex items-center justify-center gap-2">
-                {uploading ? <><Loader2 className="animate-spin w-4 h-4" /> Processing...</> : 'Start Extraction'}
-              </button>
-            </div>
+            <button disabled={uploading} onClick={handleUpload} className={clsx('w-full py-3 flex items-center justify-center gap-2 rounded-xl font-bold transition-all mt-4', uploadMode === 'structured' ? 'bg-teal-500 text-ink-950' : 'bg-yellow-500 text-ink-950')}>
+              {uploading ? <><Loader2 className="animate-spin w-4 h-4" /> Processing...</> : uploadMode === 'structured' ? 'Frame Knowledge Bank' : 'Extract PDF Key'}
+            </button>
           </div>
         </div>
       )}
@@ -501,6 +645,12 @@ function TestCard({ test, attempts = [], onStart, onViewResult, onDelete }: any)
           <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-ink-500 mt-1">
             <span className="flex items-center gap-1"><FileText className="w-3 h-3" /> {test.totalQuestions} Qs</span>
             <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {test.durationMinutes}m</span>
+            <span className={clsx(
+              "px-1.5 py-0.5 rounded text-[8px] font-bold uppercase",
+              test.mode === 'structured' ? "bg-teal-900/40 text-teal-400 border border-teal-800/50" : "bg-yellow-900/40 text-yellow-500 border border-yellow-800/50"
+            )}>
+              {test.mode === 'structured' ? 'Structured' : 'PDF Mode'}
+            </span>
             {lastAttempt && <span className="text-teal-400 font-bold">Last Score: {lastScore?.toFixed(1) ?? '--'}</span>}
           </div>
         </div>

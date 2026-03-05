@@ -5,7 +5,7 @@ import { useAuthStore } from '@/store/authStore';
 import CountdownCalendar from '../../componets/CountdownCalender';
 import {
   Calendar, Clock, Flame, Trophy, BarChart3, Target, AlertTriangle,
-  CheckCircle2, BookOpen, Brain, ChevronLeft, ChevronRight, Zap, TrendingUp
+  CheckCircle2, BookOpen, Brain, ChevronLeft, ChevronRight, Zap, TrendingUp, Loader2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ResponsiveContainer, AreaChart, Area } from 'recharts';
@@ -44,6 +44,7 @@ export default function DashboardPage() {
   const [missions, setMissions] = useState<any[]>([]);
   const [trackerData, setTrackerData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [generatingSchedule, setGeneratingSchedule] = useState(false);
   const [isSubmittedToday, setIsSubmittedToday] = useState(false);
   const [scheduleRefineInput, setScheduleRefineInput] = useState('');
   const [refiningSchedule, setRefiningSchedule] = useState(false);
@@ -102,7 +103,7 @@ export default function DashboardPage() {
   };
 
   const handleGenerateSchedule = async () => {
-    setLoading(true);
+    setGeneratingSchedule(true);
     try {
       const todayISO = format(new Date(), 'yyyy-MM-dd');
       const res = await scheduleAPI.generate(todayISO);
@@ -110,7 +111,7 @@ export default function DashboardPage() {
     } catch (err) {
       console.error("Generation Error:", err);
     } finally {
-      setLoading(false);
+      setGeneratingSchedule(false);
     }
   };
 
@@ -325,9 +326,13 @@ export default function DashboardPage() {
             <div className="py-16 text-center">
               <Brain className="w-12 h-12 text-ink-700 mx-auto mb-4 opacity-20" />
               <p className="text-ink-500 text-sm mb-6">No active strategy for today. Ready to start?</p>
-              <button onClick={handleGenerateSchedule} className="btn-primary px-8 py-2.5 flex items-center gap-2 mx-auto">
-                <Zap className="w-4 h-4 fill-current" />
-                Generate Schedule
+              <button onClick={handleGenerateSchedule} disabled={generatingSchedule} className="btn-primary px-8 py-2.5 flex items-center gap-2 mx-auto disabled:opacity-50">
+                {generatingSchedule ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Zap className="w-4 h-4 fill-current" />
+                )}
+                {generatingSchedule ? 'Generating...' : 'Generate Schedule'}
               </button>
             </div>
           )}
