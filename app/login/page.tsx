@@ -262,33 +262,22 @@ function LoginForm() {
     if (user) router.push('/dashboard');
   }, [user, router]);
 
-  // 3. Handle Email Verification Toast
-  useEffect(() => {
-    if (searchParams.get('verified') === '1') {
-      toast.success('Email verified successfully. You can login now.');
-    }
-  }, [searchParams]);
-
-  // 4. Auto-login logic (Memoized to prevent effect re-runs)
-  const autoLoginAfterVerify = useCallback(async (token: string) => {
-    try {
-      localStorage.setItem('upsc_token', token);
-      const { data } = await userAPI.getProfile();
-      localStorage.setItem('upsc_user', JSON.stringify(data));
-      setUser(data);
-      router.replace('/dashboard');
-    } catch (err: any) {
-      localStorage.removeItem('upsc_token');
-      toast.error('Verification completed, but auto-login failed.');
-    }
-  }, [router, setUser]);
-
+  // Auto-login logic for any token in URL
   useEffect(() => {
     const tokenFromVerify = searchParams.get('token');
     if (tokenFromVerify) {
-      autoLoginAfterVerify(tokenFromVerify);
+      try {
+        localStorage.setItem('upsc_token', tokenFromVerify);
+        const storedUser = localStorage.getItem('upsc_user');
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+          router.replace('/dashboard');
+        }
+      } catch (err: any) {
+        localStorage.removeItem('upsc_token');
+      }
     }
-  }, [searchParams, autoLoginAfterVerify]);
+  }, [searchParams, router, setUser]);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault(); // Form reload prevent karega
@@ -302,7 +291,7 @@ function LoginForm() {
           return;
         }
         const result = await register(form.name, form.email, form.password, form.state);
-        toast.success(result?.message || 'Verification link sent. Check email.');
+        toast.success(result?.message || 'Account created successfully! Please login.');
         setIsLogin(true);
         setForm(p => ({ ...p, password: '' }));
       }

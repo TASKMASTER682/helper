@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, BookOpen, Target, BarChart3, MessageCircle,
   FlaskConical, User, LogOut, Flame, Trophy, Zap, Brain, FileSearch, 
-  ChevronRight, Menu, X // Mobile icons add kiye
+  ChevronRight, Menu, X, Shield, Youtube
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
@@ -14,7 +14,8 @@ import clsx from 'clsx';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/dashboard/library', icon: BookOpen, label: 'Library Shelf' },
+  { href: '/dashboard/library', icon: BookOpen, label: 'Library shelf' },
+  { href: '/dashboard/youtube', icon: Youtube, label: 'YouTube Courses' },
   { href: '/dashboard/missions', icon: Target, label: 'Missions' },
   { href: '/dashboard/tracker', icon: BarChart3, label: 'Daily Tracker' },
   {
@@ -28,6 +29,10 @@ const navItems = [
   },
   { href: '/dashboard/mentor', icon: MessageCircle, label: 'AI Mentor' },
   { href: '/dashboard/profile', icon: User, label: 'Profile' },
+];
+
+const adminNavItems = [
+  { href: '/dashboard/admin', icon: Shield, label: 'Admin Panel' },
 ];
 
 export default function Sidebar() {
@@ -98,7 +103,7 @@ export default function Sidebar() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-ink-100 truncate">{user?.name || 'Aspirant'}</p>
-                <p className="text-[10px] text-ink-500 font-mono">Rank: Commander</p>
+                <p className="text-[10px] text-ink-500 font-mono">{user?.role === 'admin' ? 'Admin' : 'Rank: Commander'}</p>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-1">
@@ -109,6 +114,25 @@ export default function Sidebar() {
           </div>
         </div>
 <nav className="flex-1 px-3 space-y-1 overflow-y-auto custom-scrollbar">
+          {user?.role === 'admin' && (
+            <div className="py-2">
+              <div className="flex items-center gap-3 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] mb-1 text-yellow-500">
+                <Shield className="w-3.5 h-3.5" />
+                <span>Admin</span>
+              </div>
+              <div className="ml-3 pl-2 border-l border-yellow-500/30 space-y-1">
+                {adminNavItems.map(item => (
+                  <NavItem 
+                    key={item.href} 
+                    href={item.href} 
+                    icon={item.icon} 
+                    label={item.label} 
+                    active={isActive(item.href)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
           {navItems.map(item => {
             if (item.children) {
               const groupActive = item.children.some(c => isActive(c.href));

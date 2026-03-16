@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useAuthStore } from '@/store/authStore';
 import { mockTestAPI, testsAPI } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import {
@@ -47,6 +48,7 @@ const scrollbarStyle = `
 
 export default function MockTestPage() {
   const router = useRouter();
+  const { user } = useAuthStore();
 
   const [tests, setTests] = useState<any[]>([]);
   const [attempts, setAttempts] = useState<any[]>([]);
@@ -68,8 +70,6 @@ export default function MockTestPage() {
     topics: '',
     year: new Date().getFullYear().toString(),
   });
-  const [uploadMode, setUploadMode] = useState<'pdf' | 'structured'>('structured');
-  const [solutionText, setSolutionText] = useState('');
   const [uploading, setUploading] = useState(false);
 
   // Filters
@@ -152,7 +152,7 @@ export default function MockTestPage() {
   };
 
   const handleUpload = async () => {
-    if (uploadMode === 'pdf' && !testPdf) {
+    if (!testPdf) {
       toast.error('Upload Test PDF');
       return;
     }
@@ -160,63 +160,41 @@ export default function MockTestPage() {
       toast.error('Paste answer key text');
       return;
     }
-    if (uploadMode === 'structured' && !solutionText.trim()) {
-      toast.error('Paste solution text for structured mode');
-      return;
-    }
 
     setUploading(true);
     try {
-      let data;
-      if (uploadMode === 'pdf') {
-        const fd = new FormData();
-        fd.append('testPdf', testPdf!);
-        fd.append('answerKeyText', answerKeyText);
-        fd.append('name', formData.name || testPdf!.name.replace(/\.pdf$/i, ''));
-        fd.append('testType', formData.testType);
-        fd.append('totalQuestions', formData.totalQuestions);
-        fd.append('durationMinutes', formData.durationMinutes);
-        fd.append('markCorrect', formData.markCorrect);
-        fd.append('markWrong', formData.markWrong);
-        fd.append('subject', formData.subject);
-        fd.append('topics', formData.topics);
-        fd.append('year', formData.year);
-        fd.append('testSeriesId', selectedSeriesId);
-        const res = await mockTestAPI.upload(fd);
-        data = res.data;
-      } else {
-        const payload = {
-          ...formData,
-          year: parseInt(formData.year),
-          totalQuestions: parseInt(formData.totalQuestions),
-          durationMinutes: parseInt(formData.durationMinutes),
-          markCorrect: parseFloat(formData.markCorrect),
-          markWrong: parseFloat(formData.markWrong),
-          questionPaperText: answerKeyText,
-          solutionText: solutionText,
-          testSeriesId: selectedSeriesId
-        };
-        const res = await mockTestAPI.uploadStructured(payload);
-        data = res.data;
-      }
+      const fd = new FormData();
+      fd.append('testPdf', testPdf!);
+      fd.append('answerKeyText', answerKeyText);
+      fd.append('name', formData.name || testPdf!.name.replace(/\.pdf$/i, ''));
+      fd.append('testType', formData.testType);
+      fd.append('totalQuestions', formData.totalQuestions);
+      fd.append('durationMinutes', formData.durationMinutes);
+      fd.append('markCorrect', formData.markCorrect);
+      fd.append('markWrong', formData.markWrong);
+      fd.append('subject', formData.subject);
+      fd.append('topics', formData.topics);
+      fd.append('year', formData.year);
+      fd.append('testSeriesId', selectedSeriesId);
+      const res = await mockTestAPI.upload(fd);
+      const data = res.data;
 
-      toast.success(uploadMode === 'pdf' ? 'Test uploaded! Processing...' : 'Structured test saved!');
+      toast.success('Test uploaded! Processing...');
 
       setTests(prev => [{
         _id: data.mockTestId,
         name: data.name || formData.name,
-        status: uploadMode === 'pdf' ? 'processing' : 'ready',
+        status: 'processing',
         createdAt: new Date(),
         totalQuestions: parseInt(formData.totalQuestions),
         durationMinutes: parseInt(formData.durationMinutes),
         testType: formData.testType,
-        mode: uploadMode
+        mode: 'pdf'
       }, ...prev]);
 
       setShowUpload(false);
       setTestPdf(null);
       setAnswerKeyText('');
-      setSolutionText('');
       setFormData({ name: '', testType: 'prelims_gs', totalQuestions: '100', durationMinutes: '120', markCorrect: '2.0', markWrong: '-0.66', subject: '', topics: '', year: new Date().getFullYear().toString() });
       loadFilters();
     } catch (err: any) {
@@ -472,52 +450,23 @@ export default function MockTestPage() {
               <X className="cursor-pointer text-ink-400 hover:text-white" onClick={() => setShowUpload(false)} />
             </div>
 
-            <div className="flex p-1 bg-ink-900 rounded-lg border border-ink-800 mb-6 w-full">
-              <button
-                className={clsx('flex-1 py-2 text-xs font-bold rounded-md transition-all', uploadMode === 'structured' ? 'bg-teal-500 text-ink-950' : 'text-ink-500')}
-                onClick={() => setUploadMode('structured')}
-              >
-                Structured Bank
-              </button>
-              <button
-                className={clsx('flex-1 py-2 text-xs font-bold rounded-md transition-all', uploadMode === 'pdf' ? 'bg-yellow-500 text-ink-950' : 'text-ink-500')}
-                onClick={() => setUploadMode('pdf')}
-              >
-                PDF Paper (Fallback)
-              </button>
-            </div>
-
             <div className="space-y-4 mb-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-              {uploadMode === 'pdf' && (
-                <DropZone label="Test PDF" file={testPdf} onChange={setTestPdf} hint="Question Paper" />
-              )}
+              <DropZone label="Test PDF" file={testPdf} onChange={setTestPdf} hint="Question Paper" />
 
               <div className="space-y-1">
                 <label className="text-[10px] uppercase font-bold text-ink-500">
-                  {uploadMode === 'pdf' ? 'Answer Key (Raw Text)' : 'Question Paper (Raw Text)'}
+                  Answer Key (Raw Text)
                 </label>
                 <textarea
                   className="input-field w-full h-32 resize-none font-mono text-xs"
-                  placeholder={uploadMode === 'pdf' ? "Paste answer key here..." : "Paste full question paper text here..."}
+                  placeholder="Paste answer key here..."
                   value={answerKeyText}
                   onChange={(e) => setAnswerKeyText(e.target.value)}
                 />
                 <p className="text-[10px] text-ink-600">
-                  {uploadMode === 'pdf' ? 'Simplified regex will be used' : 'Intelligent AI will structure this bank'}
+                  Simplified regex will be used
                 </p>
               </div>
-
-              {uploadMode === 'structured' && (
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-ink-500">Solutions & Answers (Raw Text)</label>
-                  <textarea
-                    className="input-field w-full h-32 resize-none font-mono text-xs"
-                    placeholder="Paste solutions/answers text here..."
-                    value={solutionText}
-                    onChange={(e) => setSolutionText(e.target.value)}
-                  />
-                </div>
-              )}
 
               <div className="space-y-4">
                 <div>
@@ -574,8 +523,8 @@ export default function MockTestPage() {
               </div>
             </div>
 
-            <button disabled={uploading} onClick={handleUpload} className={clsx('w-full py-3 flex items-center justify-center gap-2 rounded-xl font-bold transition-all mt-4', uploadMode === 'structured' ? 'bg-teal-500 text-ink-950' : 'bg-yellow-500 text-ink-950')}>
-              {uploading ? <><Loader2 className="animate-spin w-4 h-4" /> Processing...</> : uploadMode === 'structured' ? 'Frame Knowledge Bank' : 'Extract PDF Key'}
+            <button disabled={uploading} onClick={handleUpload} className={clsx('w-full py-3 flex items-center justify-center gap-2 rounded-xl font-bold transition-all mt-4', 'bg-yellow-500 text-ink-950')}>
+              {uploading ? <><Loader2 className="animate-spin w-4 h-4" /> Processing...</> : 'Extract PDF Key'}
             </button>
           </div>
         </div>

@@ -84,6 +84,12 @@ export const scheduleAPI = {
   getDate: (date: string) => api.get(`/schedule/date/${date}`),
   generate: (date?: string) => api.post('/schedule/generate', { date }),
   refine: (instruction: string, date?: string) => api.post('/schedule/refine', { instruction, date }),
+  completeBlock: (blockIndex: number, timeSpent?: number) => 
+    api.patch(`/schedule/block/${blockIndex}/complete`, { timeSpent }),
+  incompleteBlock: (blockIndex: number) => 
+    api.patch(`/schedule/block/${blockIndex}/incomplete`),
+  timerAction: (blockIndex: number, action: 'start' | 'stop') => 
+    api.patch(`/schedule/block/${blockIndex}/timer`, { action }),
 };
 export const mentorAPI = {
   chat: (data: { message: string; conversationHistory: any[] }) => api.post('/mentor/chat', data),
@@ -123,5 +129,48 @@ export const ddayAPI = {
   setTarget: (data: { targetName: string; targetDate: string }) => api.post('/d-day', data),
   deleteTarget: (id: string) => api.delete(`/d-day/${id}`),
   clearCurrent: () => api.delete('/d-day/current'),
+};
+
+export const adminAPI = {
+  getStats: () => api.get('/admin/stats'),
+  
+  // Questions
+  getQuestions: (params?: any) => api.get('/admin/questions', { params }),
+  addQuestion: (data: any) => api.post('/admin/questions', data),
+  addBulkQuestions: (questions: any[]) => api.post('/admin/questions/bulk', { questions }),
+  updateQuestion: (id: string, data: any) => api.put(`/admin/questions/${id}`, data),
+  deleteQuestion: (id: string) => api.delete(`/admin/questions/${id}`),
+  
+  // Series
+  getSeries: (params?: any) => api.get('/admin/series', { params }),
+  addSeries: (data: any) => api.post('/admin/series', data),
+  updateSeries: (id: string, data: any) => api.put(`/admin/series/${id}`, data),
+  deleteSeries: (id: string) => api.delete(`/admin/series/${id}`),
+  
+  // Tests
+  getTests: (params?: any) => api.get('/admin/tests', { params }),
+  updateTest: (id: string, data: any) => api.put(`/admin/tests/${id}`, data),
+  updateAnswerKey: (id: string, answerKey: Record<string, string>) => api.put(`/admin/tests/${id}/answer-key`, { answerKey }),
+  createTestFromQuestions: (data: any) => api.post('/admin/create-test-from-questions', data),
+  
+  // Users
+  getUsers: (params?: any) => api.get('/admin/users', { params }),
+  updateUserRole: (id: string, role: string) => api.put(`/admin/users/${id}/role`, { role }),
+  
+  // Subjects
+  getSubjects: () => api.get('/admin/subjects'),
+};
+
+export const youtubeCourseAPI = {
+  getCourses: () => api.get('/youtube-courses'),
+  addCourse: (data: { url: string; subject?: string }) => api.post('/youtube-courses/add', data),
+  getCourse: (id: string) => api.get(`/youtube-courses/${id}`),
+  deleteCourse: (id: string) => api.delete(`/youtube-courses/${id}`),
+  markVideoComplete: (courseId: string, videoId: string) => 
+    api.patch(`/youtube-courses/${courseId}/video/${videoId}/complete`),
+  markVideoIncomplete: (courseId: string, videoId: string) => 
+    api.patch(`/youtube-courses/${courseId}/video/${videoId}/incomplete`),
+  updateWatched: (courseId: string, videoId: string) => 
+    api.patch(`/youtube-courses/${courseId}/watched/${videoId}`),
 };
 

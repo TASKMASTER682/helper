@@ -1,11 +1,11 @@
 'use client';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { scheduleAPI, trackerAPI, missionsAPI, userAPI, ddayAPI } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 import CountdownCalendar from '../../componets/CountdownCalender';
 import {
   Calendar, Clock, Flame, Trophy, BarChart3, Target, AlertTriangle,
-  CheckCircle2, BookOpen, Brain, ChevronLeft, ChevronRight, Zap, TrendingUp, Loader2
+  CheckCircle2, BookOpen, Brain, ChevronLeft, ChevronRight, Zap, TrendingUp, Loader2, Play, Pause
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ResponsiveContainer, AreaChart, Area } from 'recharts';
@@ -52,6 +52,11 @@ export default function DashboardPage() {
   const [activeTargetIndex, setActiveTargetIndex] = useState(0);
   const [targetForm, setTargetForm] = useState({ targetName: '', targetDate: '' });
   const [savingTarget, setSavingTarget] = useState(false);
+  
+  // Timer state
+  const [activeTimer, setActiveTimer] = useState<number | null>(null);
+  const [elapsedTime, setElapsedTime] = useState<Record<number, number>>({});
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (user?.id) {
@@ -81,6 +86,19 @@ export default function DashboardPage() {
         const submitted = entries.some((e: any) => new Date(e.date).toISOString().slice(0, 10) === todayISOStr);
         setIsSubmittedToday(submitted);
       }
+      
+      // Also check if schedule blocks are all completed
+      if (schedRes.status === 'fulfilled' && schedRes.value.data?.blocks) {
+        const blocks = schedRes.value.data.blocks;
+        const nonOptionalBlocks = blocks.filter((b: any) => {
+          const type = b?.taskType || '';
+          return type !== 'break' && type !== 'fitness';
+        });
+        const allCompleted = nonOptionalBlocks.length > 0 && nonOptionalBlocks.every((b: any) => b.completed);
+        if (allCompleted) {
+          setIsSubmittedToday(true);
+        }
+      }
       if (dDayRes.status === 'fulfilled') {
         const targets = Array.isArray(dDayRes.value.data) ? dDayRes.value.data : [];
         setDDayTargets(targets);
@@ -100,6 +118,79 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Timer effect
+  useEffect(() => {
+    if (activeTimer === null) {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      return;
+    }
+
+    timerRef.current = setInterval(() => {
+      setElapsedTime(prev => ({
+        ...prev,
+        [activeTimer]: (prev[activeTimer] || 0) + 1
+      }));
+    }, 1000);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [activeTimer]);
+
+  const handleStartTimer = async (index: number) => {
+    setActiveTimer(index);
+    try {
+      await scheduleAPI.timerAction(index, 'start');
+    } catch (err) {
+      console.error('Timer start error:', err);
+    }
+  };
+
+  const handleStopTimer = async (index: number) => {
+    const elapsed = elapsedTime[index] || 0;
+    setActiveTimer(null);
+    try {
+      const { data } = await scheduleAPI.timerAction(index, 'stop');
+      // Mark as completed
+      await scheduleAPI.completeBlock(index, Math.ceil(elapsed / 60));
+      // Refresh schedule
+      const todayISO = format(new Date(), 'yyyy-MM-dd');
+      const res = await scheduleAPI.getDate(todayISO);
+      setSchedule(res.data);
+      toast.success('Task completed!');
+    } catch (err) {
+      console.error('Timer stop error:', err);
+    }
+  };
+
+  const handleToggleComplete = async (index: number, currentlyCompleted: boolean) => {
+    try {
+      if (currentlyCompleted) {
+        await scheduleAPI.incompleteBlock(index);
+      } else {
+        await scheduleAPI.completeBlock(index, 0);
+      }
+      // Refresh schedule
+      const todayISO = format(new Date(), 'yyyy-MM-dd');
+      const res = await scheduleAPI.getDate(todayISO);
+      setSchedule(res.data);
+    } catch (err) {
+      console.error('Toggle error:', err);
+      toast.error('Failed to update');
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   const handleGenerateSchedule = async () => {
@@ -244,22 +335,45 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {schedule?.blocks?.length > 0 && !isSubmittedToday && (
-            <div className="mb-4 p-3 rounded-lg border border-ink-800 bg-ink-900/20">
+          {schedule && schedule.blocks && schedule.blocks.length > 0 && !isSubmittedToday ? (
+            <div className="space-y-4">
+              <div className="p-3 rounded-lg border border-ink-800 bg-ink-900/20">
+                <div className="flex items-center justify-between text-xs mb-2">
+                  <span className="text-ink-400">Progress</span>
+                  <span className="text-teal-400 font-mono">
+                    {schedule.blocks.filter((b: any) => b.completed).length} / {schedule.blocks.filter((b: any) => {
+                      const type = b?.taskType || '';
+                      return type !== 'break' && type !== 'fitness';
+                    }).length} tasks
+                  </span>
+                </div>
+                <div className="h-1.5 bg-ink-950 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-teal-500 transition-all duration-500"
+                    style={{ 
+                      width: `${(schedule.blocks.filter((b: any) => b.completed).length / schedule.blocks.filter((b: any) => {
+                        const type = b?.taskType || '';
+                        return type !== 'break' && type !== 'fitness';
+                      }).length) * 100}%` 
+                    }} 
+                  />
+                </div>
+              </div>
+
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[10px] font-mono text-ink-500 uppercase tracking-wider">
                   Refine Today's Schedule
                 </span>
                 <span className="text-[10px] font-mono text-saffron-400">
-                  {Math.max(0, 2 - (Number(schedule?.refinementCount) || 0))} refinements left
+                  {Math.max(0, 2 - (Number(schedule?.refinementCount) || 0))} left
                 </span>
               </div>
               <div className="flex gap-2">
                 <input
                   value={scheduleRefineInput}
                   onChange={(e) => setScheduleRefineInput(e.target.value)}
-                  placeholder="Add what is on your mind today..."
-                  className="input-field flex-1"
+                  placeholder="e.g. Add more Polity, reduce revision"
+                  className="input-field flex-1 text-xs"
                   disabled={refiningSchedule || (Number(schedule?.refinementCount) || 0) >= 2}
                 />
                 <button
@@ -270,70 +384,92 @@ export default function DashboardPage() {
                   {refiningSchedule ? 'Updating...' : 'Refine'}
                 </button>
               </div>
-            </div>
-          )}
 
-          {isSubmittedToday ? (
-            <div className="py-12 flex flex-col items-center text-center animate-in fade-in zoom-in duration-500">
-              <div className="w-20 h-20 bg-jade-500/10 rounded-full flex items-center justify-center mb-4 border border-jade-500/20">
-                <CheckCircle2 className="w-10 h-10 text-jade-400" />
-              </div>
-              <h3 className="text-2xl font-display font-bold text-jade-100 italic">"Duty Accomplished"</h3>
-              <p className="text-ink-400 text-sm mt-3 max-w-sm leading-relaxed">
-                You have completed your job today. ARJUN is analyzing your performance.
-              </p>
-              <div className="mt-8 flex gap-4">
-                <Link href="/dashboard/tracker" className="btn-ghost text-xs">Review Report</Link>
-                <Link href="/dashboard/mentor" className="btn-primary text-xs bg-deep-600 hover:bg-deep-500">Consult ARJUN</Link>
-              </div>
-            </div>
-          ) : schedule?.blocks?.length > 0 ? (
-            <div className="space-y-3">
-              {schedule.blocks.map((block: any, i: number) => {
-                const safeType = block?.taskType || 'learning';
-                const subjectLower = String(block?.subject || '').toLowerCase();
-                const isCsatBlock = subjectLower.includes('csat');
-                const blockClass = isCsatBlock
-                  ? CSAT_BLOCK_CLASS
-                  : (TASK_TYPE_COLORS[safeType] || 'bg-ink-800/30 border-ink-700/30');
-                return (
-                  <button
-                    key={`block-${i}`}
-                    type="button"
-                    onClick={() => openFocusMode(block)}
-                    className={clsx('w-full text-left flex items-start gap-3 p-3 rounded-lg border transition-all hover:translate-x-1', blockClass)}
-                  >
-                    <div className="shrink-0 pt-1">
-                      <div className={clsx('w-2 h-2 rounded-full', PRIORITY_DOT[block.priority] || 'bg-ink-50')} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-sm">{block.subject}</span>
-                        <span className="text-[10px] uppercase tracking-tighter opacity-70">
-                          {(TASK_TYPE_LABELS[safeType] || safeType).replace('_', ' ')}
-                        </span>
+              <div className="space-y-3">
+                {schedule.blocks.map((block: any, i: number) => {
+                  const safeType = block?.taskType || 'learning';
+                  const subjectLower = String(block?.subject || '').toLowerCase();
+                  const isCsatBlock = subjectLower.includes('csat');
+                  const isCompleted = block?.completed;
+                  const isTimerActive = activeTimer === i;
+                  const timeSpent = block?.timeSpent || 0;
+                  const elapsed = elapsedTime[i] || 0;
+                  const blockClass = isCsatBlock
+                    ? CSAT_BLOCK_CLASS
+                    : (TASK_TYPE_COLORS[safeType] || 'bg-ink-800/30 border-ink-700/30');
+                  return (
+                    <div
+                      key={`block-${i}`}
+                      className={clsx(
+                        'w-full flex items-start gap-3 p-3 rounded-lg border transition-all',
+                        blockClass,
+                        isCompleted && 'opacity-50'
+                      )}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleToggleComplete(i, isCompleted)}
+                        className={clsx(
+                          'shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all',
+                          isCompleted 
+                            ? 'bg-teal-500 border-teal-500' 
+                            : 'border-ink-500 hover:border-teal-400'
+                        )}
+                      >
+                        {isCompleted && <CheckCircle2 className="w-4 h-4 text-ink-950" />}
+                      </button>
+                      <div 
+                        className="flex-1 min-w-0 cursor-pointer"
+                        onClick={() => openFocusMode(block)}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className={clsx('font-semibold text-sm', isCompleted && 'line-through')}>{block.subject}</span>
+                          <span className="text-[10px] uppercase tracking-tighter opacity-70">
+                            {(TASK_TYPE_LABELS[safeType] || safeType).replace('_', ' ')}
+                          </span>
+                          {isCompleted && (
+                            <span className="text-[10px] text-teal-400">Done</span>
+                          )}
+                        </div>
+                        <div className="text-xs opacity-60 mt-0.5 truncate">{block.topic}</div>
+                        {timeSpent > 0 && (
+                          <div className="text-[10px] text-teal-400 mt-1">
+                            Time: {timeSpent} min
+                          </div>
+                        )}
                       </div>
-                      <div className="text-xs opacity-60 mt-0.5 truncate">{block.topic}</div>
+                      <div className="shrink-0 flex flex-col items-end gap-2">
+                        {isTimerActive ? (
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-mono text-teal-400">{formatTime(elapsed)}</span>
+                            <button
+                              onClick={() => handleStopTimer(i)}
+                              className="p-1.5 rounded-full bg-teal-500/20 text-teal-400 hover:bg-teal-500/30"
+                            >
+                              <Pause className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ) : !isCompleted ? (
+                          <button
+                            onClick={() => handleStartTimer(i)}
+                            className="p-1.5 rounded-full bg-ink-800 text-ink-400 hover:text-teal-400 hover:bg-teal-500/20 transition-all"
+                            title="Start Timer"
+                          >
+                            <Play className="w-3.5 h-3.5" />
+                          </button>
+                        ) : null}
+                        <div className="font-mono text-[10px] opacity-50">
+                          Slot {i + 1}
+                        </div>
+                      </div>
                     </div>
-                    <div className="shrink-0 text-right font-mono text-[10px] opacity-50">
-                      Slot {i + 1}
-                    </div>
-                  </button>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           ) : (
             <div className="py-16 text-center">
-              <Brain className="w-12 h-12 text-ink-700 mx-auto mb-4 opacity-20" />
-              <p className="text-ink-500 text-sm mb-6">No active strategy for today. Ready to start?</p>
-              <button onClick={handleGenerateSchedule} disabled={generatingSchedule} className="btn-primary px-8 py-2.5 flex items-center gap-2 mx-auto disabled:opacity-50">
-                {generatingSchedule ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Zap className="w-4 h-4 fill-current" />
-                )}
-                {generatingSchedule ? 'Generating...' : 'Generate Schedule'}
-              </button>
+              <p>No schedule</p>
             </div>
           )}
         </div>
