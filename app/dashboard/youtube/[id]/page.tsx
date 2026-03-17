@@ -65,14 +65,18 @@ export default function YouTubePlayerPage() {
   }, [loadCourse]);
 
   useEffect(() => {
-    const tag = document.createElement('script');
-    tag.src = 'https://www.youtube.com/iframe_api';
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
-
-    window.onYouTubeIframeAPIReady = () => {
+    if (window.YT && window.YT.Player) {
       setPlayerReady(true);
-    };
+    } else {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+
+      window.onYouTubeIframeAPIReady = () => {
+        setPlayerReady(true);
+      };
+    }
 
     return () => {
       if (playerRef.current) {
@@ -82,27 +86,34 @@ export default function YouTubePlayerPage() {
   }, []);
 
   useEffect(() => {
-    if (!playerReady || !course?.videos?.length || !playerContainerRef.current) return;
+    if (!playerReady || !course?.videos?.length) return;
 
     const currentVideo = course.videos[currentVideoIndex];
     if (!currentVideo) return;
 
-    if (playerRef.current) {
-      playerRef.current.loadVideoById(currentVideo.videoId);
-    } else {
-      playerRef.current = new window.YT.Player('youtube-player', {
-        videoId: currentVideo.videoId,
-        playerVars: {
-          autoplay: 1,
-          modestbranding: 1,
-          rel: 0,
-          iv_load_policy: 3,
-        },
-        events: {
-          onStateChange: onPlayerStateChange,
-        },
-      });
-    }
+    const initPlayer = () => {
+      const container = document.getElementById('youtube-player');
+      if (!container) return;
+
+      if (playerRef.current && typeof playerRef.current.loadVideoById === 'function') {
+        playerRef.current.loadVideoById(currentVideo.videoId);
+      } else {
+        playerRef.current = new window.YT.Player('youtube-player', {
+          videoId: currentVideo.videoId,
+          playerVars: {
+            autoplay: 1,
+            modestbranding: 1,
+            rel: 0,
+            iv_load_policy: 3,
+          },
+          events: {
+            onStateChange: onPlayerStateChange,
+          },
+        });
+      }
+    };
+
+    setTimeout(initPlayer, 200);
 
     youtubeCourseAPI.updateWatched(courseId, currentVideo.videoId).catch(console.error);
   }, [playerReady, currentVideoIndex, course]);
