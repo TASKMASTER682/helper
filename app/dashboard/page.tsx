@@ -120,6 +120,11 @@ export default function DashboardPage() {
     }
   };
 
+  const isAllCompleted = schedule?.blocks ? schedule.blocks.filter((b: any) => {
+    const type = b?.taskType || '';
+    return type !== 'break' && type !== 'fitness';
+  }).every((b: any) => b.completed) : false;
+
   // Timer effect
   useEffect(() => {
     if (activeTimer === null) {
@@ -335,7 +340,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {schedule && schedule.blocks && schedule.blocks.length > 0 && !isSubmittedToday ? (
+          {schedule && schedule.blocks && schedule.blocks.length > 0 && !isAllCompleted ? (
             <div className="space-y-4">
               <div className="p-3 rounded-lg border border-ink-800 bg-ink-900/20">
                 <div className="flex items-center justify-between text-xs mb-2">
@@ -467,9 +472,34 @@ export default function DashboardPage() {
                 })}
               </div>
             </div>
+          ) : isAllCompleted ? (
+            <div className="py-12 text-center">
+              <div className="w-16 h-16 rounded-full bg-teal-500/20 flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-8 h-8 text-teal-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-ink-100 mb-2">Today's Protocol Complete!</h3>
+              <p className="text-ink-500 text-sm mb-6">Great work! Ready for tomorrow?</p>
+              <button onClick={handleGenerateSchedule} disabled={generatingSchedule} className="btn-primary px-8 py-2.5 flex items-center gap-2 mx-auto disabled:opacity-50">
+                {generatingSchedule ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Zap className="w-4 h-4 fill-current" />
+                )}
+                {generatingSchedule ? 'Generating...' : 'Generate Tomorrow'}
+              </button>
+            </div>
           ) : (
             <div className="py-16 text-center">
-              <p>No schedule</p>
+              <Brain className="w-12 h-12 text-ink-700 mx-auto mb-4 opacity-20" />
+              <p className="text-ink-500 text-sm mb-6">No active strategy for today. Ready to start?</p>
+              <button onClick={handleGenerateSchedule} disabled={generatingSchedule} className="btn-primary px-8 py-2.5 flex items-center gap-2 mx-auto disabled:opacity-50">
+                {generatingSchedule ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Zap className="w-4 h-4 fill-current" />
+                )}
+                {generatingSchedule ? 'Generating...' : 'Generate Schedule'}
+              </button>
             </div>
           )}
         </div>

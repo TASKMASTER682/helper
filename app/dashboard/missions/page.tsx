@@ -201,16 +201,42 @@ function MissionCard({ mission, priority, expanded, onExpand, onDelete, onRebala
       </div>
 {expanded && (
         <div className="border-t border-ink-800 bg-ink-950/50 p-5 space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-{mission.aiStrategy && (
-            <div className="flex gap-3 p-4 bg-deep-500/5 border border-deep-500/20 rounded-xl relative overflow-hidden group">
-              <Brain className="w-5 h-5 text-deep-400 shrink-0 mt-0.5" />
-              <div className="space-y-1">
-                <span className="text-[10px] font-mono text-deep-400 uppercase tracking-[0.2em] block">Arjun AI Strategic Protocol</span>
-                <p className="text-sm text-ink-200 leading-relaxed italic">"{mission.aiStrategy}"</p>
-              </div>
-            </div>
-          )}
-<div>
+          {(() => {
+            try {
+              const strategy = typeof mission.aiStrategy === 'string' ? JSON.parse(mission.aiStrategy) : mission.aiStrategy;
+              if (!strategy) return null;
+              return (
+                <div className="flex gap-3 p-4 bg-deep-500/5 border border-deep-500/20 rounded-xl relative overflow-hidden group">
+                  <Brain className="w-5 h-5 text-deep-400 shrink-0 mt-0.5" />
+                  <div className="space-y-2">
+                    <span className="text-[10px] font-mono text-deep-400 uppercase tracking-[0.2em] block">Arjun AI Strategic Protocol</span>
+                    <p className="text-sm text-ink-200 leading-relaxed">{strategy.approach}</p>
+                    {strategy.tips && strategy.tips.length > 0 && (
+                      <ul className="text-xs text-ink-400 space-y-1 mt-2">
+                        {strategy.tips.map((tip: string, idx: number) => (
+                          <li key={idx} className="flex items-start gap-2">
+                            <span className="text-deep-400">•</span>
+                            {tip}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              );
+            } catch (e) {
+              return mission.aiStrategy ? (
+                <div className="flex gap-3 p-4 bg-deep-500/5 border border-deep-500/20 rounded-xl">
+                  <Brain className="w-5 h-5 text-deep-400 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-mono text-deep-400 uppercase tracking-[0.2em] block">Arjun AI Strategic Protocol</span>
+                    <p className="text-sm text-ink-200 leading-relaxed italic">{mission.aiStrategy}</p>
+                  </div>
+                </div>
+              ) : null;
+            }
+          })()}
+          <div>
             <div className="flex items-center justify-between mb-4 px-1">
               <h4 className="text-[10px] font-mono text-ink-500 uppercase tracking-[0.3em]">Operational Timeline</h4>
               <span className="text-[9px] text-ink-600 font-mono">Total Effort: {mission.dailyPlan?.reduce((acc: any, curr: any) => acc + curr.estimatedHours, 0).toFixed(0)} Hours</span>
