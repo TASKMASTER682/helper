@@ -43,7 +43,7 @@ export default function Home() {
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "EducationalOrganization",
-              "name": "Student Mentor",
+              "name": "UPSC-POS",
               "description": "Comprehensive UPSC exam preparation platform with mock tests, study materials, progress tracking, and personalized guidance for civil service aspirants.",
               "url": "https://student-mentor.vercel.app",
               "logo": "https://student-mentor.vercel.app/logo.png",

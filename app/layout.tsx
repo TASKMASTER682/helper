@@ -31,14 +31,14 @@ const jetbrains = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Student Mentor - UPSC Exam Preparation Platform',
-    template: '%s | Student Mentor'
+    default: 'UPSC-POS',
+    template: '%s | UPSC-POS'
   },
   description: 'Comprehensive UPSC exam preparation platform with mock tests, study materials, progress tracking, and personalized guidance for civil service aspirants.',
-  keywords: ['UPSC', 'Civil Services', 'Exam Preparation', 'Mock Tests', 'Study Materials', 'Progress Tracking', 'Student Mentor'],
-  authors: [{ name: 'Student Mentor Team' }],
-  creator: 'Student Mentor',
-  publisher: 'Student Mentor',
+  keywords: ['UPSC', 'Civil Services', 'Exam Preparation', 'Mock Tests', 'Study Materials', 'Progress Tracking', 'UPSC-POS'],
+  authors: [{ name: 'UPSC-POS Team' }],
+  creator: 'UPSC-POS',
+  publisher: 'UPSC-POS',
   formatDetection: {
     email: false,
     address: false,
@@ -58,21 +58,21 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_IN',
     url: '/',
-    title: 'Student Mentor - UPSC Exam Preparation Platform',
+    title: 'UPSC-POS',
     description: 'Comprehensive UPSC exam preparation platform with mock tests, study materials, progress tracking, and personalized guidance for civil service aspirants.',
-    siteName: 'Student Mentor',
+    siteName: 'UPSC-POS',
     images: [
       {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Student Mentor - UPSC Exam Preparation Platform',
+        alt: 'UPSC-POS - UPSC Exam Preparation Platform',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Student Mentor - UPSC Exam Preparation Platform',
+    title: 'UPSC-POS - UPSC Exam Preparation Platform',
     description: 'Comprehensive UPSC exam preparation platform with mock tests, study materials, progress tracking, and personalized guidance for civil service aspirants.',
     images: ['/og-image.jpg'],
     creator: '@studentmentor',
