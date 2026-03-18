@@ -349,8 +349,12 @@ export default function ResultScreen({
                               <Sparkles className="w-3.5 h-3.5 text-yellow-500" />
                               <p className="text-[10px] text-yellow-500 font-bold uppercase tracking-widest">Detailed Solution</p>
                             </div>
-                            <div className="text-[13px] text-ink-200 leading-relaxed bg-black/40 p-4 rounded-xl border border-ink-800/60 whitespace-pre-wrap overflow-y-auto custom-scrollbar shadow-inner" style={{ maxHeight: '180px' }}>
-                              {item.explanation || <span className="text-ink-600 italic">No detailed explanation available.</span>}
+                            <div className="text-[13px] text-ink-200 leading-relaxed bg-black/40 p-4 rounded-xl border border-ink-800/60 overflow-y-auto custom-scrollbar shadow-inner [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1 [&_strong]:text-yellow-400 [&_em]:italic [&_code]:bg-ink-800 [&_code]:px-1 [&_code]:rounded [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-xs" style={{ maxHeight: '180px' }}>
+                              {item.explanation ? (
+                                <div dangerouslySetInnerHTML={{ __html: item.explanation }} />
+                              ) : (
+                                <span className="text-ink-600 italic">No detailed explanation available.</span>
+                              )}
                             </div>
                           </div>
                         </div>

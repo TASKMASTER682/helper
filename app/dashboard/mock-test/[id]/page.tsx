@@ -205,7 +205,7 @@ export default function ExamPage() {
       for (let i = 1; i <= totalQ; i++) {
         userAnswers[String(i)] = answers[i] ?? null;
       }
-      const timeTaken = Math.round((test?.durationMinutes ?? 120) - timeLeft / 60);
+      const timeTaken = Math.round(((test?.durationMinutes ?? 120) * 60 - timeLeft) / 60);
       const { data } = await mockTestAPI.submitAttempt(id, { userAnswers, timeTakenMinutes: timeTaken });
       setAttemptResult(data);
       setAiFeedback(null);

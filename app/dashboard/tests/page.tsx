@@ -10,8 +10,6 @@ import {
   Plus,
   Target,
   Trash2,
-  TrendingDown,
-  TrendingUp,
   X,
 } from 'lucide-react';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
@@ -31,6 +29,9 @@ type Attempt = {
   date?: string;
   submittedAt?: string;
   testId?: string;
+  correctCount?: number;
+  wrongCount?: number;
+  unattemptedCount?: number;
 };
 
 type TestSeries = {
@@ -292,8 +293,20 @@ export default function TestsPage() {
     });
   }, [series, typeFilter, providerFilter]);
 
+  const calcAccuracy = (att: Attempt) => {
+    if (att.correctCount !== undefined && att.wrongCount !== undefined) {
+      const total = att.correctCount + att.wrongCount + (att.unattemptedCount || 0);
+      return total > 0 ? (att.correctCount / total) * 100 : 0;
+    }
+    return toNum(att.percentage);
+  };
+
   const avgAccuracy = attempts.length
-    ? (attempts.reduce((acc, curr) => acc + toNum(curr.percentage), 0) / attempts.length).toFixed(1)
+    ? (attempts.reduce((acc, curr) => acc + calcAccuracy(curr), 0) / attempts.length).toFixed(1)
+    : '0';
+  
+  const avgScore = attempts.length
+    ? (attempts.reduce((acc, curr) => acc + toNum(curr.score), 0) / attempts.length).toFixed(1)
     : '0';
 
   // Check authentication status for debugging
@@ -323,9 +336,9 @@ export default function TestsPage() {
           <p className="text-ink-500 text-sm mt-1">Overall analytics, series trends, and diagnosis.</p>
         </div>
         <div className="flex items-center gap-4 flex-wrap">
-          <div className="glass-card px-6 py-2 border-jade-500/20 bg-jade-500/5">
-            <div className="text-[10px] text-ink-500 uppercase font-bold tracking-widest">Overall Accuracy</div>
-            <div className="text-2xl font-display font-bold text-jade-400">{avgAccuracy}%</div>
+          <div className="glass-card px-6 py-2 border-teal-500/20 bg-teal-500/5">
+            <div className="text-[10px] text-ink-500 uppercase font-bold tracking-widest">Avg Accuracy</div>
+            <div className="text-2xl font-display font-bold text-teal-400">{avgAccuracy}%</div>
             <div className="text-[10px] text-ink-500">{attempts.length} attempts tracked</div>
           </div>
           <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2 h-fit">
@@ -486,47 +499,24 @@ export default function TestsPage() {
                       <>
                         <div className="grid grid-cols-2 gap-3">
                           <div className="p-3 rounded-xl bg-ink-900/50 border border-ink-800">
-                            <div className="text-[10px] uppercase font-bold text-ink-500 mb-1">Latest Score</div>
-                            <div className="text-2xl font-display font-bold text-ink-100">{lastAttempt.percentage.toFixed(1)}%</div>
+                            <div className="text-[10px] uppercase font-bold text-ink-500 mb-1">Last Test Score</div>
+                            <div className="text-2xl font-display font-bold text-ink-100">{lastAttempt.score.toFixed(1)}</div>
+                            <div className="text-[10px] text-ink-500">out of {lastAttempt.totalMarks}</div>
                           </div>
                           <div className="p-3 rounded-xl bg-ink-900/50 border border-ink-800">
-                            <div className="text-[10px] uppercase font-bold text-ink-500 mb-1">Momentum</div>
-                            <div className={clsx('flex items-center gap-1 text-lg font-bold', trend >= 0 ? 'text-jade-400' : 'text-red-400')}>
-                              {trend >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                              {Math.abs(trend)}%
+                            <div className="text-[10px] uppercase font-bold text-ink-500 mb-1">Accuracy</div>
+                            <div className="text-2xl font-display font-bold text-teal-400">{calcAccuracy(lastAttempt).toFixed(1)}%</div>
+                            <div className="text-[10px] text-ink-500">
+                              {lastAttempt.correctCount || 0}C / {lastAttempt.wrongCount || 0}W
                             </div>
                           </div>
                         </div>
 
                         <div className="p-3 rounded-xl bg-ink-900/50 border border-ink-800">
-                          <div className="text-[10px] uppercase font-bold text-ink-500 mb-1">Time Management</div>
-                          <div className="text-sm text-ink-300">Latest: {toNum(lastAttempt.timeSpent)} min</div>
+                          <div className="text-[10px] uppercase font-bold text-ink-500 mb-1">Time Spent</div>
+                          <div className="text-sm text-ink-300">Last: {toNum(lastAttempt.timeSpent)} min</div>
                           <div className="text-xs text-ink-500">Average: {avgTime} min</div>
                         </div>
-
-                        {lastAttempt.weakTopics?.length > 0 && (
-                          <div className="p-3 rounded-xl bg-red-950/10 border border-red-900/20">
-                            <div className="flex items-center gap-2 text-[10px] uppercase font-bold text-red-500 mb-2">
-                              <AlertTriangle className="w-3 h-3" /> Areas of Concern
-                            </div>
-                            <div className="flex flex-wrap gap-1">
-                              {lastAttempt.weakTopics.slice(0, 5).map((t) => (
-                                <span key={t} className="px-2 py-0.5 bg-red-900/20 text-red-400 text-[10px] rounded border border-red-900/30">{t}</span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {lastAttempt.strongTopics?.length > 0 && (
-                          <div className="p-3 rounded-xl bg-jade-900/10 border border-jade-900/20">
-                            <div className="text-[10px] uppercase font-bold text-jade-400 mb-2">Strong Topics</div>
-                            <div className="flex flex-wrap gap-1">
-                              {lastAttempt.strongTopics.slice(0, 5).map((t) => (
-                                <span key={t} className="px-2 py-0.5 bg-jade-900/20 text-jade-300 text-[10px] rounded border border-jade-900/30">{t}</span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
                       </>
                     ) : (
                       <div className="h-full flex items-center justify-center p-6 text-center text-xs text-ink-500 italic bg-ink-900/10 rounded-xl border border-ink-800/30">
