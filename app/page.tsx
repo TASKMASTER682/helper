@@ -1,6 +1,6 @@
 
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import Link from 'next/link';
@@ -17,17 +17,13 @@ import Head from 'next/head';
 
 export default function Home() {
   const router = useRouter();
-  const { init, user, token } = useAuthStore();
-  const [isChecking, setIsChecking] = useState(true);
+  const { init, user, token, isInitializing } = useAuthStore();
 
   useEffect(() => {
-    const restoreSession = async () => {
-      await init();
-      setIsChecking(false);
-    };
-    restoreSession();
+    init();
   }, [init]);
-  if (isChecking) {
+
+  if (isInitializing) {
     return (
       <div className="min-h-screen bg-ink-950 flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />

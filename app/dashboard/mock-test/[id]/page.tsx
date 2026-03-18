@@ -262,7 +262,7 @@ export default function ExamPage() {
 
   // ── Render guards ──────────────────────────────────────────────────────────
   if (loading) return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-ink-950">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-ink-950 lg:pt-0 pt-16">
       <Loader2 className="animate-spin text-yellow-400 w-10 h-10 mb-4" />
       <p className="text-ink-500 font-mono text-xs uppercase tracking-widest animate-pulse">Loading Exam...</p>
     </div>
@@ -282,7 +282,7 @@ export default function ExamPage() {
   );
 
   if (examState === 'submitting') return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-ink-950 gap-6">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-ink-950 gap-6 lg:pt-0 pt-16">
       <Loader2 className="w-16 h-16 animate-spin text-yellow-400" />
       <h2 className="text-2xl font-bold text-ink-100">Submitting & Evaluating...</h2>
       <p className="text-ink-500 text-sm">Arjun AI is Analysing Your Performance</p>
@@ -295,7 +295,7 @@ export default function ExamPage() {
   // ── PDF mode: render classic split view ───────────────────────────────────
   if (test?.mode === 'pdf') {
     return (
-      <div className="relative h-screen w-full bg-ink-950 flex flex-col overflow-hidden">
+      <div className="relative h-screen w-full bg-ink-950 flex flex-col overflow-hidden lg:pt-0 pt-16">
         {/* Header */}
         <div className="h-14 shrink-0 flex items-center justify-between px-4 md:px-6 bg-ink-900 border-b border-ink-800 z-50">
           <div className="flex items-center gap-2 overflow-hidden max-w-[50%]">
@@ -391,7 +391,7 @@ export default function ExamPage() {
 
   // ── Structured CBT mode below ───────────────────────────────────────────────
   return (
-    <div className="h-screen w-full bg-[#0d0d0f] flex flex-col overflow-hidden font-sans">
+    <div className="h-screen w-full bg-[#0d0d0f] flex flex-col overflow-hidden font-sans lg:pt-0 pt-16">
 
       {/* ── TOP HEADER ─────────────────────────────────────────────────────── */}
       <header className="h-14 shrink-0 flex items-center justify-between px-4 md:px-6 bg-[#111114] border-b border-ink-800/60 z-50 gap-4">

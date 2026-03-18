@@ -57,7 +57,7 @@ export default function Sidebar() {
 
   return (
     <>
-<div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-ink-950 border-b border-ink-800/40 px-4 flex items-center justify-between z-50">
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-ink-950/95 backdrop-blur-md border-b border-ink-800/40 px-4 flex items-center justify-between z-50">
         <div className="flex items-center gap-2">
           <Brain className="w-6 h-6 text-yellow-500" />
           <span className="font-display font-bold text-ink-100">UPSC-POS</span>

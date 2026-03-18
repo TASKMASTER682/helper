@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { Playfair_Display, Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
+import PWARegister from './components/PWARegister'
+import PWAInstallButton from './components/PWAInstallButton'
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -46,6 +48,12 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
   },
+  manifest: '/manifest.json',
+  icons: {
+    icon: '/my-icon.ico',
+    shortcut: '/my-icon.ico',
+    apple: '/my-icon.ico',
+  },
   openGraph: {
     type: 'website',
     locale: 'en_IN',
@@ -89,7 +97,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-<body
+      <body
         className={`
           ${playfair.variable}
           ${inter.variable}
@@ -97,6 +105,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           bg-ink-800 text-ink-100 font-body antialiased
         `}
       >
+        <PWARegister />
+        <PWAInstallButton />
         <Toaster
           position="top-right"
           toastOptions={{

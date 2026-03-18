@@ -27,7 +27,7 @@ const TASK_TYPE_COLORS: Record<string, string> = {
 const CSAT_BLOCK_CLASS = 'bg-teal-500/20 border-teal-500/40 text-teal-200';
 
 const PRIORITY_DOT: Record<string, string> = {
-  high: 'bg-saffron-400',
+  high: 'bg-yellow-400',
   medium: 'bg-jade-400',
   low: 'bg-ink-500',
 };
@@ -302,7 +302,7 @@ export default function DashboardPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <div className="w-8 h-8 border-2 border-saffron-500 border-t-transparent rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
@@ -313,12 +313,12 @@ export default function DashboardPage() {
           <p className="text-ink-500 font-mono text-sm">{format(new Date(), 'EEEE, d MMMM yyyy')}</p>
           <h1 className="font-display text-3xl font-bold text-ink-100 mt-1">
             Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 17 ? 'Afternoon' : 'Evening'},{' '}
-            <span className="text-gradient-saffron">{user?.name?.split(' ')[0]}</span>
+            <span className="text-yellow-400">{user?.name?.split(' ')[0]}</span>
           </h1>
         </div>
         {!isSubmittedToday && (
           <Link href="/dashboard/tracker">
-            <button className="btn-primary flex items-center gap-2 text-sm shadow-lg shadow-saffron-900/20">
+            <button className="btn-primary flex items-center gap-2 text-sm shadow-lg shadow-yellow-900/20">
               <CheckCircle2 className="w-4 h-4" />
               Submit Today
             </button>
@@ -326,7 +326,7 @@ export default function DashboardPage() {
         )}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <StatCard icon={<Flame className="w-5 h-5 text-saffron-400" />} label="Study Streak" value={stats?.studyStreak || 0} suffix="days" color="saffron" />
+        <StatCard icon={<Flame className="w-5 h-5 text-yellow-400" />} label="Study Streak" value={stats?.studyStreak || 0} suffix="days" color="yellow" />
         <StatCard icon={<Trophy className="w-5 h-5 text-jade-400" />} label="Confidence" value={stats?.confidenceScore || 50} suffix="/100" color="jade" />
         <StatCard icon={<BarChart3 className="w-5 h-5 text-deep-400" />} label="Weekly Avg" value={stats?.weeklyProductivity || 0} suffix="%" color="deep" />
         <StatCard icon={<Target className="w-5 h-5 text-purple-400" />} label="Missions" value={activeMissions.length} suffix="active" color="purple" />
@@ -335,7 +335,7 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 glass-card p-5 relative overflow-hidden h-fit">
           <div className="flex items-center justify-between mb-4 border-b border-ink-800 pb-4">
             <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-saffron-400" />
+              <Calendar className="w-4 h-4 text-yellow-400" />
               <h2 className="font-display text-lg font-semibold text-ink-100">Today's Protocol</h2>
             </div>
           </div>
@@ -369,7 +369,7 @@ export default function DashboardPage() {
                 <span className="text-[10px] font-mono text-ink-500 uppercase tracking-wider">
                   Refine Today's Schedule
                 </span>
-                <span className="text-[10px] font-mono text-saffron-400">
+                <span className="text-[10px] font-mono text-yellow-400">
                   {Math.max(0, 2 - (Number(schedule?.refinementCount) || 0))} left
                 </span>
               </div>
@@ -563,7 +563,7 @@ export default function DashboardPage() {
           <div className="glass-card p-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-sm text-ink-200 flex items-center gap-2">
-                <Target className="w-4 h-4 text-saffron-400" /> Active Missions
+                <Target className="w-4 h-4 text-yellow-400" /> Active Missions
               </h3>
               <Link href="/dashboard/missions"><ChevronRight className="w-4 h-4 text-ink-500" /></Link>
             </div>
@@ -604,7 +604,7 @@ export default function DashboardPage() {
 
 function StatCard({ icon, label, value, suffix, color }: any) {
   const colorMap: Record<string, string> = {
-    saffron: 'saffron-card',
+    yellow: 'yellow-card',
     jade: 'jade-card',
     deep: 'deep-card',
     purple: 'bg-purple-900/10 border border-purple-700/30 rounded-xl',
@@ -628,10 +628,10 @@ function MissionMiniCard({ mission }: { mission: any }) {
     <div className="p-2.5 bg-ink-900/40 border border-ink-800 rounded-lg hover:border-ink-700 transition-colors">
       <div className="flex justify-between text-[11px] mb-1.5 font-medium text-ink-200">
         <span className="truncate pr-2">{mission.title}</span>
-        <span className="text-saffron-400 shrink-0">{mission.progressPercentage}%</span>
+        <span className="text-yellow-400 shrink-0">{mission.progressPercentage}%</span>
       </div>
       <div className="w-full h-1 bg-ink-800 rounded-full overflow-hidden">
-        <div className="h-full bg-saffron-500" style={{ width: `${mission.progressPercentage}%` }} />
+        <div className="h-full bg-yellow-500" style={{ width: `${mission.progressPercentage}%` }} />
       </div>
     </div>
   );
