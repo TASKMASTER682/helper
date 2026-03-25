@@ -6,6 +6,7 @@ import clsx from 'clsx';
 import toast from 'react-hot-toast';
 
 const SUBJECTS = ['Polity', 'History', 'Geography', 'Economy', 'Environment', 'Science & Tech', 'Ethics', 'Current Affairs', 'CSAT', 'Optional'];
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
 interface PDFSource {
   _id: string;
@@ -81,17 +82,30 @@ export default function PDFReaderListPage() {
     }
     try {
       setUploading(true);
-      const formData = new FormData();
-      formData.append('pdf', selectedFile);
-      formData.append('name', uploadForm.name || selectedFile.name.replace(/\.pdf$/i, ''));
-      if (uploadForm.subject) formData.append('subject', uploadForm.subject);
-      if (uploadForm.year) formData.append('year', uploadForm.year);
+
+      const arrayBuffer = await selectedFile.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
+      let binary = '';
+      for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      const base64 = btoa(binary);
 
       const token = localStorage.getItem('upsc_token');
       const response = await fetch(`${API_BASE}/pdfs/upload`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: formData,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileName: selectedFile.name,
+          fileData: base64,
+          fileSize: selectedFile.size,
+          name: uploadForm.name || selectedFile.name.replace(/\.pdf$/i, ''),
+          subject: uploadForm.subject || null,
+          year: uploadForm.year || null,
+        }),
       });
 
       if (response.ok) {
@@ -282,7 +296,16 @@ export default function PDFReaderListPage() {
                     selectedFile ? 'border-yellow-500/50 bg-yellow-500/5' : 'border-ink-700 hover:border-ink-600'
                   )}
                 >
-                  <input ref={fileInputRef} type="file" accept=".pdf" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) setSelectedFile(file); }} />
+                  <input ref={fileInputRef} type="file" accept=".pdf" className="hidden" onChange={(e) => { 
+                    const file = e.target.files?.[0]; 
+                    if (file) {
+                      if (file.size > MAX_FILE_SIZE) {
+                        toast.error('File too large. Max size is 20MB');
+                        return;
+                      }
+                      setSelectedFile(file); 
+                    }
+                  }} />
                   {selectedFile ? (
                     <div>
                       <File className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
@@ -293,6 +316,7 @@ export default function PDFReaderListPage() {
                     <div>
                       <Upload className="w-8 h-8 text-ink-500 mx-auto mb-2" />
                       <p className="text-sm text-ink-400">Click to select PDF</p>
+                      <p className="text-[10px] text-ink-600 mt-1">Max size: 20MB</p>
                     </div>
                   )}
                 </div>
