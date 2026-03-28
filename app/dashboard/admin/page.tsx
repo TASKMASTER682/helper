@@ -453,15 +453,24 @@ function SeriesTab() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingSeries, setEditingSeries] = useState<any>(null);
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortOrder, setSortOrder] = useState('desc');
 
   useEffect(() => {
     loadSeries();
-  }, [pagination.page]);
+  }, [pagination.page, search, sortBy, sortOrder]);
 
   const loadSeries = async () => {
     try {
       setLoading(true);
-      const { data } = await adminAPI.getSeries({ page: pagination.page, limit: 10 });
+      const { data } = await adminAPI.getSeries({ 
+        page: pagination.page, 
+        limit: 10,
+        sortBy,
+        sortOrder,
+        search
+      });
       setSeries(data.series);
       setPagination(data.pagination);
     } catch (err) {
@@ -512,9 +521,36 @@ function SeriesTab() {
 
   return (
     <div className="space-y-4">
-      <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
-        <Plus className="w-4 h-4" /> New Series
-      </button>
+      <div className="flex gap-2 items-center flex-wrap">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-500" />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search series..."
+            className="input-field w-full pl-10"
+          />
+        </div>
+        <select
+          className="input-field"
+          value={sortBy}
+          onChange={e => setSortBy(e.target.value)}
+        >
+          <option value="createdAt">Sort: Recent</option>
+          <option value="name">Sort: Name</option>
+        </select>
+        <select
+          className="input-field"
+          value={sortOrder}
+          onChange={e => setSortOrder(e.target.value)}
+        >
+          <option value="desc">Desc</option>
+          <option value="asc">Asc</option>
+        </select>
+        <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
+          <Plus className="w-4 h-4" /> New Series
+        </button>
+      </div>
 
       {loading ? (
         <div className="text-center py-20 text-ink-500">Loading...</div>
@@ -682,10 +718,12 @@ function QuestionsTab() {
   const [editingQuestion, setEditingQuestion] = useState<any>(null);
   const [search, setSearch] = useState('');
   const [subjectFilter, setSubjectFilter] = useState('');
+  const [sortBy, setSortBy] = useState('mockTest');
+  const [sortOrder, setSortOrder] = useState('desc');
 
   useEffect(() => {
     loadQuestions();
-  }, [pagination.page, search, subjectFilter]);
+  }, [pagination.page, search, subjectFilter, sortBy, sortOrder]);
 
   const loadQuestions = async () => {
     try {
@@ -694,7 +732,9 @@ function QuestionsTab() {
         page: pagination.page, 
         limit: 15, 
         search,
-        subject: subjectFilter 
+        subject: subjectFilter,
+        sortBy,
+        sortOrder
       });
       setQuestions(data.questions);
       setPagination(data.pagination);
@@ -761,6 +801,24 @@ function QuestionsTab() {
         >
           <option value="">All Subjects</option>
           {SUBJECTS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <select
+          className="input-field"
+          value={sortBy}
+          onChange={e => setSortBy(e.target.value)}
+        >
+          <option value="createdAt">Sort: Recent</option>
+          <option value="subject">Sort: Subject</option>
+          <option value="year">Sort: Year</option>
+          <option value="questionNumber">Sort: Q. Number</option>
+        </select>
+        <select
+          className="input-field"
+          value={sortOrder}
+          onChange={e => setSortOrder(e.target.value)}
+        >
+          <option value="desc">Desc</option>
+          <option value="asc">Asc</option>
         </select>
         <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
           <Plus className="w-4 h-4" /> Add Question

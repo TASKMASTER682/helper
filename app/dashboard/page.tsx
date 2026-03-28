@@ -36,6 +36,42 @@ const TASK_TYPE_LABELS: Record<string, string> = {
   learning: 'doing',
 };
 
+function StatCardSkeleton() {
+  return (
+    <div className="glass-card p-4 animate-pulse">
+      <div className="flex items-center justify-between mb-2">
+        <div className="w-5 h-5 bg-ink-800 rounded" />
+        <div className="w-16 h-3 bg-ink-800 rounded" />
+      </div>
+      <div className="w-12 h-8 bg-ink-800 rounded" />
+      <div className="w-8 h-3 bg-ink-800 rounded mt-1" />
+    </div>
+  );
+}
+
+function ScheduleSkeleton() {
+  return (
+    <div className="glass-card p-5 animate-pulse">
+      <div className="h-6 w-40 bg-ink-800 rounded mb-4" />
+      <div className="space-y-3">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="h-16 bg-ink-900/50 rounded-lg" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SidebarSkeleton() {
+  return (
+    <div className="space-y-4 animate-pulse">
+      <div className="glass-card p-4 h-48 bg-ink-900/30 rounded-xl" />
+      <div className="glass-card p-4 h-32 bg-ink-900/30 rounded-xl" />
+      <div className="glass-card p-4 h-24 bg-ink-900/30 rounded-xl" />
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const { user } = useAuthStore();
@@ -43,12 +79,19 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<any>(null);
   const [missions, setMissions] = useState<any[]>([]);
   const [trackerData, setTrackerData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [dDayTargets, setDDayTargets] = useState<any[]>([]);
+  
+  // Individual loading states
+  const [loadingStats, setLoadingStats] = useState(true);
+  const [loadingSchedule, setLoadingSchedule] = useState(true);
+  const [loadingTracker, setLoadingTracker] = useState(true);
+  const [loadingMissions, setLoadingMissions] = useState(true);
+  const [loadingDDay, setLoadingDDay] = useState(true);
+  
   const [generatingSchedule, setGeneratingSchedule] = useState(false);
   const [isSubmittedToday, setIsSubmittedToday] = useState(false);
   const [scheduleRefineInput, setScheduleRefineInput] = useState('');
   const [refiningSchedule, setRefiningSchedule] = useState(false);
-  const [dDayTargets, setDDayTargets] = useState<any[]>([]);
   const [activeTargetIndex, setActiveTargetIndex] = useState(0);
   const [targetForm, setTargetForm] = useState({ targetName: '', targetDate: '' });
   const [savingTarget, setSavingTarget] = useState(false);
@@ -58,67 +101,85 @@ export default function DashboardPage() {
   const [elapsedTime, setElapsedTime] = useState<Record<number, number>>({});
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Load stats first (most important)
   useEffect(() => {
-    if (user?.id) {
-      loadData();
-    }
+    if (!user?.id) return;
+    setLoadingStats(true);
+    userAPI.getStats()
+      .then(res => setStats(res.data))
+      .catch(err => console.error("Stats Error:", err))
+      .finally(() => setLoadingStats(false));
   }, [user?.id]);
 
-  const loadData = async () => {
-    try {
-      const todayISO = format(new Date(), 'yyyy-MM-dd');
-      const [schedRes, statsRes, missionsRes, trackerRes, dDayRes] = await Promise.allSettled([
-        scheduleAPI.getDate(todayISO),
-        userAPI.getStats(),
-        missionsAPI.getMissions(),
-        trackerAPI.getEntries(14),
-        ddayAPI.getAll(),
-      ]);
+  // Load schedule
+  useEffect(() => {
+    if (!user?.id) return;
+    setLoadingSchedule(true);
+    const todayISO = format(new Date(), 'yyyy-MM-dd');
+    scheduleAPI.getDate(todayISO)
+      .then(res => {
+        setSchedule(res.data);
+        if (res.data?.blocks) {
+          const blocks = res.data.blocks;
+          const nonOptionalBlocks = blocks.filter((b: any) => {
+            const type = b?.taskType || '';
+            return type !== 'break' && type !== 'fitness';
+          });
+          const allCompleted = nonOptionalBlocks.length > 0 && nonOptionalBlocks.every((b: any) => b.completed);
+          if (allCompleted) setIsSubmittedToday(true);
+        }
+      })
+      .catch(err => console.error("Schedule Error:", err))
+      .finally(() => setLoadingSchedule(false));
+  }, [user?.id]);
 
-      if (schedRes.status === 'fulfilled') setSchedule(schedRes.value.data);
-      if (statsRes.status === 'fulfilled') setStats(statsRes.value.data);
-      if (missionsRes.status === 'fulfilled') setMissions(missionsRes.value.data);
-      if (trackerRes.status === 'fulfilled') {
-        const entries = trackerRes.value.data;
+  // Load tracker
+  useEffect(() => {
+    if (!user?.id) return;
+    setLoadingTracker(true);
+    trackerAPI.getEntries(14)
+      .then(res => {
+        const entries = res.data;
         setTrackerData([...entries].reverse());
-
         const todayISOStr = new Date().toISOString().slice(0, 10);
         const submitted = entries.some((e: any) => new Date(e.date).toISOString().slice(0, 10) === todayISOStr);
-        setIsSubmittedToday(submitted);
-      }
-      
-      // Also check if schedule blocks are all completed
-      if (schedRes.status === 'fulfilled' && schedRes.value.data?.blocks) {
-        const blocks = schedRes.value.data.blocks;
-        const nonOptionalBlocks = blocks.filter((b: any) => {
-          const type = b?.taskType || '';
-          return type !== 'break' && type !== 'fitness';
-        });
-        const allCompleted = nonOptionalBlocks.length > 0 && nonOptionalBlocks.every((b: any) => b.completed);
-        if (allCompleted) {
-          setIsSubmittedToday(true);
-        }
-      }
-      if (dDayRes.status === 'fulfilled') {
-        const targets = Array.isArray(dDayRes.value.data) ? dDayRes.value.data : [];
+        setIsSubmittedToday(prev => prev || submitted);
+      })
+      .catch(err => console.error("Tracker Error:", err))
+      .finally(() => setLoadingTracker(false));
+  }, [user?.id]);
+
+  // Load missions
+  useEffect(() => {
+    if (!user?.id) return;
+    setLoadingMissions(true);
+    missionsAPI.getMissions()
+      .then(res => setMissions(res.data))
+      .catch(err => console.error("Missions Error:", err))
+      .finally(() => setLoadingMissions(false));
+  }, [user?.id]);
+
+  // Load D-Day
+  useEffect(() => {
+    if (!user?.id) return;
+    setLoadingDDay(true);
+    ddayAPI.getAll()
+      .then(res => {
+        const targets = Array.isArray(res.data) ? res.data : [];
         setDDayTargets(targets);
         if (targets.length > 0) {
           const safeIndex = Math.min(activeTargetIndex, targets.length - 1);
           setActiveTargetIndex(safeIndex);
           const activeTarget = targets[safeIndex];
-          const yyyyMmDd = new Date(activeTarget.targetDate).toISOString().slice(0, 10);
-          setTargetForm({ targetName: activeTarget.targetName || '', targetDate: yyyyMmDd });
-        } else {
-          setActiveTargetIndex(0);
-          setTargetForm({ targetName: '', targetDate: '' });
+          if (activeTarget) {
+            const yyyyMmDd = new Date(activeTarget.targetDate).toISOString().slice(0, 10);
+            setTargetForm({ targetName: activeTarget.targetName || '', targetDate: yyyyMmDd });
+          }
         }
-      }
-    } catch (err) {
-      console.error("Dashboard Loading Error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+      })
+      .catch(err => console.error("DDay Error:", err))
+      .finally(() => setLoadingDDay(false));
+  }, [user?.id]);
 
   const isAllCompleted = schedule?.blocks ? schedule.blocks.filter((b: any) => {
     const type = b?.taskType || '';
@@ -225,8 +286,19 @@ export default function DashboardPage() {
     setSavingTarget(true);
     try {
       await ddayAPI.setTarget({ targetName, targetDate });
-      await loadData();
-      setTargetForm({ targetName: '', targetDate: '' });
+      // Reload D-Day targets
+      const res = await ddayAPI.getAll();
+      const targets = Array.isArray(res.data) ? res.data : [];
+      setDDayTargets(targets);
+      if (targets.length > 0) {
+        setActiveTargetIndex(0);
+        const activeTarget = targets[0];
+        if (activeTarget) {
+          setTargetForm({ targetName: activeTarget.targetName || '', targetDate: new Date(activeTarget.targetDate).toISOString().slice(0, 10) });
+        }
+      } else {
+        setTargetForm({ targetName: '', targetDate: '' });
+      }
       toast.success('D-Day target saved');
     } catch (err) {
       console.error('D-Day save error:', err);
@@ -268,7 +340,19 @@ export default function DashboardPage() {
     setSavingTarget(true);
     try {
       await ddayAPI.deleteTarget(String(current._id));
-      await loadData();
+      // Reload D-Day targets
+      const res = await ddayAPI.getAll();
+      const targets = Array.isArray(res.data) ? res.data : [];
+      setDDayTargets(targets);
+      setActiveTargetIndex(0);
+      if (targets.length > 0) {
+        const activeTarget = targets[0];
+        if (activeTarget) {
+          setTargetForm({ targetName: activeTarget.targetName || '', targetDate: new Date(activeTarget.targetDate).toISOString().slice(0, 10) });
+        }
+      } else {
+        setTargetForm({ targetName: '', targetDate: '' });
+      }
       toast.success('D-Day target removed');
     } catch (err) {
       console.error('D-Day clear error:', err);
@@ -300,12 +384,6 @@ export default function DashboardPage() {
     router.push(`/dashboard/focus?${params.toString()}`);
   };
 
-  if (loading) return (
-    <div className="flex items-center justify-center h-64">
-      <div className="w-8 h-8 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
-
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-start justify-between">
@@ -326,10 +404,21 @@ export default function DashboardPage() {
         )}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <StatCard icon={<Flame className="w-5 h-5 text-yellow-400" />} label="Study Streak" value={stats?.studyStreak || 0} suffix="days" color="yellow" />
-        <StatCard icon={<Trophy className="w-5 h-5 text-jade-400" />} label="Confidence" value={stats?.confidenceScore || 50} suffix="/100" color="jade" />
-        <StatCard icon={<BarChart3 className="w-5 h-5 text-deep-400" />} label="Weekly Avg" value={stats?.weeklyProductivity || 0} suffix="%" color="deep" />
-        <StatCard icon={<Target className="w-5 h-5 text-purple-400" />} label="Missions" value={activeMissions.length} suffix="active" color="purple" />
+        {loadingStats ? (
+          <>
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+          </>
+        ) : (
+          <>
+            <StatCard icon={<Flame className="w-5 h-5 text-yellow-400" />} label="Study Streak" value={stats?.studyStreak || 0} suffix="days" color="yellow" />
+            <StatCard icon={<Trophy className="w-5 h-5 text-jade-400" />} label="Confidence" value={stats?.confidenceScore || 50} suffix="/100" color="jade" />
+            <StatCard icon={<BarChart3 className="w-5 h-5 text-deep-400" />} label="Weekly Avg" value={stats?.weeklyProductivity || 0} suffix="%" color="deep" />
+            <StatCard icon={<Target className="w-5 h-5 text-purple-400" />} label="Missions" value={activeMissions.length} suffix="active" color="purple" />
+          </>
+        )}
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 glass-card p-5 relative overflow-hidden h-fit">
@@ -340,7 +429,13 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {schedule && schedule.blocks && schedule.blocks.length > 0 && !isAllCompleted ? (
+          {loadingSchedule ? (
+            <div className="space-y-3 animate-pulse">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="h-16 bg-ink-900/50 rounded-lg" />
+              ))}
+            </div>
+          ) : schedule && schedule.blocks && schedule.blocks.length > 0 && !isAllCompleted ? (
             <div className="space-y-4">
               <div className="p-3 rounded-lg border border-ink-800 bg-ink-900/20">
                 <div className="flex items-center justify-between text-xs mb-2">
@@ -504,7 +599,11 @@ export default function DashboardPage() {
           )}
         </div>
         <div className="space-y-4">
-          {calendarTargetDate ? (
+          {loadingDDay ? (
+            <div className="glass-card p-5 animate-pulse">
+              <div className="h-32 bg-ink-900/50 rounded-xl" />
+            </div>
+          ) : calendarTargetDate ? (
             <CountdownCalendar
               targetDate={calendarTargetDate}
               examName={calendarExamName}
@@ -516,70 +615,92 @@ export default function DashboardPage() {
             </div>
           )}
 
-          <div className="glass-card p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-sm text-ink-200">D-Day Targets</h3>
-              <div className="flex items-center gap-2">
-                <button className="btn-ghost text-xs px-2 py-1" onClick={handlePrevTarget} disabled={dDayTargets.length <= 1}>
-                  <ChevronLeft className="w-3 h-3" />
+          {loadingDDay ? (
+            <div className="glass-card p-4 animate-pulse space-y-3">
+              <div className="h-8 bg-ink-900/50 rounded" />
+              <div className="h-8 bg-ink-900/50 rounded" />
+              <div className="h-8 bg-ink-900/50 rounded" />
+            </div>
+          ) : (
+            <div className="glass-card p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-sm text-ink-200">D-Day Targets</h3>
+                <div className="flex items-center gap-2">
+                  <button className="btn-ghost text-xs px-2 py-1" onClick={handlePrevTarget} disabled={dDayTargets.length <= 1}>
+                    <ChevronLeft className="w-3 h-3" />
+                  </button>
+                  <span className="text-[10px] text-ink-500 font-mono">
+                    {dDayTargets.length === 0 ? '0/0' : `${activeTargetIndex + 1}/${dDayTargets.length}`}
+                  </span>
+                  <button className="btn-ghost text-xs px-2 py-1" onClick={handleNextTarget} disabled={dDayTargets.length <= 1}>
+                    <ChevronRight className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+              <input
+                className="input-field w-full"
+                placeholder="Target Name (e.g. UPSC Prelims 2027)"
+                value={targetForm.targetName}
+                onChange={(e) => setTargetForm((p) => ({ ...p, targetName: e.target.value }))}
+              />
+              <input
+                type="date"
+                className="input-field w-full"
+                value={targetForm.targetDate}
+                onChange={(e) => setTargetForm((p) => ({ ...p, targetDate: e.target.value }))}
+              />
+              <div className="flex gap-2">
+                <button
+                  className="btn-primary text-xs px-3 py-2"
+                  onClick={handleSaveTarget}
+                  disabled={savingTarget}
+                >
+                  {savingTarget ? 'Saving...' : 'Save Target'}
                 </button>
-                <span className="text-[10px] text-ink-500 font-mono">
-                  {dDayTargets.length === 0 ? '0/0' : `${activeTargetIndex + 1}/${dDayTargets.length}`}
-                </span>
-                <button className="btn-ghost text-xs px-2 py-1" onClick={handleNextTarget} disabled={dDayTargets.length <= 1}>
-                  <ChevronRight className="w-3 h-3" />
+                <button
+                  className="btn-ghost text-xs px-3 py-2"
+                  onClick={handleClearTarget}
+                  disabled={savingTarget}
+                >
+                  Clear
                 </button>
               </div>
             </div>
-            <input
-              className="input-field w-full"
-              placeholder="Target Name (e.g. UPSC Prelims 2027)"
-              value={targetForm.targetName}
-              onChange={(e) => setTargetForm((p) => ({ ...p, targetName: e.target.value }))}
-            />
-            <input
-              type="date"
-              className="input-field w-full"
-              value={targetForm.targetDate}
-              onChange={(e) => setTargetForm((p) => ({ ...p, targetDate: e.target.value }))}
-            />
-            <div className="flex gap-2">
-              <button
-                className="btn-primary text-xs px-3 py-2"
-                onClick={handleSaveTarget}
-                disabled={savingTarget}
-              >
-                {savingTarget ? 'Saving...' : 'Save Target'}
-              </button>
-              <button
-                className="btn-ghost text-xs px-3 py-2"
-                onClick={handleClearTarget}
-                disabled={savingTarget}
-              >
-                Clear
-              </button>
+          )}
+          
+          {loadingMissions ? (
+            <div className="glass-card p-4 animate-pulse space-y-3">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-10 bg-ink-900/50 rounded-lg" />
+              ))}
             </div>
-          </div>
-          <div className="glass-card p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-sm text-ink-200 flex items-center gap-2">
-                <Target className="w-4 h-4 text-yellow-400" /> Active Missions
-              </h3>
-              <Link href="/dashboard/missions"><ChevronRight className="w-4 h-4 text-ink-500" /></Link>
+          ) : (
+            <div className="glass-card p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-sm text-ink-200 flex items-center gap-2">
+                  <Target className="w-4 h-4 text-yellow-400" /> Active Missions
+                </h3>
+                <Link href="/dashboard/missions"><ChevronRight className="w-4 h-4 text-ink-500" /></Link>
+              </div>
+              <div className="space-y-3">
+                {activeMissions.length === 0 ? (
+                  <p className="text-ink-600 text-xs text-center py-4 italic border border-dashed border-ink-800 rounded-lg">No missions active</p>
+                ) : (
+                  activeMissions.slice(0, 3).map((m: any) => <MissionMiniCard key={m._id} mission={m} />)
+                )}
+              </div>
             </div>
-            <div className="space-y-3">
-              {activeMissions.length === 0 ? (
-                <p className="text-ink-600 text-xs text-center py-4 italic border border-dashed border-ink-800 rounded-lg">No missions active</p>
-              ) : (
-                activeMissions.slice(0, 3).map((m: any) => <MissionMiniCard key={m._id} mission={m} />)
-              )}
-            </div>
-          </div>
+          )}
 
-          <div className="glass-card p-4">
-            <h3 className="font-semibold text-sm text-ink-200 mb-4 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-jade-400" /> Efficiency Trend
-            </h3>
+          {loadingTracker ? (
+            <div className="glass-card p-4 animate-pulse">
+              <div className="h-24 bg-ink-900/50 rounded" />
+            </div>
+          ) : (
+            <div className="glass-card p-4">
+              <h3 className="font-semibold text-sm text-ink-200 mb-4 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-jade-400" /> Efficiency Trend
+              </h3>
             {chartData.length > 0 ? (
               <div className="h-[100px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -596,6 +717,7 @@ export default function DashboardPage() {
               </div>
             ) : <div className="h-20 flex items-center justify-center text-ink-700 text-[10px]">Data pending...</div>}
           </div>
+          )}
         </div>
       </div>
     </div>
