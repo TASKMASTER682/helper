@@ -219,9 +219,9 @@ export default function ResultScreen({
             </div>
           </div>
 
-          <div className="lg:col-span-3 glass-card p-6 border border-teal-800 bg-ink-900/40 rounded-2xl flex items-center justify-center">
-            <div className="w-full h-32">
-              <ResponsiveContainer width="100%" height="100%">
+          <div className="lg:col-span-3 glass-card p-6 border border-teal-800 bg-ink-900/40 rounded-2xl flex items-center justify-center min-h-[160px]">
+            <div className="w-full h-32 min-w-0">
+              <ResponsiveContainer width="100%" height={128}>
                 <PieChart>
                   <Pie data={pieData} innerRadius={40} outerRadius={55} paddingAngle={5} dataKey="value" stroke="none">
                     {pieData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
@@ -341,6 +341,50 @@ export default function ResultScreen({
                               ) : (
                                 <p className="text-[14px] text-ink-200 leading-relaxed font-medium whitespace-pre-wrap">{item.questionText}</p>
                               )}
+                            </div>
+                          )}
+
+                          {item.options && (
+                            <div className="mb-4 grid grid-cols-1 gap-2">
+                              {(['a', 'b', 'c', 'd'] as const).map((opt) => {
+                                const optKey = opt.toUpperCase() as 'A' | 'B' | 'C' | 'D';
+                                const optText = item.options[opt];
+                                const isCorrect = item.correctAnswer === optKey;
+                                const isMarked = item.answer === optKey;
+                                if (!optText) return null;
+                                return (
+                                  <div
+                                    key={opt}
+                                    className={clsx(
+                                      "p-3 rounded-xl border-2 flex items-start gap-3 text-[13px]",
+                                      isCorrect
+                                        ? "bg-teal-500/10 border-teal-500/50"
+                                        : isMarked
+                                          ? "bg-red-500/10 border-red-500/50"
+                                          : "bg-ink-900/30 border-ink-800/50"
+                                    )}
+                                  >
+                                    <span className={clsx(
+                                      "w-6 h-6 shrink-0 rounded-lg flex items-center justify-center font-bold text-xs border",
+                                      isCorrect
+                                        ? "bg-teal-500 border-teal-500 text-teal-950"
+                                        : isMarked
+                                          ? "bg-red-500 border-red-500 text-white"
+                                          : "bg-ink-800 border-ink-700 text-ink-400"
+                                    )}>
+                                      {optKey}
+                                    </span>
+                                    <span className={clsx(
+                                      "leading-relaxed font-medium",
+                                      isCorrect ? "text-teal-300" : isMarked ? "text-red-300" : "text-ink-300"
+                                    )}>
+                                      {optText}
+                                    </span>
+                                    {isCorrect && <span className="ml-auto text-[10px] text-teal-500 font-bold">CORRECT</span>}
+                                    {isMarked && !isCorrect && <span className="ml-auto text-[10px] text-red-500 font-bold">YOUR ANSWER</span>}
+                                  </div>
+                                );
+                              })}
                             </div>
                           )}
 

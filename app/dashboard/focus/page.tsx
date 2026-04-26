@@ -1,201 +1,192 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Play, Pause, RotateCcw, Timer, Settings2, Coffee, ArrowLeft } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { Play, ArrowLeft, Clock, Target, Zap, AlertTriangle, ChevronRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 import clsx from 'clsx';
+import { scheduleAPI, missionsAPI } from '@/lib/api';
+import toast from 'react-hot-toast';
 
-const DEFAULT_MINUTES = 50;
-
-const formatTime = (seconds: number) => {
-  const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
-  const secs = Math.max(0, seconds % 60).toString().padStart(2, '0');
-  return `${mins}:${secs}`;
-};
-
-export default function FocusModePage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const initialTitle = searchParams.get('title') || 'Deep Focus Session';
-  const initialMinutes = Math.max(1, Number(searchParams.get('minutes')) || DEFAULT_MINUTES);
-
-  const [inputMinutes, setInputMinutes] = useState(initialMinutes);
-  const [totalSeconds, setTotalSeconds] = useState(initialMinutes * 60);
-  const [remainingSeconds, setRemainingSeconds] = useState(initialMinutes * 60);
-  const [isRunning, setIsRunning] = useState(false);
-
-  const radius = 120;
-  const circumference = 2 * Math.PI * radius;
+export default function FocusPage() {
+  const [availableHours, setAvailableHours] = useState(4);
+  const [loading, setLoading] = useState(false);
+  const [plan, setPlan] = useState<any>(null);
+  const [missions, setMissions] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!isRunning) return;
-    const timer = setInterval(() => {
-      setRemainingSeconds((prev) => {
-        if (prev <= 1) {
-          setIsRunning(false);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [isRunning]);
+    loadMissions();
+  }, []);
 
-  const progressPercentage = useMemo(() => {
-    return Math.min(1, Math.max(0, (totalSeconds - remainingSeconds) / totalSeconds));
-  }, [remainingSeconds, totalSeconds]);
-
-  const offset = circumference - progressPercentage * circumference;
-
-  const handleApply = () => {
-    const mins = Math.max(1, Math.min(300, Number(inputMinutes)));
-    setTotalSeconds(mins * 60);
-    setRemainingSeconds(mins * 60);
-    setIsRunning(false);
+  const loadMissions = async () => {
+    try {
+      const { data } = await missionsAPI.getMissions();
+      setMissions(data.filter((m: any) => m.status === 'active'));
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  const handleReset = () => {
-    setRemainingSeconds(totalSeconds);
-    setIsRunning(false);
+  const generatePlan = async () => {
+    setLoading(true);
+    try {
+      const { data } = await scheduleAPI.generatePlan(availableHours);
+      setPlan(data);
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Failed to generate plan');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const totalRequired = plan?.totalRequired ? Math.round(plan.totalRequired / 60 * 10) / 10 : 0;
+  const hasDeficit = plan?.deficit > 0;
+  const hasExcess = plan?.excessHours > 0;
 
   return (
-    <div className="min-h-[90vh] flex flex-col items-center justify-center p-4 overflow-hidden relative bg-ink-950">
-<div className={clsx(
-        "absolute top-1/4 -left-20 w-96 h-96 rounded-full blur-[120px] transition-all duration-1000",
-        isRunning ? "bg-yellow-500/20 scale-125" : "bg-yellow-500/10 scale-100"
-      )} />
-      <div className={clsx(
-        "absolute bottom-1/4 -right-20 w-96 h-96 rounded-full blur-[120px] transition-all duration-1000",
-        isRunning ? "bg-teal-500/20 scale-125" : "bg-teal-500/10 scale-100"
-      )} />
+    <div className="min-h-screen p-4 md:p-6 space-y-6 pb-24">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="section-title">Daily Planner</h1>
+          <p className="text-ink-500 text-sm mt-1 font-mono text-[10px]">MATH-DRIVEN EXECUTION ENGINE</p>
+        </div>
+      </div>
 
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-2xl z-10"
-      >
-        <div className="mb-8 flex items-center justify-between">
+      <div className="glass-card p-6 border border-yellow-500/20">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-12 h-12 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center">
+            <Clock className="w-6 h-6 text-yellow-500" />
+          </div>
+          <div className="flex-1">
+            <h2 className="font-display text-lg font-semibold text-ink-100">Enter Available Time</h2>
+            <p className="text-ink-500 text-xs">How many hours can you study today?</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <input
+            type="number"
+            min="1"
+            max="18"
+            value={availableHours}
+            onChange={(e) => setAvailableHours(Math.max(1, Math.min(18, Number(e.target.value))))}
+            className="input-field w-24 text-center text-xl font-bold"
+          />
+          <span className="text-ink-400 font-mono text-sm">hours</span>
           <button
-            onClick={() => router.back()}
-            className="group flex items-center gap-2 text-ink-400 hover:text-white transition-colors"
+            onClick={generatePlan}
+            disabled={loading}
+            className="btn-primary flex items-center gap-2 flex-1 justify-center"
           >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-xs font-mono uppercase tracking-widest">Exit</span>
+            {loading ? 'Generating...' : (
+              <>
+                <Zap className="w-4 h-4" /> Generate Plan
+              </>
+            )}
           </button>
-          
-          <motion.div 
-            animate={isRunning ? { opacity: [0.5, 1, 0.5] } : {}}
-            transition={{ repeat: Infinity, duration: 3 }}
-            className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-yellow-500 text-[10px] font-mono uppercase tracking-[0.2em]"
-          >
-            <div className={clsx("w-1.5 h-1.5 rounded-full bg-yellow-500", isRunning && "animate-ping")} />
-            {isRunning ? 'Flow Active' : 'System Ready'}
-          </motion.div>
         </div>
+      </div>
 
-        <div className="glass-card p-8 md:p-12 backdrop-blur-3xl border-white/5 shadow-2xl rounded-3xl">
-          <h1 className="text-center text-3xl md:text-4xl font-display font-bold text-white mb-10 tracking-tight">
-            {initialTitle}
-          </h1>
-          
-          <div className="relative flex items-center justify-center mb-12">
-            <svg className="w-64 h-64 md:w-80 md:h-80 transform -rotate-90">
-              <circle
-                cx="50%" cy="50%" r={radius}
-                stroke="currentColor" strokeWidth="6" fill="transparent"
-                className="text-white/5"
-              />
-              <motion.circle
-                cx="50%" cy="50%" r={radius}
-                stroke="currentColor" strokeWidth="6" fill="transparent"
-                strokeDasharray={circumference}
-                animate={{ strokeDashoffset: offset }}
-                transition={{ duration: 1, ease: "linear" }}
-                strokeLinecap="round"
-                className="text-yellow-500"
-                style={{ filter: 'drop-shadow(0 0 8px rgba(234, 179, 8, 0.4))' }}
-              />
-            </svg>
+      {plan && (
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-4"
+        >
+          {hasDeficit && (
+            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-yellow-400 font-medium text-sm">You are behind by {plan.deficit ? Math.round(plan.deficit / 60 * 10) / 10 : 0} hours</p>
+                <p className="text-ink-500 text-xs mt-1">
+                  Increase daily effort to {plan.shouldIncreaseBy || Math.ceil(totalRequired)} hours to catch up
+                </p>
+              </div>
+            </div>
+          )}
 
-            <div className="absolute flex flex-col items-center justify-center text-center">
-              <AnimatePresence mode="wait">
-                <motion.span 
-                  key={remainingSeconds}
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-6xl md:text-7xl font-display font-bold text-white tracking-tighter"
+          <div className="grid grid-cols-3 gap-3">
+            <div className="glass-card p-4 text-center">
+              <div className="text-2xl font-black text-teal-500">{totalRequired}</div>
+              <div className="text-[9px] font-mono text-ink-500 uppercase tracking-wider">Required</div>
+            </div>
+            <div className="glass-card p-4 text-center">
+              <div className="text-2xl font-black text-white">{availableHours}</div>
+              <div className="text-[9px] font-mono text-ink-500 uppercase tracking-wider">Available</div>
+            </div>
+            <div className="glass-card p-4 text-center">
+              <div className="text-2xl font-black text-yellow-500">
+                {plan.allocations?.length || 0}
+              </div>
+              <div className="text-[9px] font-mono text-ink-500 uppercase tracking-wider">Missions</div>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <h3 className="text-xs font-mono text-ink-500 uppercase tracking-widest">Today's Allocation</h3>
+            
+            {plan.allocations?.length === 0 ? (
+              <div className="text-center py-8 text-ink-500">
+                <Target className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p>No active missions to allocate</p>
+              </div>
+            ) : (
+              plan.allocations?.map((allocation: any, idx: number) => (
+                <div 
+                  key={allocation.missionId}
+                  className="glass-card p-4 border border-ink-800 hover:border-yellow-500/30 transition-colors"
                 >
-                  {formatTime(remainingSeconds)}
-                </motion.span>
-              </AnimatePresence>
-              <div className="h-px w-12 bg-white/20 my-2" />
-              <span className="text-[10px] font-mono text-ink-500 uppercase tracking-[0.3em]">
-                {Math.round(progressPercentage * 100)}% Focus
-              </span>
-            </div>
-          </div>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3">
+                      <div className={clsx(
+                        'w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm',
+                        idx === 0 ? 'bg-yellow-500 text-ink-950' : 'bg-ink-800 text-ink-400'
+                      )}>
+                        {idx + 1}
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-ink-100">{allocation.missionName}</h4>
+                        <p className="text-ink-500 text-xs mt-1">
+                          {allocation.daysLeft} days remaining · {allocation.remainingHours.toFixed(1)} hours left
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-teal-500">
+                        {Math.round(allocation.allocatedMinutes / 60 * 10) / 10}h
+                      </div>
+                      <div className="text-[9px] text-ink-600 font-mono">allocated</div>
+                    </div>
+                  </div>
 
-          <div className="flex items-center gap-6 justify-center mb-12">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setIsRunning(!isRunning)}
-              className={clsx(
-                "h-20 w-20 rounded-full flex items-center justify-center transition-all",
-                isRunning 
-                  ? "bg-white/5 text-white border border-white/20 shadow-inner" 
-                  : "bg-yellow-500 text-ink-950 shadow-[0_10px_40px_-10px_rgba(234,179,8,0.5)]"
-              )}
-            >
-              {isRunning ? <Pause className="w-8 h-8 fill-current" /> : <Play className="w-8 h-8 ml-1 fill-current" />}
-            </motion.button>
-
-            <motion.button
-              whileHover={{ rotate: -180, scale: 1.1 }}
-              onClick={handleReset}
-              className="h-14 w-14 rounded-full flex items-center justify-center bg-white/5 border border-white/10 text-ink-400 hover:text-white"
-            >
-              <RotateCcw className="w-5 h-5" />
-            </motion.button>
-          </div>
-<div className="pt-8 border-t border-white/5">
-            <div className="flex flex-col md:flex-row gap-8 items-start md:items-end justify-between">
-              
-              <div className="w-full md:w-auto flex-shrink-0">
-                <label className="block text-[10px] font-mono text-ink-500 uppercase tracking-widest mb-3">
-                  <Settings2 className="w-3 h-3 inline mr-1.5 mb-0.5" /> Session Length
-                </label>
-                <div className="flex gap-2 h-11">
-                  <input
-                    type="number"
-                    value={inputMinutes}
-                    onChange={(e) => setInputMinutes(Number(e.target.value))}
-                    className="w-20 bg-white/5 border border-white/10 rounded-xl text-center font-bold text-white focus:outline-none focus:border-yellow-500/50 transition-colors"
-                  />
-                  <button 
-                    onClick={handleApply} 
-                    className="px-5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-bold uppercase tracking-widest text-white hover:bg-white/10 transition-colors"
-                  >
-                    Set Time
-                  </button>
+                  {allocation.blocks?.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-ink-800">
+                      <p className="text-[9px] text-ink-600 font-mono mb-2">SESSION BLOCKS</p>
+                      <div className="flex gap-2">
+                        {allocation.blocks.map((block: number, bIdx: number) => (
+                          <div 
+                            key={bIdx}
+                            className="flex-1 py-2 bg-ink-900 rounded-lg text-center text-xs font-mono text-ink-400"
+                          >
+                            {block >= 60 ? `${block / 60}h` : `${block}m`}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-
-              <div className="w-full md:max-w-[260px]">
-                <div className="bg-teal-500/5 border border-teal-500/10 rounded-2xl p-4 flex items-start gap-3">
-                  <Coffee className="w-4 h-4 text-teal-500 mt-0.5" />
-                  <p className="text-[10px] leading-relaxed text-teal-200/60 font-medium">
-                    Break intervals are crucial. Every 50m, take 5m to rest your eyes.
-                  </p>
-                </div>
-              </div>
-
-            </div>
+              ))
+            )}
           </div>
-        </div>
-      </motion.div>
+
+          {hasExcess && (
+            <div className="bg-teal-500/10 border border-teal-500/30 rounded-xl p-4">
+              <p className="text-teal-400 text-sm font-medium">
+                +{plan.excessHours.toFixed(1)} hours extra available for revision or buffer
+              </p>
+            </div>
+          )}
+        </motion.div>
+      )}
     </div>
   );
 }

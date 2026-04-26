@@ -65,7 +65,6 @@ export default function ProfilePage() {
             <p className="text-ink-500 text-sm">{user?.email}</p>
             <div className="flex items-center gap-3 mt-1">
               <span className="text-xs font-mono text-yellow-400">Streak: {liveStats?.studyStreak ?? user?.stats?.studyStreak ?? 0}d</span>
-              <span className="text-xs font-mono text-teal-400">Confidence: {liveStats?.confidenceScore ?? user?.stats?.confidenceScore ?? 50}/100</span>
               <span className="text-xs font-mono text-deep-400">Study days: {liveStats?.totalStudyDays ?? user?.stats?.totalStudyDays ?? 0}</span>
             </div>
           </div>

@@ -100,6 +100,8 @@ export default function YouTubePlayerPage() {
       } else {
         playerRef.current = new window.YT.Player('youtube-player', {
           videoId: currentVideo.videoId,
+          width: '100%',
+          height: '100%',
           playerVars: {
             autoplay: 1,
             modestbranding: 1,
@@ -251,7 +253,7 @@ export default function YouTubePlayerPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 space-y-4">
           <div className="glass-card p-0 overflow-hidden">
-            <div ref={playerContainerRef} className="aspect-video bg-black">
+            <div ref={playerContainerRef} className="aspect-video w-full bg-black">
               <div id="youtube-player" className="w-full h-full" />
             </div>
             

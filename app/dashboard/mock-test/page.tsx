@@ -409,27 +409,35 @@ export default function MockTestPage() {
 
       {tab === 'analytics' && totalAttempts > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="glass-card p-5 h-64">
+          <div className="glass-card p-5 h-64 min-h-[200px]">
             <h3 className="text-sm font-bold mb-4">Score Trend</h3>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={scoreTrend}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2d2820" />
-                <XAxis dataKey="idx" hide />
-                <YAxis stroke="#6b5e52" fontSize={10} />
-                <Tooltip contentStyle={{ background: '#1a1612', border: 'none' }} />
-                <Line type="monotone" dataKey="score" stroke="#ff7c0a" strokeWidth={2} dot={{ fill: '#ff7c0a' }} />
-              </LineChart>
-            </ResponsiveContainer>
+            <div className="h-[180px] min-h-[180px] w-full min-w-0">
+              {scoreTrend.length > 0 ? (
+                <ResponsiveContainer width="100%" height={180}>
+                  <LineChart data={scoreTrend}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#2d2820" />
+                    <XAxis dataKey="idx" hide />
+                    <YAxis stroke="#6b5e52" fontSize={10} />
+                    <Tooltip contentStyle={{ background: '#1a1612', border: 'none' }} />
+                    <Line type="monotone" dataKey="score" stroke="#ff7c0a" strokeWidth={2} dot={{ fill: '#ff7c0a' }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : <div className="h-full flex items-center justify-center text-ink-600 text-xs">No data</div>}
+            </div>
           </div>
-          <div className="glass-card p-5 h-64 flex items-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={overallPie} innerRadius={50} outerRadius={70} dataKey="value" stroke="none">
-                  {overallPie.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+          <div className="glass-card p-5 h-64 min-h-[200px] flex items-center">
+            <div className="h-[200px] min-h-[200px] w-full min-w-0">
+              {overallPie.length > 0 ? (
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie data={overallPie} innerRadius={50} outerRadius={70} dataKey="value" stroke="none">
+                      {overallPie.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : <div className="h-full flex items-center justify-center text-ink-600 text-xs">No data</div>}
+            </div>
             <div className="space-y-2 text-xs">
               {overallPie.map(d => (
                 <div key={d.name} className="flex items-center gap-2">

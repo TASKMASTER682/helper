@@ -4,6 +4,7 @@ import './globals.css'
 import { Toaster } from 'react-hot-toast'
 import PWARegister from './components/PWARegister'
 import PWAInstallButton from './components/PWAInstallButton'
+import Script from 'next/script'
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -116,6 +117,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
         {children}
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       </body>
     </html>
   )

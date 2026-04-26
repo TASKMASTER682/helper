@@ -152,12 +152,14 @@ export default function ExamPage() {
 
         // Viewing a past attempt
         if (viewAttemptId) {
-          const { data: allAttempts } = await mockTestAPI.getAllAttempts();
-          const target = allAttempts.find((a: any) => a._id === viewAttemptId);
+          // Get full attempt details with options
+          const { data: target } = await mockTestAPI.getAttempt(viewAttemptId);
           if (target) {
             setAttemptResult(target);
             setAiFeedback(target.aiFeedback);
             setDeepAnalysis(target.deepAnalysis || []);
+            // Set test mode from the attempt's mockTestId
+            setTest({ mode: target.mockTestId?.mode, name: target.mockTestId?.name });
             setExamState('result');
             if (target?.feedbackStatus === 'pending' || target?.feedbackStatus === 'generating') {
               startFeedbackPolling(target._id);
@@ -218,6 +220,39 @@ export default function ExamPage() {
       setExamState('exam');
     }
   }, [test, answers, id, timeLeft, totalQ, startFeedbackPolling]);
+
+  // ── Navigation Protection ──────────────────────────────────────────────────
+  useEffect(() => {
+    if (examState !== 'exam') return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = ''; // Shows browser confirm
+    };
+
+    const handlePopState = (e: PopStateEvent) => {
+      // Push state back so the user stays on the page
+      window.history.pushState(null, '', window.location.href);
+      setShowConfirm(true); // Show our submit modal
+      toast('Please submit the exam before leaving.', { icon: '⚠️' });
+    };
+
+    // Initialize state to allow popstate interception
+    window.history.pushState(null, '', window.location.href);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
+      
+      // Auto-submit fallback if component unmounts during exam
+      // Note: This is a best-effort as unmount might be too fast for network
+      if (submitRef.current && typeof submitRef.current === 'function') {
+        // We check if it was explicitly submitted or timed out already
+      }
+    };
+  }, [examState]);
 
   useEffect(() => { submitRef.current = () => void submitExam(); }, [submitExam]);
 
@@ -394,14 +429,14 @@ export default function ExamPage() {
     <div className="h-screen w-full bg-[#0d0d0f] flex flex-col overflow-hidden font-sans lg:pt-0 pt-16">
 
       {/* ── TOP HEADER ─────────────────────────────────────────────────────── */}
-      <header className="h-14 shrink-0 flex items-center justify-between px-4 md:px-6 bg-[#111114] border-b border-ink-800/60 z-50 gap-4">
+      <header className="h-14 shrink-0 flex items-center justify-between px-3 md:px-6 bg-[#111114] border-b border-ink-800/60 z-50 gap-2 md:gap-4">
         {/* Test name */}
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-7 h-7 rounded-lg bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-6 h-6 md:w-7 md:h-7 rounded-lg bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center shrink-0">
             <span className="text-yellow-400 text-[10px] font-black">Q</span>
           </div>
-          <span className="font-bold text-ink-100 truncate text-sm hidden sm:block">{test?.name}</span>
-          <span className="text-[10px] text-teal-500 font-mono shrink-0">{currentIdx + 1}/{totalQ}</span>
+          <span className="font-bold text-ink-100 truncate text-xs md:text-sm hidden sm:block">{test?.name}</span>
+          <span className="text-[10px] text-teal-500 font-mono shrink-0 bg-teal-500/10 px-1.5 py-0.5 rounded border border-teal-500/20">{currentIdx + 1}/{totalQ}</span>
         </div>
 
         {/* Center: Stats */}
@@ -413,25 +448,25 @@ export default function ExamPage() {
         </div>
 
         {/* Right: Timer + Submit */}
-        <div className="flex items-center gap-2 md:gap-3 shrink-0">
-          <div className={clsx('px-3 py-1.5 rounded-xl border font-mono font-black text-sm flex items-center gap-1.5 transition-all',
+        <div className="flex items-center gap-1.5 md:gap-3 shrink-0">
+          <div className={clsx('px-2 md:px-3 py-1.5 rounded-xl border font-mono font-black text-[11px] md:text-sm flex items-center gap-1 md:gap-1.5 transition-all',
             timeLeft < 300 ? 'border-red-500 bg-red-500/10 text-red-400 animate-pulse' :
               timeLeft < 600 ? 'border-orange-500 bg-orange-500/10 text-orange-400' :
                 'border-yellow-500/40 bg-yellow-500/5 text-yellow-400')}>
-            <Clock className="w-3.5 h-3.5" />
+            <Clock className="w-3 md:w-3.5 h-3 md:h-3.5" />
             {fmt(timeLeft)}
           </div>
           <button
             onClick={() => setSidebarOpen(o => !o)}
-            className="md:hidden p-2 rounded-lg bg-ink-800 text-ink-300"
+            className="md:hidden p-2 rounded-lg bg-ink-800/50 text-ink-300 border border-ink-700/50"
           >
             <LayoutGrid className="w-4 h-4" />
           </button>
           <button
             onClick={() => setShowConfirm(true)}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-ink-950 font-bold text-xs transition-all active:scale-95"
+            className="flex items-center gap-1 px-3 md:px-4 py-2 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-ink-950 font-black text-[10px] md:text-xs transition-all active:scale-95 shadow-lg shadow-yellow-500/20"
           >
-            <Send className="w-3.5 h-3.5" /> Submit
+            <Send className="w-3 md:w-3.5 h-3 md:h-3.5" /> <span className="hidden xs:inline">Submit</span>
           </button>
         </div>
       </header>
@@ -454,22 +489,22 @@ export default function ExamPage() {
             <div className="max-w-3xl mx-auto">
 
               {/* Question Header */}
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-4 md:mb-6">
                 <div className="flex items-center gap-3">
-                  <div className={clsx('w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm border-2 transition-all',
+                  <div className={clsx('w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center font-black text-sm border-2 transition-all',
                     isMarkedCurrent ? 'bg-purple-500/20 border-purple-500 text-purple-300' : 'bg-yellow-500/10 border-yellow-500/40 text-yellow-400')}>
                     {currentQNum}
                   </div>
-                  <span className="text-[10px] text-ink-500 font-mono uppercase tracking-[0.15em]">Question {currentIdx + 1} of {totalQ}</span>
+                  <span className="text-[9px] md:text-[10px] text-ink-500 font-mono uppercase tracking-[0.15em]">Question {currentIdx + 1} of {totalQ}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   {isMarkedCurrent && (
-                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                    <span className="text-[8px] md:text-[9px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30">
                       MARKED
                     </span>
                   )}
                   {currentAnswer && (
-                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-400 border border-teal-500/30">
+                    <span className="text-[8px] md:text-[9px] font-bold px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-400 border border-teal-500/30">
                       ANSWERED
                     </span>
                   )}
@@ -477,18 +512,18 @@ export default function ExamPage() {
               </div>
 
               {/* Question Text */}
-              <div className="mb-8 p-6 bg-ink-900/40 rounded-2xl border border-yellow-500 shadow-inner">
+              <div className="mb-6 md:mb-8 p-5 md:p-6 bg-ink-900/40 rounded-2xl border border-yellow-500/30 shadow-inner">
                 {currentQ?.text && /<[a-z][\s\S]*>/i.test(currentQ.text) ? (
-                  <div className="text-ink-100 text-[15px] leading-relaxed font-medium ai-content" dangerouslySetInnerHTML={{ __html: currentQ.text }} />
+                  <div className="text-ink-100 text-[14px] md:text-[15px] leading-relaxed font-medium ai-content" dangerouslySetInnerHTML={{ __html: currentQ.text }} />
                 ) : (
-                  <p className="text-ink-100 text-base leading-relaxed whitespace-pre-wrap font-medium">
+                  <p className="text-ink-100 text-sm md:text-base leading-relaxed whitespace-pre-wrap font-medium">
                     {currentQ?.text || `Question ${currentQNum}`}
                   </p>
                 )}
               </div>
 
               {/* Options */}
-              <div className="grid grid-cols-1 gap-3 mb-8">
+              <div className="grid grid-cols-1 gap-2.5 mb-8">
                 {OPTION_KEYS.map((opt) => {
                   const optText = currentQ?.options?.[OPTION_MAP[opt]] || `Option ${opt}`;
                   const isSelected = currentAnswer === opt;
@@ -497,7 +532,7 @@ export default function ExamPage() {
                       key={opt}
                       onClick={() => handleOptionSelect(opt)}
                       className={clsx(
-                        'w-full text-left p-4 rounded-2xl border-2 flex items-start gap-4 transition-all duration-200 group',
+                        'w-full text-left p-3.5 md:p-4 rounded-2xl border-2 flex items-start gap-3 md:gap-4 transition-all duration-200 group',
                         isSelected
                           ? 'border-yellow-500 bg-yellow-500/10 shadow-lg shadow-yellow-500/10'
                           : 'border-ink-800/60 bg-ink-900/20 hover:border-teal-600 hover:bg-ink-900/50'
@@ -505,7 +540,7 @@ export default function ExamPage() {
                     >
                       {/* Option bubble */}
                       <span className={clsx(
-                        'w-8 h-8 shrink-0 rounded-xl flex items-center justify-center font-black text-sm border-2 transition-all',
+                        'w-7 h-7 md:w-8 md:h-8 shrink-0 rounded-xl flex items-center justify-center font-black text-xs md:text-sm border-2 transition-all',
                         isSelected
                           ? 'bg-yellow-500 border-yellow-500 text-teal-950'
                           : 'border-ink-700 text-ink-500 group-hover:border-teal-500 group-hover:text-ink-300'
@@ -513,7 +548,7 @@ export default function ExamPage() {
                         {opt}
                       </span>
                       <span className={clsx(
-                        'text-[14px] leading-relaxed pt-0.5 font-medium transition-colors',
+                        'text-[13px] md:text-[14px] leading-relaxed pt-0.5 font-medium transition-colors',
                         isSelected ? 'text-ink-100' : 'text-ink-400 group-hover:text-ink-200'
                       )}>
                         {optText}

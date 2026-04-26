@@ -1,16 +1,46 @@
 
 'use client';
 import { Calendar as CalendarIcon } from 'lucide-react';
-import { 
-  format, 
-  differenceInDays, 
-  startOfMonth, 
-  endOfMonth, 
-  eachDayOfInterval, 
-  isSameDay, 
-  getDay 
-} from 'date-fns';
 import clsx from 'clsx';
+
+const format = (date: Date, fmt: string) => {
+  const d = new Date(date);
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return fmt.replace('dd', pad(d.getDate())).replace('MMM', monthNames[d.getMonth()]).replace('MMMM', monthNames[d.getMonth()]).replace('yyyy', d.getFullYear().toString());
+};
+
+const differenceInDays = (end: Date, start: Date) => {
+  const diff = end.getTime() - start.getTime();
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+};
+
+const startOfMonth = (date: Date) => {
+  const d = new Date(date);
+  d.setDate(1);
+  return d;
+};
+
+const endOfMonth = (date: Date) => {
+  const d = new Date(date);
+  d.setMonth(d.getMonth() + 1);
+  d.setDate(0);
+  return d;
+};
+
+const eachDayOfInterval = ({ start, end }: { start: Date; end: Date }) => {
+  const days: Date[] = [];
+  let current = new Date(start);
+  while (current <= end) {
+    days.push(new Date(current));
+    current.setDate(current.getDate() + 1);
+  }
+  return days;
+};
+
+const isSameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
+
+const getDay = (date: Date) => date.getDay();
 
 interface CountdownCalendarProps {
   targetDate: string; 

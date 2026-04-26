@@ -470,28 +470,30 @@ export default function TestsPage() {
                 </div>
 
                 <div className="p-5 grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2 h-64">
-                    {seriesAttempts.length > 0 ? (
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={chartData}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#2d2820" vertical={false} />
-                          <XAxis dataKey="idx" stroke="#6b5e52" fontSize={10} tickMargin={10} />
-                          <YAxis domain={[0, 100]} stroke="#6b5e52" fontSize={10} />
-                          <Tooltip
-                            formatter={(value: any) => [`${value}%`, 'Score']}
-                            labelFormatter={(label) => `Attempt #${label}`}
-                            contentStyle={{ background: '#1a1612', border: '1px solid #3d3124', borderRadius: '12px', fontSize: '12px' }}
-                            itemStyle={{ color: '#10b981' }}
-                          />
-                          <Line type="monotone" dataKey="score" stroke="#10b981" strokeWidth={3} dot={{ fill: '#10b981', r: 3 }} activeDot={{ r: 5 }} />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    ) : (
-                      <div className="h-full flex flex-col items-center justify-center text-ink-700 bg-ink-900/20 rounded-xl border border-dashed border-ink-800">
-                        <BarChart3 className="w-8 h-8 mb-2 opacity-20" />
-                        <span className="text-xs uppercase tracking-widest font-bold">Waiting for first attempt</span>
-                      </div>
-                    )}
+                  <div className="lg:col-span-2 h-64 min-h-[200px]">
+                    <div className="h-full min-h-[200px] w-full min-w-0">
+                      {seriesAttempts.length > 0 ? (
+                        <ResponsiveContainer width="100%" height={256}>
+                          <LineChart data={chartData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#2d2820" vertical={false} />
+                            <XAxis dataKey="idx" stroke="#6b5e52" fontSize={10} tickMargin={10} />
+                            <YAxis domain={[0, 100]} stroke="#6b5e52" fontSize={10} />
+                            <Tooltip
+                              formatter={(value: any) => [`${value}%`, 'Score']}
+                              labelFormatter={(label) => `Attempt #${label}`}
+                              contentStyle={{ background: '#1a1612', border: '1px solid #3d3124', borderRadius: '12px', fontSize: '12px' }}
+                              itemStyle={{ color: '#10b981' }}
+                            />
+                            <Line type="monotone" dataKey="score" stroke="#10b981" strokeWidth={3} dot={{ fill: '#10b981', r: 3 }} activeDot={{ r: 5 }} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      ) : (
+                        <div className="h-full flex flex-col items-center justify-center text-ink-700 bg-ink-900/20 rounded-xl border border-dashed border-ink-800">
+                          <BarChart3 className="w-8 h-8 mb-2 opacity-20" />
+                          <span className="text-xs uppercase tracking-widest font-bold">Waiting for first attempt</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="space-y-4">

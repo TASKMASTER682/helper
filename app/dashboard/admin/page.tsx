@@ -2,13 +2,19 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
-import { adminAPI, mockTestAPI, testsAPI } from '@/lib/api';
+import { adminAPI, mockTestAPI, testsAPI, coursesAPI, settingsAPI } from '@/lib/api';
 import {
   Shield, BookOpen, Target, Users, FileText, Plus, X,
   Edit2, Trash2, CheckCircle2, XCircle, Loader2, Search,
   ChevronLeft, ChevronRight, Upload, Settings, BarChart3,
-  ToggleLeft, ToggleRight, Save, CheckSquare, Square, Eye
+  ToggleLeft, ToggleRight, Save, CheckSquare, Square, Eye, Crown, CreditCard, PlayCircle,
+  Zap, Clock, TrendingUp, RefreshCw, Filter, MoreVertical, UserPlus, Database, Mail, Calendar,
+  Activity, Video, Layers, Bell, Percent, MessageSquare, Send, Copy
 } from 'lucide-react';
+import { 
+  PlanFormModal, ActivateUserModal, CourseFormModal, LessonFormModal,
+  QuestionFormModal, BulkQuestionModal, EditTestModal 
+} from './modals';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
 
@@ -25,7 +31,7 @@ const TEST_TYPES = [
   { value: 'full_length', label: 'Full Length' },
 ];
 
-const SERIES_TYPES = ['prelims', 'mains', 'sectional', 'full_length', 'csat'];
+const SERIES_TYPES = ['prelims_gs', 'prelims_csat', 'mains_gs', 'sectional', 'full_length', 'optional'];
 
 // Helper to render HTML content safely
 function renderHtml(html: string): { __html: string } {
@@ -60,7 +66,7 @@ function renderWithBreaks(text: string): string {
   return text.replace(/\n/g, '<br/>');
 }
 
-type TabType = 'dashboard' | 'tests' | 'series' | 'questions' | 'create-test' | 'users';
+type TabType = 'dashboard' | 'tests' | 'series' | 'questions' | 'create-test' | 'users' | 'subscriptions' | 'courses' | 'settings';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -77,56 +83,111 @@ export default function AdminDashboard() {
 
   if (user?.role !== 'admin') {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <Shield className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <p className="text-ink-400">Access Denied</p>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] animate-fade-in">
+        <div className="relative">
+          <div className="absolute inset-0 bg-red-500 blur-3xl opacity-20 animate-pulse" />
+          <Shield className="w-20 h-20 text-red-500 relative z-10" />
         </div>
+        <h2 className="text-2xl font-black text-white mt-6 uppercase tracking-tighter">Secure Terminal Restricted</h2>
+        <p className="text-ink-500 mt-2 text-xs font-black uppercase tracking-[0.2em]">Level 4 Clearance Required</p>
       </div>
     );
   }
 
+  const TABS = [
+    { id: 'dashboard', icon: BarChart3, label: 'Overview', desc: 'Platform Analytics' },
+    { id: 'tests', icon: FileText, label: 'Mock Tests', desc: 'Manage Content' },
+    { id: 'series', icon: Target, label: 'Test Series', desc: 'Bundles' },
+    { id: 'questions', icon: BookOpen, label: 'Questions', desc: 'Database' },
+    { id: 'create-test', icon: Plus, label: 'Quick Launch', desc: 'New Content' },
+    { id: 'users', icon: Users, label: 'Citizens', desc: 'User Management' },
+    { id: 'subscriptions', icon: Crown, label: 'Nexus Plans', desc: 'Monetization' },
+    { id: 'courses', icon: PlayCircle, label: 'Academy', desc: 'Video Courses' },
+    { id: 'settings', icon: Settings, label: 'System', desc: 'Configurations' },
+  ] as const;
+
   return (
-    <div className="space-y-6 animate-fade-in pb-10">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-3xl font-display font-bold flex items-center gap-3">
-            <Shield className="w-8 h-8 text-yellow-500" />
-            Admin Dashboard
-          </h1>
-          <p className="text-ink-500 text-sm mt-1">Manage platform content, tests, and users</p>
+    <div className="min-h-screen animate-fade-in pb-20">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 p-8 rounded-3xl bg-ink-900 border border-ink-800 relative overflow-hidden shadow-2xl">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-500/5 blur-[100px] rounded-full" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-4 mb-2">
+            <div className="p-3 bg-yellow-500 text-ink-950 rounded-2xl shadow-lg shadow-yellow-500/20">
+              <Shield className="w-8 h-8" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-black text-white tracking-tighter uppercase">Command Center</h1>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+                <p className="text-ink-500 text-[10px] font-black uppercase tracking-[0.3em]">System Admin v4.0.2</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Quick Actions or Status */}
+        <div className="flex items-center gap-3 relative z-10">
+          <div className="px-4 py-2 bg-ink-950/50 border border-ink-800 rounded-xl">
+            <div className="text-[10px] text-ink-600 font-black uppercase tracking-widest mb-1">Server Status</div>
+            <div className="text-teal-400 text-xs font-bold flex items-center gap-2">
+              <RefreshCw className="w-3 h-3 animate-spin-slow" /> Operational
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="flex gap-1 p-1 bg-ink-900 rounded-xl border border-ink-800 w-fit flex-wrap">
-        {([
-          { id: 'dashboard', icon: BarChart3, label: 'Overview' },
-          { id: 'tests', icon: FileText, label: 'Mock Tests' },
-          { id: 'series', icon: Target, label: 'Test Series' },
-          { id: 'questions', icon: BookOpen, label: 'Questions' },
-          { id: 'create-test', icon: CheckSquare, label: 'Create Test' },
-          { id: 'users', icon: Users, label: 'Users' },
-        ] as const).map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={clsx(
-              'px-4 py-2 rounded-lg text-sm font-semibold capitalize flex items-center gap-2 transition-all',
-              activeTab === tab.id ? 'bg-yellow-500 text-ink-950' : 'text-ink-500 hover:text-white'
-            )}
-          >
-            <tab.icon className="w-4 h-4" />
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Navigation Sidebar */}
+        <div className="lg:col-span-3 space-y-2">
+          <div className="sticky top-24 space-y-2">
+            {TABS.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={clsx(
+                  'w-full group px-5 py-4 rounded-2xl flex items-center gap-4 transition-all duration-300 border text-left',
+                  activeTab === tab.id 
+                    ? 'bg-yellow-500 border-yellow-400 text-ink-950 shadow-xl shadow-yellow-500/10 scale-[1.02]' 
+                    : 'bg-ink-900/40 border-ink-800 text-ink-500 hover:bg-ink-900 hover:border-ink-700'
+                )}
+              >
+                <div className={clsx(
+                  'p-2 rounded-xl transition-colors',
+                  activeTab === tab.id ? 'bg-ink-950/20' : 'bg-ink-800 group-hover:bg-ink-700'
+                )}>
+                  <tab.icon className="w-5 h-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-black text-sm uppercase tracking-tight">{tab.label}</div>
+                  <div className={clsx(
+                    'text-[9px] font-bold uppercase tracking-widest truncate',
+                    activeTab === tab.id ? 'text-ink-900/60' : 'text-ink-600'
+                  )}>
+                    {tab.desc}
+                  </div>
+                </div>
+                {activeTab === tab.id && <ChevronRight className="w-4 h-4" />}
+              </button>
+            ))}
+          </div>
+        </div>
 
-      {activeTab === 'dashboard' && <OverviewTab />}
-      {activeTab === 'tests' && <TestsTab />}
-      {activeTab === 'series' && <SeriesTab />}
-      {activeTab === 'questions' && <QuestionsTab />}
-      {activeTab === 'create-test' && <CreateTestTab />}
-      {activeTab === 'users' && <UsersTab />}
+        {/* Content Area */}
+        <div className="lg:col-span-9">
+          <div className="animate-slide-up">
+            {activeTab === 'dashboard' && <OverviewTab />}
+            {activeTab === 'tests' && <TestsTab />}
+            {activeTab === 'series' && <SeriesTab />}
+            {activeTab === 'questions' && <QuestionsTab />}
+            {activeTab === 'create-test' && <CreateTestTab />}
+            {activeTab === 'users' && <UsersTab />}
+            {activeTab === 'subscriptions' && <SubscriptionsTab />}
+            {activeTab === 'courses' && <CoursesTab />}
+            {activeTab === 'settings' && <SettingsTab />}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -135,53 +196,103 @@ function OverviewTab() {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadStats();
-  }, []);
+  useEffect(() => { loadStats(); }, []);
 
   const loadStats = async () => {
     try {
       const { data } = await adminAPI.getStats();
       setStats(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   };
 
-  if (loading) return <div className="text-center py-20 text-ink-500">Loading...</div>;
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center py-40 gap-4">
+      <Loader2 className="w-10 h-10 text-yellow-500 animate-spin" />
+      <p className="text-ink-500 font-mono text-xs animate-pulse uppercase tracking-[0.3em]">Querying Mainframe...</p>
+    </div>
+  );
+
+  const CARDS = [
+    { label: 'Total Mock Tests', value: stats?.totalTests || 0, icon: FileText, color: 'yellow', trend: stats?.testTrend || 'Stable' },
+    { label: 'Active Series', value: stats?.totalSeries || 0, icon: Target, color: 'teal', trend: stats?.seriesTrend || 'Verified' },
+    { label: 'Database Nodes', value: stats?.totalQuestions || 0, icon: BookOpen, color: 'purple', trend: 'Verified' },
+    { label: 'Course Enrollments', value: stats?.totalEnrollments || 0, icon: Video, color: 'orange', trend: stats?.enrollmentsTrend || 'Verified' },
+    { label: 'Nexus Users', value: stats?.totalUsers || 0, icon: Users, color: 'blue', trend: stats?.usersToday || 'Verified' },
+  ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {[
-        { label: 'Total Tests', value: stats?.totalTests || 0, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
-        { label: 'Test Series', value: stats?.totalSeries || 0, color: 'text-teal-500', bg: 'bg-teal-500/10' },
-        { label: 'Questions', value: stats?.totalQuestions || 0, color: 'text-purple-500', bg: 'bg-purple-500/10' },
-        { label: 'Users', value: stats?.totalUsers || 0, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-      ].map(item => (
-        <div key={item.label} className="glass-card p-6">
-          <div className={clsx('w-12 h-12 rounded-xl flex items-center justify-center mb-3', item.bg)}>
-            <span className={clsx('text-2xl font-bold', item.color)}>{item.value}</span>
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {CARDS.map(item => (
+          <div key={item.label} className="group relative glass-card p-8 border-ink-800 hover:border-yellow-500/30 transition-all duration-500 overflow-hidden">
+            <div className={clsx(
+              "absolute -bottom-10 -right-10 w-40 h-40 blur-[80px] opacity-10 group-hover:opacity-20 transition-opacity rounded-full",
+              item.color === 'yellow' ? 'bg-yellow-500' : 
+              item.color === 'teal' ? 'bg-teal-500' : 
+              item.color === 'orange' ? 'bg-orange-500' :
+              item.color === 'purple' ? 'bg-purple-500' : 'bg-blue-500'
+            )} />
+            
+            <div className="relative z-10 flex items-start justify-between">
+              <div>
+                <div className="text-[10px] font-black text-ink-500 uppercase tracking-[0.2em] mb-6">{item.label}</div>
+                <div className="text-5xl font-black text-white mb-2 tabular-nums tracking-tighter">
+                  {item.value}
+                </div>
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-3 h-3 text-teal-500" />
+                  <span className="text-[10px] font-bold text-ink-400 uppercase tracking-wide">{item.trend}</span>
+                </div>
+              </div>
+              <div className={clsx(
+                "p-4 rounded-2xl",
+                item.color === 'yellow' ? 'bg-yellow-500/10 text-yellow-500' : 
+                item.color === 'teal' ? 'bg-teal-500/10 text-teal-400' : 
+                item.color === 'orange' ? 'bg-orange-500/10 text-orange-400' :
+                item.color === 'purple' ? 'bg-purple-500/10 text-purple-400' : 'bg-blue-500/10 text-blue-400'
+              )}>
+                <item.icon className="w-8 h-8" />
+              </div>
+            </div>
           </div>
-          <div className="text-sm text-ink-500">{item.label}</div>
+        ))}
+      </div>
+
+      {/* System Health */}
+      <div className="glass-card p-8 border-ink-800">
+        <h3 className="text-sm font-black text-white uppercase tracking-widest mb-6 flex items-center gap-3">
+          <Settings className="w-4 h-4 text-yellow-500" /> Live System Metrics
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[
+            { label: 'CPU Load', value: stats?.system?.cpu || '0%', color: 'bg-teal-500' },
+            { label: 'API Latency', value: stats?.system?.latency || '0ms', color: 'bg-yellow-500' },
+            { label: 'Memory Usage', value: stats?.system?.memory || '0%', color: 'bg-purple-500', detail: stats?.system?.memRaw },
+          ].map(m => (
+            <div key={m.label} className="space-y-3">
+              <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-ink-500">
+                <span>{m.label} {m.detail && <span className="text-[8px] opacity-50 ml-1">({m.detail})</span>}</span>
+                <span className="text-white">{m.value}</span>
+              </div>
+              <div className="h-1 w-full bg-ink-950 rounded-full overflow-hidden">
+                <div className={clsx("h-full rounded-full", m.color)} style={{ width: m.value }} />
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
     </div>
   );
 }
-
 function TestsTab() {
   const [tests, setTests] = useState<any[]>([]);
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
   const [editingTest, setEditingTest] = useState<any>(null);
   const [filters, setFilters] = useState({ subject: '', testType: '', mode: '' });
 
-  useEffect(() => {
-    loadTests();
-  }, [pagination.page, filters]);
+  useEffect(() => { loadTests(); }, [pagination.page, filters]);
 
   const loadTests = async () => {
     try {
@@ -189,119 +300,145 @@ function TestsTab() {
       const { data } = await adminAPI.getTests({ page: pagination.page, limit: 10, ...filters });
       setTests(data.tests);
       setPagination(data.pagination);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this test?')) return;
+    if (!confirm('Execute Deletion Protocol? This cannot be undone.')) return;
     try {
       await mockTestAPI.deleteTest(id);
-      toast.success('Test deleted');
+      toast.success('Node purged from database');
       loadTests();
-    } catch {
-      toast.error('Delete failed');
-    }
+    } catch { toast.error('Purge failed'); }
   };
 
   const handleToggleActive = async (test: any) => {
     try {
       await adminAPI.updateTest(test._id, { isActive: !test.isActive });
-      toast.success(test.isActive ? 'Test disabled' : 'Test enabled');
+      toast.success(test.isActive ? 'Node offline' : 'Node synchronized');
       loadTests();
-    } catch {
-      toast.error('Update failed');
-    }
+    } catch { toast.error('State transition failed'); }
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-2 items-center flex-wrap">
-        <select
-          className="input-field"
-          value={filters.subject}
-          onChange={e => setFilters({ ...filters, subject: e.target.value })}
-        >
-          <option value="">All Subjects</option>
-          {SUBJECTS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
-        </select>
-        <select
-          className="input-field"
-          value={filters.testType}
-          onChange={e => setFilters({ ...filters, testType: e.target.value })}
-        >
-          <option value="">All Types</option>
-          {TEST_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-        </select>
-        <select
-          className="input-field"
-          value={filters.mode}
-          onChange={e => setFilters({ ...filters, mode: e.target.value })}
-        >
-          <option value="">All Modes</option>
-          <option value="structured">Structured</option>
-          <option value="pdf">PDF</option>
-        </select>
+    <div className="space-y-6">
+      {/* Control Bar */}
+      <div className="flex items-center justify-between gap-4 flex-wrap bg-ink-900/50 p-4 rounded-2xl border border-ink-800">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-ink-950 rounded-xl border border-ink-800">
+            <Search className="w-3.5 h-3.5 text-ink-500" />
+            <select
+              className="bg-transparent text-xs text-ink-300 outline-none min-w-[120px]"
+              value={filters.subject}
+              onChange={e => setFilters({ ...filters, subject: e.target.value })}
+            >
+              <option value="">All Subjects</option>
+              {SUBJECTS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-ink-950 rounded-xl border border-ink-800">
+            <FileText className="w-3.5 h-3.5 text-ink-500" />
+            <select
+              className="bg-transparent text-xs text-ink-300 outline-none"
+              value={filters.testType}
+              onChange={e => setFilters({ ...filters, testType: e.target.value })}
+            >
+              <option value="">All Types</option>
+              {TEST_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="text-[10px] font-black text-ink-600 uppercase tracking-widest">
+          Showing {tests.length} of {pagination.total} Records
+        </div>
       </div>
 
       {loading ? (
-        <div className="text-center py-20 text-ink-500">Loading...</div>
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <Loader2 className="w-8 h-8 text-yellow-500 animate-spin" />
+          <p className="text-ink-500 font-mono text-xs">Syncing nodes...</p>
+        </div>
       ) : tests.length === 0 ? (
-        <div className="glass-card p-12 text-center border-dashed border-ink-800">
-          <FileText className="w-12 h-12 text-ink-800 mx-auto mb-4" />
-          <p className="text-ink-500">No tests found</p>
+        <div className="glass-card p-20 text-center border-dashed border-ink-800">
+          <FileText className="w-16 h-16 text-ink-800 mx-auto mb-4 opacity-20" />
+          <p className="text-ink-500 font-display text-lg">No Data Streams Found</p>
+          <p className="text-ink-600 text-sm mt-2 font-mono">Adjust your filters to see more content</p>
         </div>
       ) : (
         <div className="space-y-3">
           {tests.map(test => (
             <div key={test._id} className={clsx(
-              'glass-card p-4 flex items-center gap-4',
-              !test.isActive && 'opacity-50'
+              'group relative glass-card p-5 border-ink-800 hover:border-yellow-500/40 transition-all duration-300',
+              !test.isActive && 'opacity-60 grayscale-[0.5]'
             )}>
-              <div className={clsx(
-                'w-10 h-10 rounded-lg flex items-center justify-center',
-                test.mode === 'structured' ? 'bg-teal-500/20' : 'bg-yellow-500/20'
-              )}>
-                <FileText className={clsx('w-5 h-5', test.mode === 'structured' ? 'text-teal-400' : 'text-yellow-400')} />
-              </div>
-              <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-6">
+                <div className={clsx(
+                  'w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-inner border',
+                  test.mode === 'structured' ? 'bg-teal-500/10 border-teal-500/20 text-teal-400' : 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500'
+                )}>
+                  {test.mode === 'structured' ? <Zap className="w-7 h-7" /> : <FileText className="w-7 h-7" />}
+                </div>
+                
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-1">
+                    <h4 className="text-lg font-black text-white truncate leading-none">{test.name}</h4>
+                    {!test.isActive && (
+                      <span className="px-2 py-0.5 rounded-full bg-red-500/10 text-red-500 text-[8px] font-black uppercase tracking-widest border border-red-500/20">
+                        Inactive
+                      </span>
+                    )}
+                    {test.status === 'ready' && (
+                      <span className="px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-400 text-[8px] font-black uppercase tracking-widest border border-teal-500/20">
+                        Live
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1.5 text-ink-500">
+                      <BookOpen className="w-3 h-3" />
+                      <span className="text-[10px] font-bold uppercase tracking-wider">{test.subject}</span>
+                    </div>
+                    <div className="w-1 h-1 rounded-full bg-ink-800" />
+                    <div className="flex items-center gap-1.5 text-ink-500">
+                      <CheckCircle2 className="w-3 h-3" />
+                      <span className="text-[10px] font-bold uppercase tracking-wider">{test.totalQuestions} Qs</span>
+                    </div>
+                    <div className="w-1 h-1 rounded-full bg-ink-800" />
+                    <div className="flex items-center gap-1.5 text-ink-500">
+                      <Clock className="w-3 h-3" />
+                      <span className="text-[10px] font-bold uppercase tracking-wider">{test.durationMinutes}m</span>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="flex items-center gap-2">
-                  <h4 className="font-bold text-ink-100 truncate">{test.name}</h4>
-                  {test.isActive === false && (
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/20 text-red-400">Disabled</span>
-                  )}
+                  <button
+                    onClick={() => handleToggleActive(test)}
+                    className={clsx(
+                      "p-3 rounded-xl transition-all",
+                      test.isActive ? "bg-teal-500/10 text-teal-400 hover:bg-teal-500/20" : "bg-ink-800 text-ink-500 hover:bg-ink-700"
+                    )}
+                    title={test.isActive ? 'Take Offline' : 'Publish to Production'}
+                  >
+                    {test.isActive ? <ToggleRight className="w-6 h-6" /> : <ToggleLeft className="w-6 h-6" />}
+                  </button>
+                  <button
+                    onClick={() => setEditingTest(test)}
+                    className="p-3 bg-ink-800 text-ink-400 hover:bg-yellow-500/20 hover:text-yellow-500 rounded-xl transition-all"
+                    title="Reconfigure Parameters"
+                  >
+                    <Settings className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(test._id)}
+                    className="p-3 bg-ink-800 text-ink-500 hover:bg-red-500/20 hover:text-red-500 rounded-xl transition-all"
+                    title="Purge Protocol"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
                 </div>
-                <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-ink-500 mt-1">
-                  <span>{test.subject}</span>
-                  <span>{test.testType}</span>
-                  <span>{test.totalQuestions} Qs</span>
-                  <span>{test.durationMinutes}m</span>
-                  <span className={test.status === 'ready' ? 'text-teal-400' : 'text-yellow-400'}>{test.status}</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handleToggleActive(test)}
-                  className="p-2 text-ink-500 hover:text-white transition-colors"
-                  title={test.isActive ? 'Disable' : 'Enable'}
-                >
-                  {test.isActive ? <ToggleRight className="w-5 h-5 text-teal-400" /> : <ToggleLeft className="w-5 h-5" />}
-                </button>
-                <button
-                  onClick={() => setEditingTest(test)}
-                  className="p-2 text-ink-500 hover:text-yellow-400 transition-colors"
-                >
-                  <Edit2 className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleDelete(test._id)}
-                  className="p-2 text-ink-500 hover:text-red-400 transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
               </div>
             </div>
           ))}
@@ -309,23 +446,23 @@ function TestsTab() {
       )}
 
       {pagination.pages > 1 && (
-        <div className="flex justify-center gap-2">
+        <div className="flex items-center justify-center gap-4 pt-6">
           <button
             onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))}
             disabled={pagination.page === 1}
-            className="btn-ghost"
+            className="p-3 bg-ink-900 border border-ink-800 rounded-xl text-ink-500 hover:text-white disabled:opacity-30 transition-all"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-5 h-5" />
           </button>
-          <span className="text-sm text-ink-500 py-2">
-            {pagination.page} / {pagination.pages}
-          </span>
+          <div className="text-xs font-black text-ink-500 uppercase tracking-[0.2em]">
+            Page <span className="text-yellow-500">{pagination.page}</span> / {pagination.pages}
+          </div>
           <button
             onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))}
             disabled={pagination.page === pagination.pages}
-            className="btn-ghost"
+            className="p-3 bg-ink-900 border border-ink-800 rounded-xl text-ink-500 hover:text-white disabled:opacity-30 transition-all"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-5 h-5" />
           </button>
         </div>
       )}
@@ -333,116 +470,6 @@ function TestsTab() {
       {editingTest && (
         <EditTestModal test={editingTest} onClose={() => setEditingTest(null)} onSave={() => { setEditingTest(null); loadTests(); }} />
       )}
-    </div>
-  );
-}
-
-function EditTestModal({ test, onClose, onSave }: { test: any; onClose: () => void; onSave: () => void }) {
-  const [form, setForm] = useState({
-    name: test.name,
-    testType: test.testType,
-    subject: test.subject,
-    year: test.year || new Date().getFullYear(),
-    totalQuestions: test.totalQuestions,
-    durationMinutes: test.durationMinutes,
-    markCorrect: test.markCorrect,
-    markWrong: test.markWrong,
-  });
-  const [saving, setSaving] = useState(false);
-
-  const handleSave = async () => {
-    try {
-      setSaving(true);
-      await adminAPI.updateTest(test._id, form);
-      toast.success('Test updated');
-      onSave();
-    } catch {
-      toast.error('Update failed');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-ink-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="glass-card p-6 w-full max-w-lg">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-lg">Edit Test</h3>
-          <X className="cursor-pointer text-ink-400 hover:text-white" onClick={onClose} />
-        </div>
-        <div className="space-y-3">
-          <input
-            value={form.name}
-            onChange={e => setForm({ ...form, name: e.target.value })}
-            className="input-field w-full"
-            placeholder="Test Name"
-          />
-          <div className="grid grid-cols-2 gap-3">
-            <select
-              value={form.testType}
-              onChange={e => setForm({ ...form, testType: e.target.value })}
-              className="input-field"
-            >
-              {TEST_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-            </select>
-            <select
-              value={form.subject}
-              onChange={e => setForm({ ...form, subject: e.target.value })}
-              className="input-field"
-            >
-              <option value="">Select Subject</option>
-              {SUBJECTS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            <input
-              type="number"
-              value={form.totalQuestions}
-              onChange={e => setForm({ ...form, totalQuestions: parseInt(e.target.value) })}
-              className="input-field"
-              placeholder="Questions"
-            />
-            <input
-              type="number"
-              value={form.durationMinutes}
-              onChange={e => setForm({ ...form, durationMinutes: parseInt(e.target.value) })}
-              className="input-field"
-              placeholder="Duration"
-            />
-            <input
-              type="number"
-              value={form.year}
-              onChange={e => setForm({ ...form, year: parseInt(e.target.value) })}
-              className="input-field"
-              placeholder="Year"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <input
-              type="number"
-              step="0.1"
-              value={form.markCorrect}
-              onChange={e => setForm({ ...form, markCorrect: parseFloat(e.target.value) })}
-              className="input-field"
-              placeholder="Mark Correct"
-            />
-            <input
-              type="number"
-              step="0.1"
-              value={form.markWrong}
-              onChange={e => setForm({ ...form, markWrong: parseFloat(e.target.value) })}
-              className="input-field"
-              placeholder="Mark Wrong"
-            />
-          </div>
-        </div>
-        <div className="flex gap-3 mt-4">
-          <button onClick={handleSave} disabled={saving} className="btn-primary flex-1">
-            {saving ? 'Saving...' : 'Save Changes'}
-          </button>
-          <button onClick={onClose} className="btn-ghost">Cancel</button>
-        </div>
-      </div>
     </div>
   );
 }
@@ -457,9 +484,7 @@ function SeriesTab() {
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState('desc');
 
-  useEffect(() => {
-    loadSeries();
-  }, [pagination.page, search, sortBy, sortOrder]);
+  useEffect(() => { loadSeries(); }, [pagination.page, search, sortBy, sortOrder]);
 
   const loadSeries = async () => {
     try {
@@ -473,133 +498,107 @@ function SeriesTab() {
       });
       setSeries(data.series);
       setPagination(data.pagination);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this series and all its tests?')) return;
+    if (!confirm('WARNING: Deleting a Series will impact all associated test nodes. Proceed?')) return;
     try {
       await adminAPI.deleteSeries(id);
-      toast.success('Series deleted');
+      toast.success('Series cluster deleted');
       loadSeries();
-    } catch {
-      toast.error('Delete failed');
-    }
+    } catch { toast.error('Cluster purge failed'); }
   };
 
   const handleToggleActive = async (s: any) => {
     try {
       await adminAPI.updateSeries(s._id, { isActive: !s.isActive });
-      toast.success(s.isActive ? 'Series disabled' : 'Series enabled');
+      toast.success(s.isActive ? 'Cluster deactivated' : 'Cluster operational');
       loadSeries();
-    } catch {
-      toast.error('Update failed');
-    }
-  };
-
-  const handleAddSeries = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    try {
-      await adminAPI.addSeries({
-        name: formData.get('name'),
-        provider: formData.get('provider'),
-        type: formData.get('type'),
-        totalTests: parseInt(formData.get('totalTests') as string) || undefined,
-      });
-      toast.success('Series created');
-      setShowForm(false);
-      loadSeries();
-    } catch {
-      toast.error('Failed to create series');
-    }
+    } catch { toast.error('State update failed'); }
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-2 items-center flex-wrap">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-500" />
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search series..."
-            className="input-field w-full pl-10"
-          />
+    <div className="space-y-6">
+      {/* Header Toolbar */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-ink-900/50 p-6 rounded-3xl border border-ink-800">
+        <div className="flex items-center gap-4 flex-1">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-600" />
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search Series Database..."
+              className="w-full bg-ink-950 border border-ink-800 rounded-2xl pl-12 pr-4 py-3 text-sm text-white focus:border-yellow-500/50 outline-none transition-all shadow-inner"
+            />
+          </div>
+          <select
+            className="bg-ink-950 border border-ink-800 rounded-2xl px-4 py-3 text-xs text-ink-300 outline-none focus:border-yellow-500/50"
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value)}
+          >
+            <option value="createdAt">Newest First</option>
+            <option value="name">Alphabetical</option>
+          </select>
         </div>
-        <select
-          className="input-field"
-          value={sortBy}
-          onChange={e => setSortBy(e.target.value)}
+        <button 
+          onClick={() => setShowForm(true)} 
+          className="px-6 py-3 bg-yellow-500 hover:bg-yellow-400 text-ink-950 font-black rounded-2xl transition-all flex items-center gap-2 shadow-lg shadow-yellow-500/10 uppercase text-xs tracking-widest"
         >
-          <option value="createdAt">Sort: Recent</option>
-          <option value="name">Sort: Name</option>
-        </select>
-        <select
-          className="input-field"
-          value={sortOrder}
-          onChange={e => setSortOrder(e.target.value)}
-        >
-          <option value="desc">Desc</option>
-          <option value="asc">Asc</option>
-        </select>
-        <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" /> New Series
+          <Plus className="w-5 h-5" /> New Series
         </button>
       </div>
 
       {loading ? (
-        <div className="text-center py-20 text-ink-500">Loading...</div>
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <Loader2 className="w-10 h-10 text-yellow-500 animate-spin" />
+          <p className="text-ink-500 font-mono text-xs">Accessing Archives...</p>
+        </div>
       ) : series.length === 0 ? (
-        <div className="glass-card p-12 text-center border-dashed border-ink-800">
-          <Target className="w-12 h-12 text-ink-800 mx-auto mb-4" />
-          <p className="text-ink-500">No series found</p>
+        <div className="glass-card p-20 text-center border-dashed border-ink-800">
+          <Target className="w-16 h-16 text-ink-800 mx-auto mb-4 opacity-30" />
+          <p className="text-ink-500 font-display text-lg">Empty Cluster Database</p>
+          <p className="text-ink-600 text-sm mt-2">Initialize a new series to start populating content</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 gap-4">
           {series.map(s => (
             <div key={s._id} className={clsx(
-              'glass-card p-4 flex items-center gap-4',
-              !s.isActive && 'opacity-50'
+              "group glass-card p-6 border-ink-800 hover:border-yellow-500/30 transition-all flex items-center justify-between",
+              !s.isActive && "opacity-60"
             )}>
-              <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                <Target className="w-5 h-5 text-purple-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h4 className="font-bold text-ink-100 truncate">{s.name}</h4>
-                  {s.isActive === false && (
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/20 text-red-400">Disabled</span>
-                  )}
+              <div className="flex items-center gap-6">
+                <div className="w-14 h-14 rounded-2xl bg-ink-950 border border-ink-800 flex items-center justify-center text-yellow-500 shadow-inner group-hover:scale-110 transition-transform">
+                  <Target className="w-7 h-7" />
                 </div>
-                <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-ink-500 mt-1">
-                  <span>{s.provider || 'No provider'}</span>
-                  <span className="uppercase">{s.type}</span>
-                  <span>{s.totalTests || 0} tests</span>
+                <div>
+                  <div className="flex items-center gap-3 mb-1">
+                    <h4 className="text-lg font-black text-white tracking-tight uppercase">{s.name}</h4>
+                    {s.isActive ? (
+                      <span className="px-2 py-0.5 rounded bg-teal-500/10 text-teal-400 text-[8px] font-black uppercase tracking-widest border border-teal-500/20">Active Cluster</span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded bg-ink-800 text-ink-500 text-[8px] font-black uppercase tracking-widest border border-ink-700">Offline</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-4 text-[10px] font-bold text-ink-600 uppercase tracking-widest">
+                    <span className="flex items-center gap-1.5"><Shield className="w-3 h-3"/> {s.provider || 'Platform'}</span>
+                    <span className="w-1 h-1 rounded-full bg-ink-800" />
+                    <span>{s.totalTests || 0} Nodes</span>
+                    <span className="w-1 h-1 rounded-full bg-ink-800" />
+                    <span>{s.type?.toUpperCase()}</span>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handleToggleActive(s)}
-                  className="p-2 text-ink-500 hover:text-white transition-colors"
-                >
+              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                <button onClick={() => handleToggleActive(s)} className="p-3 bg-ink-950 text-ink-500 hover:text-white rounded-xl border border-ink-800 transition-all">
                   {s.isActive ? <ToggleRight className="w-5 h-5 text-teal-400" /> : <ToggleLeft className="w-5 h-5" />}
                 </button>
-                <button
-                  onClick={() => setEditingSeries(s)}
-                  className="p-2 text-ink-500 hover:text-yellow-400 transition-colors"
-                >
-                  <Edit2 className="w-4 h-4" />
+                <button onClick={() => setEditingSeries(s)} className="p-3 bg-ink-950 text-ink-500 hover:text-yellow-500 rounded-xl border border-ink-800 transition-all">
+                  <Edit2 className="w-5 h-5" />
                 </button>
-                <button
-                  onClick={() => handleDelete(s._id)}
-                  className="p-2 text-ink-500 hover:text-red-400 transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
+                <button onClick={() => handleDelete(s._id)} className="p-3 bg-ink-950 text-ink-600 hover:text-red-500 rounded-xl border border-ink-800 transition-all">
+                  <Trash2 className="w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -607,34 +606,84 @@ function SeriesTab() {
         </div>
       )}
 
-      {showForm && (
-        <div className="fixed inset-0 bg-ink-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass-card p-6 w-full max-w-lg">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-lg">New Test Series</h3>
-              <X className="cursor-pointer text-ink-400 hover:text-white" onClick={() => setShowForm(false)} />
-            </div>
-            <form onSubmit={handleAddSeries} className="space-y-3">
-              <input name="name" required className="input-field w-full" placeholder="Series Name" />
-              <input name="provider" className="input-field w-full" placeholder="Provider (optional)" />
-              <div className="grid grid-cols-2 gap-3">
-                <select name="type" required className="input-field">
-                  {SERIES_TYPES.map(t => <option key={t} value={t}>{t.toUpperCase()}</option>)}
-                </select>
-                <input name="totalTests" type="number" className="input-field" placeholder="Total Tests" />
-              </div>
-              <div className="flex gap-3">
-                <button type="submit" className="btn-primary flex-1">Create</button>
-                <button type="button" onClick={() => setShowForm(false)} className="btn-ghost">Cancel</button>
-              </div>
-            </form>
+      {/* Pagination Styled */}
+      {pagination.pages > 1 && (
+        <div className="flex items-center justify-center gap-6 pt-10">
+          <button onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))} disabled={pagination.page === 1} className="p-4 bg-ink-900 border border-ink-800 rounded-2xl text-ink-500 hover:text-white disabled:opacity-20 transition-all shadow-lg"><ChevronLeft className="w-5 h-5"/></button>
+          <div className="flex flex-col items-center">
+            <span className="text-[10px] font-black text-ink-600 uppercase tracking-[0.3em] mb-1">Index Navigation</span>
+            <span className="text-sm font-black text-white">{pagination.page} <span className="text-ink-600">/</span> {pagination.pages}</span>
           </div>
+          <button onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))} disabled={pagination.page === pagination.pages} className="p-4 bg-ink-900 border border-ink-800 rounded-2xl text-ink-500 hover:text-white disabled:opacity-20 transition-all shadow-lg"><ChevronRight className="w-5 h-5"/></button>
         </div>
       )}
 
-      {editingSeries && (
-        <EditSeriesModal series={editingSeries} onClose={() => setEditingSeries(null)} onSave={() => { setEditingSeries(null); loadSeries(); }} />
-      )}
+      {showForm && <SeriesFormModal onClose={() => setShowForm(false)} onSave={() => { setShowForm(false); loadSeries(); }} />}
+      {editingSeries && <EditSeriesModal series={editingSeries} onClose={() => setEditingSeries(null)} onSave={() => { setEditingSeries(null); loadSeries(); }} />}
+    </div>
+  );
+}
+
+
+
+function SeriesFormModal({ onClose, onSave }: { onClose: () => void; onSave: () => void }) {
+  const [form, setForm] = useState({ name: '', provider: '', type: 'prelims_gs', totalTests: 0 });
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      await adminAPI.createSeries(form);
+      toast.success('Series cluster initialized');
+      onSave();
+    } catch { toast.error('Initialization failed'); }
+    finally { setSaving(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-ink-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="glass-card p-6 w-full max-w-lg">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="font-bold text-lg">Initialize New Series</h3>
+          <X className="cursor-pointer text-ink-400 hover:text-white" onClick={onClose} />
+        </div>
+        <div className="space-y-3">
+          <input
+            value={form.name}
+            onChange={e => setForm({ ...form, name: e.target.value })}
+            className="input-field w-full"
+            placeholder="Series Name"
+          />
+          <input
+            value={form.provider}
+            onChange={e => setForm({ ...form, provider: e.target.value })}
+            className="input-field w-full"
+            placeholder="Provider"
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <select
+              value={form.type}
+              onChange={e => setForm({ ...form, type: e.target.value })}
+              className="input-field"
+            >
+              {SERIES_TYPES.map(t => <option key={t} value={t}>{t.toUpperCase()}</option>)}
+            </select>
+            <input
+              type="number"
+              value={form.totalTests}
+              onChange={e => setForm({ ...form, totalTests: parseInt(e.target.value) })}
+              className="input-field"
+              placeholder="Total Tests"
+            />
+          </div>
+        </div>
+        <div className="flex gap-3 mt-4">
+          <button onClick={handleSave} disabled={saving || !form.name} className="btn-primary flex-1">
+            {saving ? 'Initializing...' : 'Initialize Cluster'}
+          </button>
+          <button onClick={onClose} className="btn-ghost">Abort</button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -721,9 +770,7 @@ function QuestionsTab() {
   const [sortBy, setSortBy] = useState('mockTest');
   const [sortOrder, setSortOrder] = useState('desc');
 
-  useEffect(() => {
-    loadQuestions();
-  }, [pagination.page, search, subjectFilter, sortBy, sortOrder]);
+  useEffect(() => { loadQuestions(); }, [pagination.page, search, subjectFilter, sortBy, sortOrder]);
 
   const loadQuestions = async () => {
     try {
@@ -738,201 +785,145 @@ function QuestionsTab() {
       });
       setQuestions(data.questions);
       setPagination(data.pagination);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this question?')) return;
+    if (!confirm('Execute Deletion? This will permanently remove the question node.')) return;
     try {
       await adminAPI.deleteQuestion(id);
-      toast.success('Question deleted');
+      toast.success('Question node purged');
       loadQuestions();
-    } catch {
-      toast.error('Delete failed');
-    }
-  };
-
-  const handleAddQuestion = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    try {
-      await adminAPI.addQuestion({
-        questionNumber: parseInt(formData.get('questionNumber') as string),
-        text: formData.get('text'),
-        options: {
-          a: formData.get('optionA'),
-          b: formData.get('optionB'),
-          c: formData.get('optionC'),
-          d: formData.get('optionD'),
-        },
-        correctAnswer: formData.get('correctAnswer'),
-        explanation: formData.get('explanation'),
-        subject: formData.get('subject'),
-        year: parseInt(formData.get('year') as string) || new Date().getFullYear(),
-      });
-      toast.success('Question added');
-      setShowForm(false);
-      loadQuestions();
-    } catch {
-      toast.error('Failed to add question');
-    }
+    } catch { toast.error('Purge failed'); }
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-2 items-center flex-wrap">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-500" />
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search questions..."
-            className="input-field w-full pl-10"
-          />
+    <div className="space-y-6">
+      {/* Control Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-ink-900/50 p-6 rounded-3xl border border-ink-800">
+        <div className="flex items-center gap-3 flex-1 flex-wrap">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-600" />
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search Question Database..."
+              className="w-full bg-ink-950 border border-ink-800 rounded-2xl pl-12 pr-4 py-3 text-sm text-white focus:border-yellow-500/50 outline-none transition-all"
+            />
+          </div>
+          <select
+            className="bg-ink-950 border border-ink-800 rounded-2xl px-4 py-3 text-xs text-ink-300 outline-none"
+            value={subjectFilter}
+            onChange={e => setSubjectFilter(e.target.value)}
+          >
+            <option value="">All Subjects</option>
+            {SUBJECTS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
         </div>
-        <select
-          className="input-field"
-          value={subjectFilter}
-          onChange={e => setSubjectFilter(e.target.value)}
-        >
-          <option value="">All Subjects</option>
-          {SUBJECTS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
-        </select>
-        <select
-          className="input-field"
-          value={sortBy}
-          onChange={e => setSortBy(e.target.value)}
-        >
-          <option value="createdAt">Sort: Recent</option>
-          <option value="subject">Sort: Subject</option>
-          <option value="year">Sort: Year</option>
-          <option value="questionNumber">Sort: Q. Number</option>
-        </select>
-        <select
-          className="input-field"
-          value={sortOrder}
-          onChange={e => setSortOrder(e.target.value)}
-        >
-          <option value="desc">Desc</option>
-          <option value="asc">Asc</option>
-        </select>
-        <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" /> Add Question
-        </button>
-        <button onClick={() => setShowBulkForm(true)} className="btn-ghost flex items-center gap-2">
-          <Upload className="w-4 h-4" /> Bulk Upload
-        </button>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setShowBulkForm(true)} 
+            className="px-5 py-3 bg-ink-800 hover:bg-ink-700 text-ink-200 font-bold rounded-2xl transition-all flex items-center gap-2 border border-ink-700 uppercase text-[10px] tracking-widest"
+          >
+            <Upload className="w-4 h-4" /> Bulk Import
+          </button>
+          <button 
+            onClick={() => setShowForm(true)} 
+            className="px-5 py-3 bg-yellow-500 hover:bg-yellow-400 text-ink-950 font-black rounded-2xl transition-all flex items-center gap-2 shadow-lg shadow-yellow-500/10 uppercase text-[10px] tracking-widest"
+          >
+            <Plus className="w-4 h-4" /> Add Node
+          </button>
+        </div>
       </div>
 
       {loading ? (
-        <div className="text-center py-20 text-ink-500">Loading...</div>
-      ) : questions.length === 0 ? (
-        <div className="glass-card p-12 text-center border-dashed border-ink-800">
-          <BookOpen className="w-12 h-12 text-ink-800 mx-auto mb-4" />
-          <p className="text-ink-500">No questions found</p>
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <Loader2 className="w-10 h-10 text-yellow-500 animate-spin" />
+          <p className="text-ink-500 font-mono text-xs uppercase tracking-widest">Querying database...</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           {questions.map(q => (
-            <div key={q._id} className="glass-card p-4 hover:border-ink-600 transition-all">
-              {/* Header */}
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-1 rounded-lg bg-yellow-500/20 text-yellow-400 text-sm font-bold">
-                    Q{q.questionNumber}
-                  </span>
-                  <span className="px-2 py-0.5 rounded bg-ink-800 text-ink-400 text-xs">
-                    {q.subject}
-                  </span>
-                  <span className="px-2 py-0.5 rounded bg-ink-800 text-ink-400 text-xs">
-                    {q.year}
-                  </span>
+            <div key={q._id} className="group glass-card p-6 border-ink-800 hover:border-ink-600 transition-all relative">
+              <div className="flex items-start justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-ink-950 border border-ink-800 flex items-center justify-center text-yellow-500 font-black text-xs">
+                    #{q.questionNumber}
+                  </div>
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded bg-teal-500/10 text-teal-400 text-[9px] font-black uppercase tracking-widest border border-teal-500/20">
+                        {q.subject}
+                      </span>
+                      <span className="px-2 py-0.5 rounded bg-ink-800 text-ink-500 text-[9px] font-black uppercase tracking-widest border border-ink-700">
+                        {q.year}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={() => setEditingQuestion(q)}
-                    className="p-2 text-ink-500 hover:text-yellow-400 hover:bg-yellow-500/10 rounded-lg transition-colors"
-                    title="View/Edit"
+                    className="p-2.5 bg-ink-950 text-ink-400 hover:text-yellow-500 rounded-xl border border-ink-800 hover:border-yellow-500/30 transition-all"
                   >
                     <Eye className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleDelete(q._id)}
-                    className="p-2 text-ink-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                    title="Delete"
+                    className="p-2.5 bg-ink-950 text-ink-500 hover:text-red-500 rounded-xl border border-ink-800 hover:border-red-500/30 transition-all"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
 
-              {/* Question Text - Clean HTML with line breaks */}
-              <div 
-                className="text-sm text-ink-100 mb-3 leading-relaxed whitespace-pre-wrap"
-              >
-                {cleanHtml(q.text)}
-              </div>
-
-              {/* Options - Clean HTML with line breaks */}
-              <div className="grid grid-cols-1 gap-1.5 mb-3">
-                {['a', 'b', 'c', 'd'].map(opt => (
-                  <div 
-                    key={opt}
-                    className={clsx(
-                      "flex items-start gap-2 p-2 rounded-lg text-xs transition-all",
-                      q.correctAnswer?.toUpperCase() === opt.toUpperCase()
-                        ? "bg-teal-500/15 border border-teal-500/30"
-                        : "bg-ink-900/50 border border-ink-800"
-                    )}
-                  >
-                    <span className={clsx(
-                      "w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold shrink-0",
-                      q.correctAnswer?.toUpperCase() === opt.toUpperCase()
-                        ? "bg-teal-500 text-ink-950"
-                        : "bg-ink-800 text-ink-500"
-                    )}>
-                      {opt.toUpperCase()}
-                    </span>
-                    <span className={q.correctAnswer?.toUpperCase() === opt.toUpperCase() ? "text-teal-300" : "text-ink-400"}>
-                      {cleanHtml(q.options?.[opt] || '')}
-                    </span>
-                    {q.correctAnswer?.toUpperCase() === opt.toUpperCase() && (
-                      <CheckCircle2 className="w-3 h-3 text-teal-400 ml-auto shrink-0" />
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Explanation */}
-              {q.explanation && (
-                <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <BookOpen className="w-3 h-3 text-blue-400" />
-                    <span className="text-[10px] font-bold text-blue-400 uppercase">Explanation</span>
-                  </div>
-                  <p className="text-xs text-ink-400 whitespace-pre-wrap">
-                    {cleanHtml(q.explanation)}
-                  </p>
+              <div className="space-y-4">
+                <p className="text-white text-sm leading-relaxed font-medium">
+                  {cleanHtml(q.text)}
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {['a', 'b', 'c', 'd'].map(opt => (
+                    <div 
+                      key={opt}
+                      className={clsx(
+                        "flex items-center gap-3 p-3 rounded-xl border transition-all",
+                        q.correctAnswer?.toLowerCase() === opt.toLowerCase()
+                          ? "bg-teal-500/10 border-teal-500/30 text-teal-100"
+                          : "bg-ink-950 border-ink-800 text-ink-400"
+                      )}
+                    >
+                      <span className={clsx(
+                        "w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0 uppercase",
+                        q.correctAnswer?.toLowerCase() === opt.toLowerCase()
+                          ? "bg-teal-500 text-ink-950"
+                          : "bg-ink-800 text-ink-600"
+                      )}>
+                        {opt}
+                      </span>
+                      <span className="text-xs truncate">{cleanHtml(q.options?.[opt] || '')}</span>
+                      {q.correctAnswer?.toLowerCase() === opt.toLowerCase() && (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-teal-400 ml-auto" />
+                      )}
+                    </div>
+                  ))}
                 </div>
-              )}
+              </div>
             </div>
           ))}
         </div>
       )}
 
+      {/* Pagination Styled */}
       {pagination.pages > 1 && (
-        <div className="flex justify-center gap-2">
-          <button onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))} disabled={pagination.page === 1} className="btn-ghost">
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <span className="text-sm text-ink-500 py-2">{pagination.page} / {pagination.pages}</span>
-          <button onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))} disabled={pagination.page === pagination.pages} className="btn-ghost">
-            <ChevronRight className="w-4 h-4" />
-          </button>
+        <div className="flex items-center justify-center gap-6 pt-10">
+          <button onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))} disabled={pagination.page === 1} className="p-4 bg-ink-900 border border-ink-800 rounded-2xl text-ink-500 hover:text-white disabled:opacity-20 transition-all shadow-lg"><ChevronLeft className="w-5 h-5"/></button>
+          <div className="flex flex-col items-center">
+            <span className="text-[10px] font-black text-ink-600 uppercase tracking-[0.3em] mb-1">Index Navigation</span>
+            <span className="text-sm font-black text-white">{pagination.page} <span className="text-ink-600">/</span> {pagination.pages}</span>
+          </div>
+          <button onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))} disabled={pagination.page === pagination.pages} className="p-4 bg-ink-900 border border-ink-800 rounded-2xl text-ink-500 hover:text-white disabled:opacity-20 transition-all shadow-lg"><ChevronRight className="w-5 h-5"/></button>
         </div>
       )}
 
@@ -943,451 +934,13 @@ function QuestionsTab() {
   );
 }
 
-function QuestionFormModal({ question, onClose, onSave }: { question?: any; onClose: () => void; onSave: () => void }) {
-  const [form, setForm] = useState({
-    questionNumber: question?.questionNumber || 1,
-    text: question?.text || '',
-    optionA: question?.options?.a || '',
-    optionB: question?.options?.b || '',
-    optionC: question?.options?.c || '',
-    optionD: question?.options?.d || '',
-    correctAnswer: question?.correctAnswer || 'A',
-    explanation: question?.explanation || '',
-    subject: question?.subject || 'General Studies',
-    year: question?.year || new Date().getFullYear(),
-  });
-  const [saving, setSaving] = useState(false);
-
-  const handleSave = async () => {
-    try {
-      setSaving(true);
-      const data = {
-        questionNumber: form.questionNumber,
-        text: form.text,
-        options: { a: form.optionA, b: form.optionB, c: form.optionC, d: form.optionD },
-        correctAnswer: form.correctAnswer,
-        explanation: form.explanation,
-        subject: form.subject,
-        year: form.year,
-      };
-      if (question) {
-        await adminAPI.updateQuestion(question._id, data);
-      } else {
-        await adminAPI.addQuestion(data);
-      }
-      toast.success(question ? 'Question updated' : 'Question added');
-      onSave();
-    } catch {
-      toast.error('Failed to save');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const OPTION_COLORS: Record<string, string> = {
-    A: 'border-yellow-500/30 bg-yellow-500/5',
-    B: 'border-teal-500/30 bg-teal-500/5',
-    C: 'border-purple-500/30 bg-purple-500/5',
-    D: 'border-pink-500/30 bg-pink-500/5',
-  };
-
-  return (
-    <div className="fixed inset-0 bg-ink-950/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="glass-card p-0 w-full max-w-4xl my-4 overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-ink-800 bg-ink-900/50">
-          <h3 className="font-bold text-lg text-ink-100">
-            {question ? 'Edit Question' : 'Add New Question'}
-          </h3>
-          <button onClick={onClose} className="p-2 text-ink-400 hover:text-white hover:bg-ink-800 rounded-lg transition-colors">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="flex flex-col lg:flex-row max-h-[80vh]">
-          {/* Left Panel - Edit Form */}
-          <div className="w-full lg:w-1/2 p-4 border-r border-ink-800 overflow-y-auto">
-            {/* Meta Info */}
-            <div className="mb-4">
-              <label className="text-xs text-ink-500 uppercase tracking-wider mb-2 block">Question Meta</label>
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <span className="text-[10px] text-ink-500 mb-1 block">Q.No.</span>
-                  <input
-                    type="number"
-                    value={form.questionNumber}
-                    onChange={e => setForm({ ...form, questionNumber: parseInt(e.target.value) })}
-                    className="input-field w-full text-sm"
-                  />
-                </div>
-                <div>
-                  <span className="text-[10px] text-ink-500 mb-1 block">Subject</span>
-                  <select
-                    value={form.subject}
-                    onChange={e => setForm({ ...form, subject: e.target.value })}
-                    className="input-field w-full text-sm"
-                  >
-                    {SUBJECTS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <span className="text-[10px] text-ink-500 mb-1 block">Year</span>
-                  <input
-                    type="number"
-                    value={form.year}
-                    onChange={e => setForm({ ...form, year: parseInt(e.target.value) })}
-                    className="input-field w-full text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Question Text */}
-            <div className="mb-4">
-              <label className="text-xs text-ink-500 uppercase tracking-wider mb-2 block">Question Text *</label>
-              <textarea
-                value={form.text}
-                onChange={e => setForm({ ...form, text: e.target.value })}
-                className="input-field w-full h-32 text-sm resize-none"
-                placeholder="Enter question text here..."
-              />
-            </div>
-
-            {/* Options */}
-            <div className="mb-4">
-              <label className="text-xs text-ink-500 uppercase tracking-wider mb-2 block">Options *</label>
-              <div className="space-y-2">
-                {['A', 'B', 'C', 'D'].map(opt => (
-                  <div key={opt} className="flex items-center gap-2">
-                    <button
-                      onClick={() => setForm({ ...form, correctAnswer: opt })}
-                      className={clsx(
-                        'w-8 h-8 rounded-lg font-bold text-sm flex items-center justify-center transition-all',
-                        form.correctAnswer === opt 
-                          ? 'bg-teal-500 text-ink-950 shadow-lg shadow-teal-500/30' 
-                          : 'bg-ink-800 text-ink-500 hover:bg-ink-700'
-                      )}
-                    >
-                      {opt}
-                    </button>
-                    <input 
-                      value={form[`option${opt}` as keyof typeof form] as string}
-                      onChange={e => setForm({ ...form, [`option${opt}`]: e.target.value })}
-                      className={clsx(
-                        'input-field flex-1 text-sm',
-                        form.correctAnswer === opt && 'border-teal-500/50 bg-teal-500/5'
-                      )}
-                      placeholder={`Option ${opt}`}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Explanation */}
-            <div className="mb-4">
-              <label className="text-xs text-ink-500 uppercase tracking-wider mb-2 block">Explanation</label>
-              <textarea
-                value={form.explanation}
-                onChange={e => setForm({ ...form, explanation: e.target.value })}
-                className="input-field w-full h-24 text-sm resize-none"
-                placeholder="Enter explanation (optional)..."
-              />
-            </div>
-
-            {/* Actions */}
-            <div className="flex gap-2 pt-2">
-              <button 
-                onClick={handleSave} 
-                disabled={saving || !form.text || !form.optionA || !form.optionB || !form.optionC || !form.optionD} 
-                className="btn-primary flex-1 flex items-center justify-center gap-2"
-              >
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                {saving ? 'Saving...' : 'Save Question'}
-              </button>
-              <button onClick={onClose} className="btn-ghost px-4">
-                Cancel
-              </button>
-            </div>
-          </div>
-
-          {/* Right Panel - Live Preview */}
-          <div className="w-full lg:w-1/2 p-4 bg-ink-950/50 overflow-y-auto">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
-              <span className="text-xs text-ink-500 uppercase tracking-wider">Live Preview</span>
-            </div>
-
-            {/* Question Preview Card */}
-            <div className="bg-ink-900/50 rounded-xl border border-ink-800 p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-400 text-xs font-bold">
-                  Q{form.questionNumber}
-                </span>
-                <span className="px-2 py-0.5 rounded bg-ink-800 text-ink-400 text-xs">
-                  {form.subject || 'General Studies'}
-                </span>
-                <span className="px-2 py-0.5 rounded bg-ink-800 text-ink-400 text-xs">
-                  {form.year}
-                </span>
-              </div>
-
-              {/* Question Text - Clean HTML */}
-              <div className="mb-4">
-                <p 
-                  className="text-sm leading-relaxed text-ink-100 whitespace-pre-wrap"
-                >
-                  {cleanHtml(form.text) || 'Question text will appear here...'}
-                </p>
-              </div>
-
-              {/* Options - Clean HTML */}
-              <div className="space-y-2 mb-4">
-                {['A', 'B', 'C', 'D'].map(opt => (
-                  <div 
-                    key={opt}
-                    className={clsx(
-                      "flex items-start gap-3 p-3 rounded-lg border transition-all",
-                      form.correctAnswer === opt 
-                        ? "border-teal-500/50 bg-teal-500/10" 
-                        : "border-ink-800 bg-ink-900/30"
-                    )}
-                  >
-                    <div className={clsx(
-                      "w-6 h-6 rounded flex items-center justify-center text-xs font-bold shrink-0",
-                      form.correctAnswer === opt 
-                        ? "bg-teal-500 text-ink-950" 
-                        : "bg-ink-800 text-ink-500"
-                    )}>
-                      {opt}
-                    </div>
-                    <p 
-                      className="text-sm flex-1 text-ink-200 whitespace-pre-wrap"
-                    >
-                      {cleanHtml(form[`option${opt}` as keyof typeof form] as string) || `Option ${opt}...`}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Answer & Explanation */}
-              {form.correctAnswer && (
-                <div className="border-t border-ink-800 pt-3 mt-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <CheckCircle2 className="w-4 h-4 text-teal-400" />
-                    <span className="text-xs font-bold text-teal-400 uppercase">Correct Answer</span>
-                    <span className="px-2 py-0.5 rounded bg-teal-500/20 text-teal-400 text-sm font-bold">
-                      {form.correctAnswer}
-                    </span>
-                  </div>
-                  
-                  {form.explanation && (
-                    <div className="mt-2 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                      <div className="flex items-center gap-2 mb-1">
-                        <BookOpen className="w-3 h-3 text-blue-400" />
-                        <span className="text-[10px] font-bold text-blue-400 uppercase">Explanation</span>
-                      </div>
-                      <p className="text-xs text-ink-300 leading-relaxed whitespace-pre-wrap">
-                        {cleanHtml(form.explanation)}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Tips */}
-            <div className="mt-4 p-3 rounded-lg bg-ink-900/30 border border-ink-800">
-              <p className="text-[10px] text-ink-500">
-                <span className="text-yellow-500 font-bold">Tip:</span> Click on the letter button (A/B/C/D) to set the correct answer. The selected option will be highlighted in green.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function BulkQuestionModal({ onClose, onSave }: { onClose: () => void; onSave: () => void }) {
-  const [text, setText] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [subject, setSubject] = useState('General Studies');
-
-  const parseQuestions = (input: string) => {
-    const questions: any[] = [];
-    const blocks = input.split(/Q\.\d+[\)\.]?\s*/i).filter(b => b.trim());
-    
-    let questionNumber = 1;
-    
-    for (const block of blocks) {
-      if (!block.trim()) continue;
-      
-      const lines = block.split('\n').map(l => l.trim()).filter(l => l);
-      
-      let questionText = '';
-      const options: any = { a: '', b: '', c: '', d: '' };
-      let correctAnswer = '';
-      let explanation = '';
-      
-      let optionIndex = 0;
-      
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        
-        // Check for answer - Ans) c or Answer: c
-        const ansMatch = line.match(/^(?:Ans(?:wer)?)[\s\):]*([a-dA-D])/i);
-        if (ansMatch) {
-          correctAnswer = ansMatch[1].toUpperCase();
-          continue;
-        }
-        
-        // Check for explanation - Exp) or Explanation:
-        const expMatch = line.match(/^(?:Exp(?:lanation)?)[\s\):]*/i);
-        if (expMatch) {
-          explanation = line.replace(expMatch[0], '').trim();
-          if (!explanation && i + 1 < lines.length) {
-            explanation = lines.slice(i + 1).join(' ').trim();
-          }
-          continue;
-        }
-        
-        // Check for options - a), b), c), d) or A) B) C) D)
-        const optMatch = line.match(/^([a-dA-D])[\)\.]\s*(.+)/);
-        if (optMatch) {
-          const optKey = optMatch[1].toLowerCase();
-          options[optKey] = optMatch[2].trim();
-          optionIndex++;
-          continue;
-        }
-        
-        // Otherwise it's question text
-        if (questionText) {
-          questionText += ' ' + line;
-        } else {
-          questionText = line;
-        }
-      }
-      
-      // Clean up question text
-      questionText = questionText.replace(/\s+/g, ' ').trim();
-      
-      // Remove options from question text if they're at the end
-      for (const opt of ['a)', 'b)', 'c)', 'd)', 'A)', 'B)', 'C)', 'D)']) {
-        const idx = questionText.lastIndexOf(opt);
-        if (idx > questionText.length - 20) {
-          questionText = questionText.substring(0, idx).trim();
-        }
-      }
-      
-      if (questionText && Object.values(options).some(v => v)) {
-        questions.push({
-          questionNumber,
-          text: questionText,
-          options,
-          correctAnswer,
-          explanation,
-          subject,
-          year: new Date().getFullYear(),
-        });
-        questionNumber++;
-      }
-    }
-    
-    return questions;
-  };
-
-  const handleBulkUpload = async () => {
-    if (!text.trim()) return toast.error('Please paste questions');
-    
-    try {
-      setSaving(true);
-      const questions = parseQuestions(text);
-
-      if (questions.length === 0) {
-        return toast.error('No valid questions found. Check format!');
-      }
-
-      const { data } = await adminAPI.addBulkQuestions(questions);
-      toast.success(`${data.inserted} questions added`);
-      onSave();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Upload failed');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-ink-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="glass-card p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-lg">Bulk Upload Questions</h3>
-          <X className="cursor-pointer text-ink-400 hover:text-white" onClick={onClose} />
-        </div>
-        
-        <div className="mb-3">
-          <label className="text-xs text-ink-500 block mb-1">Subject for all questions:</label>
-          <select
-            value={subject}
-            onChange={e => setSubject(e.target.value)}
-            className="input-field w-full"
-          >
-            {SUBJECTS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-        </div>
-        
-        <p className="text-xs text-ink-500 mb-3">
-          Format supported:<br/>
-          Q.1 Question text...<br/>
-          a) Option A<br/>
-          b) Option B<br/>
-          c) Option C<br/>
-          d) Option D<br/>
-          Ans) c<br/>
-          Exp) Explanation here...<br/><br/>
-          Next question starts with Q.2 or Q.3 etc.
-        </p>
-        <textarea
-          value={text}
-          onChange={e => setText(e.target.value)}
-          className="input-field w-full h-64 font-mono text-xs"
-          placeholder={`Q.6) With reference to Balance of Payments (BOP) of India... 
-a) Only two 
-b) Only three 
-c) Only four 
-d) All the five 
-Ans) c 
-Exp) Option c is the correct answer...
-
-Q.9) Consider the following statements...
-a) Both Statement I...
-b) Both Statement II...
-c) Statement I is correct...
-d) Statement II is correct...
-Ans) d 
-Exp) Option d is the correct answer...`}
-        />
-        <div className="flex gap-3 mt-4">
-          <button onClick={handleBulkUpload} disabled={saving} className="btn-primary flex-1">
-            {saving ? 'Processing...' : 'Upload Questions'}
-          </button>
-          <button onClick={onClose} className="btn-ghost">Cancel</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function UsersTab() {
   const [users, setUsers] = useState<any[]>([]);
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
-  useEffect(() => {
-    loadUsers();
-  }, [pagination.page, search]);
+  useEffect(() => { loadUsers(); }, [pagination.page, search]);
 
   const loadUsers = async () => {
     try {
@@ -1395,87 +948,113 @@ function UsersTab() {
       const { data } = await adminAPI.getUsers({ page: pagination.page, limit: 15, search });
       setUsers(data.users);
       setPagination(data.pagination);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   };
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
       await adminAPI.updateUserRole(userId, newRole);
-      toast.success('Role updated');
+      toast.success('Clearance level updated');
       loadUsers();
-    } catch {
-      toast.error('Update failed');
-    }
+    } catch { toast.error('Access modification failed'); }
   };
 
   return (
-    <div className="space-y-4">
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-500" />
-        <input
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="Search users..."
-          className="input-field w-full pl-10"
-        />
+    <div className="space-y-6">
+      {/* Registry Header */}
+      <div className="bg-ink-900/50 p-6 rounded-3xl border border-ink-800 flex items-center justify-between gap-4">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-600" />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search Citizen Registry..."
+            className="w-full bg-ink-950 border border-ink-800 rounded-2xl pl-12 pr-4 py-3 text-sm text-white focus:border-yellow-500/50 outline-none transition-all shadow-inner"
+          />
+        </div>
+        <div className="text-[10px] font-black text-ink-600 uppercase tracking-[0.2em] text-right">
+          <div className="text-white text-lg">{pagination.total}</div>
+          Total Registered Users
+        </div>
       </div>
 
       {loading ? (
-        <div className="text-center py-20 text-ink-500">Loading...</div>
-      ) : users.length === 0 ? (
-        <div className="glass-card p-12 text-center border-dashed border-ink-800">
-          <Users className="w-12 h-12 text-ink-800 mx-auto mb-4" />
-          <p className="text-ink-500">No users found</p>
+        <div className="flex flex-col items-center justify-center py-20">
+          <Loader2 className="w-10 h-10 text-yellow-500 animate-spin" />
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="grid grid-cols-1 gap-3">
           {users.map(u => (
-            <div key={u._id} className="glass-card p-4 flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-ink-800 flex items-center justify-center text-ink-300 font-bold">
+            <div key={u._id} className="group glass-card p-4 border-ink-800 hover:bg-ink-900 transition-all flex items-center gap-6">
+              <div className="w-12 h-12 rounded-2xl bg-ink-950 border border-ink-800 flex items-center justify-center text-xl font-black text-ink-500 shadow-inner group-hover:text-yellow-500 transition-colors uppercase">
                 {u.name?.charAt(0) || 'U'}
               </div>
+              
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h4 className="font-bold text-ink-100 truncate">{u.name}</h4>
-                  {u.role === 'admin' && (
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-400">Admin</span>
+                <div className="flex items-center gap-3">
+                  <h4 className="font-black text-white truncate">{u.name}</h4>
+                  {u.role === 'admin' ? (
+                    <span className="px-2 py-0.5 rounded-lg bg-yellow-500/10 text-yellow-500 text-[8px] font-black uppercase tracking-widest border border-yellow-500/20">
+                      Level 4 Admin
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded-lg bg-ink-800 text-ink-500 text-[8px] font-black uppercase tracking-widest border border-ink-700">
+                      Standard Citizen
+                    </span>
                   )}
                 </div>
-                <p className="text-xs text-ink-500 truncate">{u.email}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <Mail className="w-3 h-3 text-ink-600" />
+                  <p className="text-xs text-ink-500 truncate">{u.email}</p>
+                </div>
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(u._id);
+                    toast.success('ID Copied to Clipboard');
+                  }}
+                  className="mt-2 flex items-center gap-2 px-2 py-1 bg-ink-950 border border-ink-800 rounded-lg hover:border-yellow-500/30 transition-all group/id"
+                >
+                  <Copy className="w-3 h-3 text-ink-700 group-hover/id:text-yellow-500" />
+                  <span className="text-[10px] font-black text-ink-600 uppercase tracking-widest group-hover/id:text-ink-400">Copy Citizen ID</span>
+                </button>
               </div>
-              <select
-                value={u.role}
-                onChange={e => handleRoleChange(u._id, e.target.value)}
-                className="input-field text-sm"
-              >
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-              </select>
+
+              <div className="flex items-center gap-4">
+                <div className="text-right hidden md:block">
+                  <div className="text-[9px] font-black text-ink-600 uppercase tracking-widest mb-0.5">Joined Matrix</div>
+                  <div className="text-[10px] text-ink-400 font-bold">{new Date(u.createdAt).toLocaleDateString()}</div>
+                </div>
+                
+                <div className="h-10 w-px bg-ink-800" />
+
+                <select
+                  value={u.role}
+                  onChange={e => handleRoleChange(u._id, e.target.value)}
+                  className="bg-ink-950 border border-ink-800 rounded-xl px-4 py-2 text-[10px] font-black text-ink-300 outline-none focus:border-yellow-500/50 uppercase tracking-widest"
+                >
+                  <option value="user">Assign Citizen</option>
+                  <option value="admin">Promote Admin</option>
+                </select>
+              </div>
             </div>
           ))}
         </div>
       )}
 
+      {/* Pagination remains consistent */}
       {pagination.pages > 1 && (
-        <div className="flex justify-center gap-2">
-          <button onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))} disabled={pagination.page === 1} className="btn-ghost">
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <span className="text-sm text-ink-500 py-2">{pagination.page} / {pagination.pages}</span>
-          <button onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))} disabled={pagination.page === pagination.pages} className="btn-ghost">
-            <ChevronRight className="w-4 h-4" />
-          </button>
+        <div className="flex justify-center gap-4 pt-10">
+          <button onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))} disabled={pagination.page === 1} className="p-3 bg-ink-900 border border-ink-800 rounded-xl disabled:opacity-20 transition-all"><ChevronLeft className="w-5 h-5"/></button>
+          <span className="py-3 text-xs font-black text-ink-500 uppercase tracking-widest">{pagination.page} <span className="text-ink-800">/</span> {pagination.pages}</span>
+          <button onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))} disabled={pagination.page === pagination.pages} className="p-3 bg-ink-900 border border-ink-800 rounded-xl disabled:opacity-20 transition-all"><ChevronRight className="w-5 h-5"/></button>
         </div>
       )}
     </div>
   );
 }
 
-function CreateTestTab() {
+function CreateTestTab_Legacy() {
   const [questions, setQuestions] = useState<any[]>([]);
   const [subjects, setSubjects] = useState<string[]>([]);
   const [selectedSubject, setSelectedSubject] = useState<string>('');
@@ -1558,7 +1137,14 @@ function CreateTestTab() {
         solutionText,
         testSeriesId: selectedSeriesId
       };
-      await mockTestAPI.uploadStructured(payload);
+      console.log("[Admin] Uploading structured test with payload:", { 
+        name: payload.name, 
+        testSeriesId: payload.testSeriesId,
+        questionPaperLength: payload.questionPaperText?.length,
+        solutionLength: payload.solutionText?.length
+      });
+      const response = await mockTestAPI.uploadStructured(payload);
+      console.log("[Admin] Upload response:", response);
       toast.success('Structured test created!');
       setShowStructuredForm(false);
       setQuestionPaperText('');
@@ -1575,7 +1161,9 @@ function CreateTestTab() {
         year: new Date().getFullYear().toString(),
       });
     } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Upload failed');
+      console.error("[Admin] Upload error:", err);
+      console.error("[Admin] Upload error response:", err.response?.data);
+      toast.error(err.response?.data?.error || err.message || 'Upload failed');
     } finally {
       setUploadingStructured(false);
     }
@@ -2035,6 +1623,995 @@ function CreateTestTab() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function CreateTestTab() {
+  const [questions, setQuestions] = useState<any[]>([]);
+  const [subjects, setSubjects] = useState<string[]>([]);
+  const [selectedSubject, setSelectedSubject] = useState<string>('');
+  const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showStructuredForm, setShowStructuredForm] = useState(false);
+  const [structuredData, setStructuredData] = useState({
+    name: '',
+    testType: 'prelims_gs',
+    totalQuestions: '100',
+    durationMinutes: '120',
+    markCorrect: '2.0',
+    markWrong: '-0.66',
+    subject: '',
+    topics: '',
+    year: new Date().getFullYear().toString(),
+  });
+  const [questionPaperText, setQuestionPaperText] = useState('');
+  const [solutionText, setSolutionText] = useState('');
+  const [allSeries, setAllSeries] = useState<any[]>([]);
+  const [selectedSeriesId, setSelectedSeriesId] = useState('');
+  const [uploadingStructured, setUploadingStructured] = useState(false);
+
+  useEffect(() => {
+    loadQuestions();
+    loadSubjects();
+    loadSeries();
+  }, []);
+
+  const loadSubjects = async () => {
+    try {
+      const { data } = await adminAPI.getSubjects();
+      setSubjects(data || []);
+    } catch (err) { console.error(err); }
+  };
+
+  const loadSeries = async () => {
+    try {
+      const { data } = await testsAPI.getSeries();
+      setAllSeries(data || []);
+    } catch (err) { console.error(err); }
+  };
+
+  const loadQuestions = async () => {
+    try {
+      setLoading(true);
+      const { data } = await adminAPI.getQuestions({ limit: 100 });
+      setQuestions(data.questions);
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
+  };
+
+  const handleStructuredUpload = async () => {
+    if (!questionPaperText.trim() || !solutionText.trim()) {
+      return toast.error('Incomplete data streams detected');
+    }
+
+    setUploadingStructured(true);
+    try {
+      const payload = {
+        ...structuredData,
+        totalQuestions: parseInt(structuredData.totalQuestions),
+        durationMinutes: parseInt(structuredData.durationMinutes),
+        markCorrect: parseFloat(structuredData.markCorrect),
+        markWrong: parseFloat(structuredData.markWrong),
+        year: parseInt(structuredData.year),
+        questionPaperText,
+        solutionText,
+        testSeriesId: selectedSeriesId
+      };
+      await mockTestAPI.uploadStructured(payload);
+      toast.success('Test node synthesized successfully');
+      setShowStructuredForm(false);
+      setQuestionPaperText('');
+      setSolutionText('');
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Synthesis failed');
+    } finally {
+      setUploadingStructured(false);
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Launchpad Header */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div 
+          onClick={() => setShowStructuredForm(true)}
+          className="group glass-card p-8 border-ink-800 hover:border-teal-500/50 transition-all cursor-pointer relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity">
+            <Zap className="w-20 h-20 text-teal-400" />
+          </div>
+          <div className="relative z-10">
+            <div className="w-12 h-12 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 mb-6">
+              <Zap className="w-6 h-6" />
+            </div>
+            <h3 className="text-xl font-black text-white uppercase tracking-tight mb-2">Structured Synthesis</h3>
+            <p className="text-sm text-ink-500 leading-relaxed max-w-[280px]">
+              Upload raw text data to automatically generate full-scale mock tests with AI-powered parsing.
+            </p>
+          </div>
+        </div>
+
+        <div className="group glass-card p-8 border-ink-800 hover:border-yellow-500/50 transition-all cursor-not-allowed opacity-60 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <Layers className="w-20 h-20 text-yellow-500" />
+          </div>
+          <div className="relative z-10">
+            <div className="w-12 h-12 rounded-2xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-yellow-500 mb-6">
+              <Layers className="w-6 h-6" />
+            </div>
+            <h3 className="text-xl font-black text-white uppercase tracking-tight mb-2">Manual Constructor</h3>
+            <p className="text-sm text-ink-500 leading-relaxed max-w-[280px]">
+              Select individual nodes from the question database to construct a custom examination pattern.
+            </p>
+            <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ink-950 border border-ink-800 text-[8px] font-black uppercase tracking-widest text-ink-600">
+              Maintenance Required
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {showStructuredForm && (
+        <div className="animate-slide-up space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-3">
+              <Settings className="w-4 h-4 text-teal-400" /> Synthesis Parameters
+            </h2>
+            <button onClick={() => setShowStructuredForm(false)} className="text-xs text-ink-600 hover:text-white uppercase font-black tracking-widest transition-colors">Abort Launch</button>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-1 space-y-4">
+              <div className="glass-card p-6 border-ink-800 space-y-4">
+                <div>
+                  <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Test Designation</label>
+                  <input 
+                    value={structuredData.name}
+                    onChange={e => setStructuredData({...structuredData, name: e.target.value})}
+                    className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-3 text-sm text-white focus:border-teal-500/50 outline-none"
+                    placeholder="E.g. Prelims Mock X"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Target Series</label>
+                  <select 
+                    value={selectedSeriesId}
+                    onChange={e => setSelectedSeriesId(e.target.value)}
+                    className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-3 text-sm text-ink-300 outline-none focus:border-teal-500/50"
+                  >
+                    <option value="">Independent Node</option>
+                    {allSeries.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Subject</label>
+                    <input 
+                      value={structuredData.subject}
+                      onChange={e => setStructuredData({...structuredData, subject: e.target.value})}
+                      className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-2 text-xs text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Year</label>
+                    <input 
+                      value={structuredData.year}
+                      onChange={e => setStructuredData({...structuredData, year: e.target.value})}
+                      className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-2 text-xs text-white"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Qs Load</label>
+                    <input 
+                      value={structuredData.totalQuestions}
+                      onChange={e => setStructuredData({...structuredData, totalQuestions: e.target.value})}
+                      className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-2 text-xs text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Time (m)</label>
+                    <input 
+                      value={structuredData.durationMinutes}
+                      onChange={e => setStructuredData({...structuredData, durationMinutes: e.target.value})}
+                      className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-2 text-xs text-white"
+                    />
+                  </div>
+                </div>
+              </div>
+              <button 
+                onClick={handleStructuredUpload}
+                disabled={uploadingStructured}
+                className="w-full py-4 bg-teal-500 hover:bg-teal-400 text-ink-950 font-black rounded-2xl transition-all shadow-xl shadow-teal-500/10 uppercase text-xs tracking-[0.2em] flex items-center justify-center gap-3"
+              >
+                {uploadingStructured ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+                Initiate Synthesis
+              </button>
+            </div>
+
+            <div className="lg:col-span-2 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest">Question Paper Stream</label>
+                    <span className="text-[8px] text-ink-700 font-mono">{questionPaperText.length} Bytes</span>
+                  </div>
+                  <textarea 
+                    value={questionPaperText}
+                    onChange={e => setQuestionPaperText(e.target.value)}
+                    className="w-full h-96 bg-ink-950 border border-ink-800 rounded-2xl p-6 text-xs text-ink-300 font-mono focus:border-teal-500/30 outline-none resize-none shadow-inner"
+                    placeholder="Paste Question Data Here..."
+                  />
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest">Solution Matrix</label>
+                    <span className="text-[8px] text-ink-700 font-mono">{solutionText.length} Bytes</span>
+                  </div>
+                  <textarea 
+                    value={solutionText}
+                    onChange={e => setSolutionText(e.target.value)}
+                    className="w-full h-96 bg-ink-950 border border-ink-800 rounded-2xl p-6 text-xs text-ink-300 font-mono focus:border-teal-500/30 outline-none resize-none shadow-inner"
+                    placeholder="Paste Solution Data Here..."
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SubscriptionsTab() {
+  const [subscriptions, setSubscriptions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
+  const [stats, setStats] = useState({ total: 0, active: 0, expired: 0 });
+  const [showPlanForm, setShowPlanForm] = useState(false);
+  const [plans, setPlans] = useState<any[]>([]);
+  const [filter, setFilter] = useState({ status: '', search: '' });
+  const [showActivateModal, setShowActivateModal] = useState<any>(null);
+
+  useEffect(() => {
+    loadSubscriptions();
+    loadPlans();
+  }, [pagination.page, filter]);
+
+  const loadSubscriptions = async () => {
+    try {
+      setLoading(true);
+      const { data } = await adminAPI.getSubscriptions({ page: pagination.page, limit: 15, ...filter });
+      setSubscriptions(data.subscriptions);
+      setPagination(data.pagination);
+      setStats(data.stats);
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
+  };
+
+  const loadPlans = async () => {
+    try {
+      const { data } = await adminAPI.getSubscriptionPlans();
+      setPlans(data);
+    } catch (err) { console.error(err); }
+  };
+
+  const togglePlan = async (plan: any) => {
+    try {
+      await adminAPI.updateSubscriptionPlan(plan._id, { isActive: !plan.isActive });
+      loadPlans();
+      toast.success(plan.isActive ? 'Tier Locked' : 'Tier Operational');
+    } catch { toast.error('State update failed'); }
+  };
+
+  const updateSubscriptionStatus = async (sub: any, newStatus: string) => {
+    try {
+      await adminAPI.updateSubscription(sub._id, { status: newStatus });
+      loadSubscriptions();
+      toast.success('Clearance status updated');
+    } catch { toast.error('Update failed'); }
+  };
+
+  const activateUser = async (userId: string, planId: string) => {
+    try {
+      await adminAPI.activateUserSubscription(userId, { planId });
+      setShowActivateModal(false);
+      loadSubscriptions();
+      toast.success('Manual authorization granted');
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Authorization failed');
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Financial Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[
+          { label: 'Active Contracts', value: stats.active, icon: Shield, color: 'teal' },
+          { label: 'Total Volume', value: stats.total, icon: Activity, color: 'blue' },
+          { label: 'Expired Clearances', value: stats.expired, icon: XCircle, color: 'red' },
+        ].map(s => (
+          <div key={s.label} className="glass-card p-6 border-ink-800 flex items-center justify-between">
+            <div>
+              <div className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-1">{s.label}</div>
+              <div className="text-3xl font-black text-white">{s.value}</div>
+            </div>
+            <div className={clsx(
+              "p-3 rounded-xl",
+              s.color === 'teal' ? 'bg-teal-500/10 text-teal-400' : 
+              s.color === 'blue' ? 'bg-blue-500/10 text-blue-400' : 'bg-red-500/10 text-red-400'
+            )}>
+              <s.icon className="w-6 h-6" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Subscription Tiers */}
+      <div className="glass-card p-8 border-ink-800">
+        <div className="flex items-center justify-between mb-8">
+          <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-3">
+            <Crown className="w-4 h-4 text-yellow-500" /> Nexus Subscription Tiers
+          </h3>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setShowActivateModal(true)}
+              className="px-4 py-2 bg-ink-800 hover:bg-ink-700 text-ink-200 text-[10px] font-black uppercase tracking-widest rounded-xl border border-ink-700 transition-all flex items-center gap-2"
+            >
+              <CreditCard className="w-3.5 h-3.5" /> Manual Activation
+            </button>
+            <button 
+              onClick={() => setShowPlanForm(true)} 
+              className="px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-ink-950 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-yellow-500/10"
+            >
+              New Plan
+            </button>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {plans.map(plan => (
+            <div key={plan._id} className={clsx(
+              "p-6 rounded-2xl border transition-all relative overflow-hidden group",
+              plan.isActive ? "bg-ink-900 border-ink-800 hover:border-yellow-500/30" : "bg-ink-950 border-ink-900 opacity-50"
+            )}>
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-lg font-black text-white uppercase tracking-tight">{plan.name}</h4>
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button onClick={() => togglePlan(plan)} className="p-2 bg-ink-950 rounded-lg text-ink-500 hover:text-white">
+                    {plan.isActive ? <ToggleRight className="w-4 h-4 text-teal-400" /> : <ToggleLeft className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+              <div className="flex items-baseline gap-1 mb-4">
+                <span className="text-3xl font-black text-yellow-500">₹{plan.price}</span>
+                <span className="text-[10px] text-ink-600 font-bold uppercase tracking-widest">/ {plan.duration} {plan.durationUnit}</span>
+              </div>
+              <div className="pt-4 border-t border-ink-800 flex items-center justify-between">
+                <span className={clsx(
+                  "text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border",
+                  plan.isActive ? "bg-teal-500/10 text-teal-400 border-teal-500/20" : "bg-ink-800 text-ink-600 border-ink-700"
+                )}>
+                  {plan.isActive ? 'Active' : 'Locked'}
+                </span>
+                {plan.isActive && <Shield className="w-3.5 h-3.5 text-ink-700" />}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Registry of Contracts */}
+      <div className="glass-card p-8 border-ink-800">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          <h3 className="text-sm font-black text-white uppercase tracking-widest">Clearance Registry</h3>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-ink-600" />
+              <input 
+                value={filter.search}
+                onChange={e => setFilter({...filter, search: e.target.value})}
+                placeholder="Search Citizens..."
+                className="bg-ink-950 border border-ink-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:border-yellow-500/30 outline-none"
+              />
+            </div>
+            <select 
+              value={filter.status}
+              onChange={e => setFilter({...filter, status: e.target.value})}
+              className="bg-ink-950 border border-ink-800 rounded-xl px-3 py-2 text-[10px] font-black text-ink-500 outline-none uppercase tracking-widest"
+            >
+              <option value="">All Status</option>
+              <option value="active">Active Only</option>
+              <option value="expired">Expired</option>
+            </select>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-8 h-8 text-yellow-500 animate-spin" />
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {subscriptions.map(sub => (
+              <div key={sub._id} className="group flex items-center gap-6 p-4 bg-ink-900/40 border border-ink-900 hover:bg-ink-900 hover:border-ink-800 rounded-2xl transition-all">
+                <div className="w-10 h-10 rounded-xl bg-ink-950 border border-ink-800 flex items-center justify-center text-ink-500 font-black group-hover:text-yellow-500 transition-colors">
+                  {(sub.userId?.name || 'U').charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-1">
+                    <h4 className="text-sm font-black text-white truncate">{sub.userId?.name || 'Unknown Subject'}</h4>
+                    <span className={clsx(
+                      "px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border",
+                      sub.status === 'active' ? "bg-teal-500/10 text-teal-400 border-teal-500/20" : "bg-red-500/10 text-red-500 border-red-500/20"
+                    )}>
+                      {sub.status}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-[10px] text-ink-600 font-bold uppercase tracking-widest">{sub.planName}</span>
+                    <div className="w-1 h-1 rounded-full bg-ink-800" />
+                    <span className="text-[10px] text-ink-500 font-mono">
+                      {sub.startDate ? new Date(sub.startDate).toLocaleDateString() : '??'} → {sub.endDate ? new Date(sub.endDate).toLocaleDateString() : '??'}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                  {sub.status === 'active' ? (
+                    <button onClick={() => updateSubscriptionStatus(sub, 'cancelled')} className="p-2.5 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-xl border border-red-500/20 transition-all">
+                      <XCircle className="w-4 h-4" />
+                    </button>
+                  ) : (
+                    <button onClick={() => updateSubscriptionStatus(sub, 'active')} className="p-2.5 bg-teal-500/10 text-teal-400 hover:bg-teal-500/20 rounded-xl border border-teal-500/20 transition-all">
+                      <CheckCircle2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {showPlanForm && <PlanFormModal onClose={() => setShowPlanForm(false)} onSave={() => { setShowPlanForm(false); loadPlans(); }} />}
+      {showActivateModal && <ActivateUserModal onClose={() => setShowActivateModal(false)} onActivate={activateUser} />}
+    </div>
+  );
+}
+
+function CoursesTab() {
+  const [courses, setCourses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showCourseForm, setShowCourseForm] = useState(false);
+  const [editingCourse, setEditingCourse] = useState<any>(null);
+  const [selectedCourse, setSelectedCourse] = useState<any>(null);
+  const [lessons, setLessons] = useState<any[]>([]);
+  const [showLessonForm, setShowLessonForm] = useState(false);
+  const [editingLesson, setEditingLesson] = useState<any>(null);
+
+  useEffect(() => { loadCourses(); }, []);
+
+  const loadCourses = async () => {
+    try {
+      setLoading(true);
+      const { data } = await coursesAPI.getAllCourses();
+      setCourses(data);
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
+  };
+
+  const loadLessons = async (courseId: string) => {
+    try {
+      const { data } = await coursesAPI.getAdminCourseLessons(courseId);
+      setLessons(data);
+    } catch (err) { console.error(err); }
+  };
+
+  const handleTogglePublished = async (course: any) => {
+    try {
+      await coursesAPI.updateCourse(course._id, { isPublished: !course.isPublished });
+      loadCourses();
+      toast.success(course.isPublished ? 'Module Offline' : 'Module Published');
+    } catch { toast.error('Publication failed'); }
+  };
+
+  const handleDeleteCourse = async (id: string) => {
+    if (!confirm('Execute Module Deletion? This will wipe all lessons.')) return;
+    try {
+      await coursesAPI.deleteCourse(id);
+      toast.success('Module purged');
+      loadCourses();
+    } catch { toast.error('Purge failed'); }
+  };
+
+  return (
+    <div className="space-y-8 relative">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-3">
+          <PlayCircle className="w-4 h-4 text-blue-400" /> Academy Management
+        </h2>
+        <button 
+          onClick={() => setShowCourseForm(true)} 
+          className="relative z-[40] px-6 py-3 bg-yellow-500 hover:bg-yellow-400 active:scale-95 text-ink-950 font-black rounded-2xl transition-all shadow-lg shadow-yellow-500/10 flex items-center gap-2 uppercase text-xs tracking-widest cursor-pointer"
+        >
+          <Plus className="w-5 h-5" /> New Module
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-10 h-10 text-yellow-500 animate-spin" />
+        </div>
+      ) : courses.length === 0 ? (
+        <div className="glass-card p-20 text-center border-dashed border-ink-800">
+          <PlayCircle className="w-16 h-16 text-ink-800 mx-auto mb-4 opacity-30" />
+          <p className="text-ink-500 font-display text-lg">Empty Academy Archive</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {courses.map(course => (
+            <div key={course._id} className="group glass-card p-6 border-ink-800 hover:border-blue-500/30 transition-all flex flex-col justify-between">
+              <div>
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 relative">
+                    <Video className="w-6 h-6" />
+                    {course.isPremium && (
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center border-2 border-ink-950">
+                        <Crown className="w-2 h-2 text-ink-950" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setEditingCourse(course)} className="p-2 bg-ink-950 text-ink-500 hover:text-yellow-500 rounded-xl border border-ink-800 transition-all"><Edit2 className="w-3.5 h-3.5"/></button>
+                    <button onClick={() => handleDeleteCourse(course._id)} className="p-2 bg-ink-950 text-ink-600 hover:text-red-500 rounded-xl border border-ink-800 transition-all"><Trash2 className="w-3.5 h-3.5"/></button>
+                  </div>
+                </div>
+                <h4 className="text-xl font-black text-white tracking-tight mb-2 group-hover:text-blue-400 transition-colors">{course.title}</h4>
+                <p className="text-xs text-ink-500 line-clamp-2 mb-4 leading-relaxed">{course.description}</p>
+                <div className="flex items-center gap-4 mb-4">
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(course._id);
+                      toast.success('Module ID Copied');
+                    }}
+                    className="flex items-center gap-2 px-2 py-1 bg-ink-950 border border-ink-800 rounded-lg hover:border-blue-500/30 transition-all group/id"
+                  >
+                    <Copy className="w-3 h-3 text-ink-700 group-hover/id:text-blue-500" />
+                    <span className="text-[10px] font-black text-ink-600 uppercase tracking-widest group-hover/id:text-ink-400">Copy Module ID</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-6 border-t border-ink-800 mt-auto">
+                <div className="flex items-center gap-4">
+                  <div className="flex flex-col">
+                    <span className="text-[8px] text-ink-700 font-black uppercase tracking-widest mb-1">Status</span>
+                    <span className={clsx(
+                      "text-[9px] font-black uppercase tracking-widest",
+                      course.isPublished ? "text-teal-400" : "text-ink-500"
+                    )}>
+                      {course.isPublished ? 'Live' : 'Draft'}
+                    </span>
+                  </div>
+                  <div className="w-px h-6 bg-ink-800" />
+                  <div className="flex flex-col">
+                    <span className="text-[8px] text-ink-700 font-black uppercase tracking-widest mb-1">Index</span>
+                    <span className="text-[9px] font-black text-white uppercase tracking-widest">{course.lessonCount || 0} Nodes</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => handleTogglePublished(course)}
+                    className={clsx(
+                      "p-2 rounded-xl transition-all border",
+                      course.isPublished ? "bg-teal-500/10 border-teal-500/20 text-teal-400" : "bg-ink-800 border-ink-700 text-ink-500"
+                    )}
+                  >
+                    {course.isPublished ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
+                  </button>
+                  <button 
+                    onClick={() => { setSelectedCourse(course); loadLessons(course._id); }}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-blue-500/10"
+                  >
+                    Manage Index
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {showCourseForm && <CourseFormModal onClose={() => setShowCourseForm(false)} onSave={() => { setShowCourseForm(false); loadCourses(); }} />}
+      {editingCourse && <CourseFormModal course={editingCourse} onClose={() => setEditingCourse(null)} onSave={() => { setEditingCourse(null); loadCourses(); }} />}
+      {showLessonForm && <LessonFormModal courseId={selectedCourse._id} onClose={() => setShowLessonForm(false)} onSave={() => { setShowLessonForm(false); loadLessons(selectedCourse._id); }} />}
+      {editingLesson && <LessonFormModal courseId={selectedCourse._id} lesson={editingLesson} onClose={() => setEditingLesson(null)} onSave={() => { setEditingLesson(null); loadLessons(selectedCourse._id); }} />}
+
+      {/* Lesson Index Drawer */}
+      {selectedCourse && (
+        <div className="fixed inset-y-0 right-0 w-full md:w-[450px] bg-ink-950 border-l border-ink-800 p-8 overflow-y-auto z-[100] shadow-2xl animate-slide-left">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-blue-500/10 text-blue-400 rounded-2xl border border-blue-500/20">
+                <BookOpen className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-white tracking-tight">Index Manager</h3>
+                <p className="text-[10px] text-ink-600 font-black uppercase tracking-widest">{selectedCourse.title}</p>
+              </div>
+            </div>
+            <button onClick={() => setSelectedCourse(null)} className="p-3 bg-ink-900 text-ink-400 hover:text-white rounded-2xl hover:bg-ink-800 transition-all">
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+          
+          <button
+            onClick={() => setShowLessonForm(true)}
+            className="w-full py-4 bg-blue-500 hover:bg-blue-400 text-ink-950 font-black rounded-2xl transition-all shadow-xl shadow-blue-500/10 flex items-center justify-center gap-3 uppercase text-xs tracking-[0.2em] mb-8"
+          >
+            <Plus className="w-5 h-5" /> Append Lesson
+          </button>
+
+          <div className="space-y-4">
+            {lessons.map((lesson, idx) => (
+              <div key={lesson._id} className="group p-5 bg-ink-900/50 border border-ink-800 hover:border-blue-500/30 rounded-2xl transition-all flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="text-[10px] font-black text-ink-700 font-mono w-4">{String(idx + 1).padStart(2, '0')}</div>
+                  <div>
+                    <h5 className="text-sm font-black text-white group-hover:text-blue-400 transition-colors">{lesson.title}</h5>
+                    <span className="text-[9px] text-ink-600 font-bold uppercase tracking-widest">{lesson.duration || 'Video Node'}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button onClick={() => setEditingLesson(lesson)} className="p-2 text-ink-600 hover:text-yellow-500"><Edit2 className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => handleDeleteLesson(lesson._id)} className="p-2 text-ink-700 hover:text-red-500"><Trash2 className="w-3.5 h-3.5" /></button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SettingsTab() {
+  const [config, setConfig] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [announcements, setAnnouncements] = useState<any[]>([]);
+  const [newAnnouncement, setNewAnnouncement] = useState({ title: '', content: '', type: 'info' });
+  const [manualEnroll, setManualEnroll] = useState({ userId: '', courseId: '', amount: 0 });
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [configRes, announceRes] = await Promise.all([
+        settingsAPI.getConfig(),
+        settingsAPI.getAnnouncements()
+      ]);
+      setConfig(configRes.data);
+      setAnnouncements(announceRes.data);
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to sync system configuration');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateConfig = async (updates: any) => {
+    try {
+      setSaving(true);
+      const { data } = await settingsAPI.updateConfig({ ...config, ...updates });
+      setConfig(data);
+      toast.success('System parameters updated');
+    } catch {
+      toast.error('Sync failed');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCreateAnnouncement = async () => {
+    if (!newAnnouncement.title || !newAnnouncement.content) return;
+    try {
+      await settingsAPI.createAnnouncement(newAnnouncement);
+      setNewAnnouncement({ title: '', content: '', type: 'info' });
+      const { data } = await settingsAPI.getAnnouncements();
+      setAnnouncements(data);
+      toast.success('Announcement broadcasted');
+    } catch {
+      toast.error('Broadcast failed');
+    }
+  };
+
+  const handleDeleteAnnouncement = async (id: string) => {
+    try {
+      await settingsAPI.deleteAnnouncement(id);
+      setAnnouncements(prev => prev.filter(a => a._id !== id));
+      toast.success('Announcement purged');
+    } catch {
+      toast.error('Purge failed');
+    }
+  };
+
+  const handleManualEnroll = async () => {
+    if (!manualEnroll.userId || !manualEnroll.courseId) return toast.error('Incomplete credentials');
+    try {
+      await settingsAPI.manualEnroll(manualEnroll);
+      setManualEnroll({ userId: '', courseId: '', amount: 0 });
+      toast.success('Citizen enrolled successfully');
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Enrollment failed');
+    }
+  };
+
+  if (loading) return (
+    <div className="flex items-center justify-center py-40">
+      <Loader2 className="w-10 h-10 text-yellow-500 animate-spin" />
+    </div>
+  );
+
+  return (
+    <div className="space-y-8 animate-slide-up pb-20">
+      {/* Payment Gateway Toggle */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="glass-card p-8 border-ink-800 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-5">
+            <CreditCard className="w-24 h-24 text-yellow-500" />
+          </div>
+          <h3 className="text-sm font-black text-white uppercase tracking-[0.2em] mb-8 flex items-center gap-3">
+            <CreditCard className="w-4 h-4 text-yellow-500" /> Financial Protocols
+          </h3>
+          
+          <div className="space-y-6 relative z-10">
+            <div className="flex items-center justify-between p-4 bg-ink-950/50 rounded-2xl border border-ink-800">
+              <div>
+                <div className="text-xs font-black text-white uppercase tracking-wider mb-1">Razorpay Integration</div>
+                <div className="text-[10px] text-ink-500 font-bold uppercase tracking-widest">Automatic UPI & Card Processing</div>
+              </div>
+              <button 
+                onClick={() => handleUpdateConfig({ paymentMethod: config.paymentMethod === 'razorpay' ? 'manual' : 'razorpay' })}
+                className={clsx(
+                  "p-2 rounded-xl border transition-all",
+                  config.paymentMethod === 'razorpay' ? "bg-teal-500/10 border-teal-500/50 text-teal-400" : "bg-ink-800 border-ink-700 text-ink-600"
+                )}
+              >
+                {config.paymentMethod === 'razorpay' ? <ToggleRight className="w-6 h-6" /> : <ToggleLeft className="w-6 h-6" />}
+              </button>
+            </div>
+
+            {config.paymentMethod === 'razorpay' ? (
+              <div className="space-y-4 animate-in slide-in-from-top-2">
+                <div>
+                  <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Key ID</label>
+                  <input 
+                    value={config.razorpayKeyId}
+                    onChange={e => setConfig({...config, razorpayKeyId: e.target.value})}
+                    onBlur={() => handleUpdateConfig({ razorpayKeyId: config.razorpayKeyId })}
+                    className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-3 text-sm text-white focus:border-yellow-500/50 outline-none"
+                    placeholder="rzp_live_..."
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Key Secret</label>
+                  <input 
+                    type="password"
+                    value={config.razorpayKeySecret}
+                    onChange={e => setConfig({...config, razorpayKeySecret: e.target.value})}
+                    onBlur={() => handleUpdateConfig({ razorpayKeySecret: config.razorpayKeySecret })}
+                    className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-3 text-sm text-white focus:border-yellow-500/50 outline-none"
+                    placeholder="••••••••••••••••"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4 animate-in slide-in-from-top-2">
+                <div>
+                  <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Telegram Handle</label>
+                  <input 
+                    value={config.telegramHandle}
+                    onChange={e => setConfig({...config, telegramHandle: e.target.value})}
+                    onBlur={() => handleUpdateConfig({ telegramHandle: config.telegramHandle })}
+                    className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500/50 outline-none"
+                    placeholder="@username"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Direct Payment Link</label>
+                  <input 
+                    value={config.telegramLink}
+                    onChange={e => setConfig({...config, telegramLink: e.target.value})}
+                    onBlur={() => handleUpdateConfig({ telegramLink: config.telegramLink })}
+                    className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500/50 outline-none"
+                    placeholder="https://t.me/..."
+                  />
+                </div>
+                <div className="p-4 bg-blue-500/5 border border-blue-500/20 rounded-2xl">
+                  <div className="flex gap-3">
+                    <MessageSquare className="w-5 h-5 text-blue-400 shrink-0" />
+                    <p className="text-[10px] text-blue-300 font-bold leading-relaxed uppercase tracking-wide">
+                      Manual mode enabled. Users will be directed to your Telegram for payment coordination. You must manually enroll them after verification.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="glass-card p-8 border-ink-800 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-5">
+            <Percent className="w-24 h-24 text-teal-500" />
+          </div>
+          <h3 className="text-sm font-black text-white uppercase tracking-[0.2em] mb-8 flex items-center gap-3">
+            <Percent className="w-4 h-4 text-teal-500" /> Global Economy
+          </h3>
+          
+          <div className="space-y-8 relative z-10">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest block">Global Platform Discount</label>
+                <div className={clsx(
+                  "px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border",
+                  config.globalDiscount?.isActive ? "bg-teal-500/10 text-teal-400 border-teal-500/20" : "bg-ink-800 text-ink-500 border-ink-700"
+                )}>
+                  {config.globalDiscount?.isActive ? 'Operational' : 'Disabled'}
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="relative flex-1">
+                  <Percent className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-600" />
+                  <input 
+                    type="number"
+                    value={config.globalDiscount?.percentage}
+                    onChange={e => setConfig({...config, globalDiscount: {...config.globalDiscount, percentage: parseInt(e.target.value)}})}
+                    className="w-full bg-ink-950 border border-ink-800 rounded-xl pl-12 pr-4 py-3 text-lg font-black text-white focus:border-teal-500/50 outline-none"
+                    placeholder="0"
+                  />
+                </div>
+                <button 
+                  onClick={() => handleUpdateConfig({ globalDiscount: {...config.globalDiscount, isActive: !config.globalDiscount?.isActive} })}
+                  className={clsx(
+                    "px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border",
+                    config.globalDiscount?.isActive ? "bg-teal-500 text-ink-950 border-teal-400" : "bg-ink-800 border-ink-700 text-ink-500"
+                  )}
+                >
+                  {config.globalDiscount?.isActive ? 'Deactivate' : 'Apply Globally'}
+                </button>
+              </div>
+              <p className="text-[9px] text-ink-600 font-bold uppercase mt-3 tracking-widest">
+                * This percentage will be deducted from all course prices platform-wide.
+              </p>
+            </div>
+
+            <div className="pt-8 border-t border-ink-800">
+              <h4 className="text-[10px] font-black text-white uppercase tracking-widest mb-4">Manual Citizen Enrollment</h4>
+              <div className="space-y-3">
+                <input 
+                  value={manualEnroll.userId}
+                  onChange={e => setManualEnroll({...manualEnroll, userId: e.target.value})}
+                  className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-2 text-xs text-white focus:border-yellow-500/30 outline-none"
+                  placeholder="Citizen ID (User MongoDB ID)"
+                />
+                <input 
+                  value={manualEnroll.courseId}
+                  onChange={e => setManualEnroll({...manualEnroll, courseId: e.target.value})}
+                  className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-2 text-xs text-white focus:border-yellow-500/30 outline-none"
+                  placeholder="Module ID (Course MongoDB ID)"
+                />
+                <div className="flex gap-3">
+                  <input 
+                    type="number"
+                    value={manualEnroll.amount}
+                    onChange={e => setManualEnroll({...manualEnroll, amount: parseInt(e.target.value)})}
+                    className="flex-1 bg-ink-950 border border-ink-800 rounded-xl px-4 py-2 text-xs text-white focus:border-yellow-500/30 outline-none"
+                    placeholder="Paid Amount (INR)"
+                  />
+                  <button 
+                    onClick={handleManualEnroll}
+                    className="px-6 py-2 bg-yellow-500 hover:bg-yellow-400 text-ink-950 font-black rounded-xl transition-all shadow-lg shadow-yellow-500/10 uppercase text-[10px] tracking-widest"
+                  >
+                    Enroll Citizen
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Announcements Section */}
+      <div className="glass-card p-8 border-ink-800">
+        <h3 className="text-sm font-black text-white uppercase tracking-[0.2em] mb-8 flex items-center gap-3">
+          <Bell className="w-4 h-4 text-purple-500" /> Broadcast Terminal
+        </h3>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-1 space-y-4">
+            <div className="p-6 bg-ink-950/50 border border-ink-800 rounded-2xl space-y-4">
+              <input 
+                value={newAnnouncement.title}
+                onChange={e => setNewAnnouncement({...newAnnouncement, title: e.target.value})}
+                className="w-full bg-ink-900 border border-ink-800 rounded-xl px-4 py-2 text-xs text-white focus:border-purple-500/50 outline-none"
+                placeholder="Broadcast Headline"
+              />
+              <textarea 
+                value={newAnnouncement.content}
+                onChange={e => setNewAnnouncement({...newAnnouncement, content: e.target.value})}
+                className="w-full h-32 bg-ink-900 border border-ink-800 rounded-xl p-4 text-xs text-white focus:border-purple-500/50 outline-none resize-none"
+                placeholder="Message Payload..."
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <select 
+                  value={newAnnouncement.type}
+                  onChange={e => setNewAnnouncement({...newAnnouncement, type: e.target.value})}
+                  className="bg-ink-900 border border-ink-800 rounded-xl px-4 py-2 text-[10px] font-black text-ink-400 outline-none uppercase"
+                >
+                  <option value="info">Information</option>
+                  <option value="alert">Alert</option>
+                  <option value="discount">Discount</option>
+                  <option value="update">System Update</option>
+                </select>
+                <button 
+                  onClick={handleCreateAnnouncement}
+                  className="bg-purple-600 hover:bg-purple-500 text-white font-black rounded-xl transition-all flex items-center justify-center gap-2 uppercase text-[10px] tracking-widest"
+                >
+                  <Send className="w-3.5 h-3.5" /> Transmit
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="lg:col-span-2 space-y-4">
+            {announcements.length === 0 ? (
+              <div className="p-20 text-center border-2 border-dashed border-ink-900 rounded-3xl">
+                <Bell className="w-12 h-12 text-ink-900 mx-auto mb-4" />
+                <p className="text-ink-600 font-bold uppercase tracking-widest text-[10px]">No Active Broadcasts</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4">
+                {announcements.map(a => (
+                  <div key={a._id} className="group p-5 bg-ink-900/40 border border-ink-800 hover:border-purple-500/30 rounded-2xl transition-all flex items-start justify-between">
+                    <div className="flex gap-4">
+                      <div className={clsx(
+                        "p-3 rounded-xl",
+                        a.type === 'alert' ? 'bg-red-500/10 text-red-400' :
+                        a.type === 'discount' ? 'bg-teal-500/10 text-teal-400' :
+                        a.type === 'update' ? 'bg-blue-500/10 text-blue-400' : 'bg-purple-500/10 text-purple-400'
+                      )}>
+                        <Bell className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-3 mb-1">
+                          <h4 className="text-sm font-black text-white uppercase tracking-tight">{a.title}</h4>
+                          <span className="text-[8px] font-bold text-ink-600 uppercase">{new Date(a.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        <p className="text-xs text-ink-400 leading-relaxed max-w-lg">{a.content}</p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => handleDeleteAnnouncement(a._id)}
+                      className="p-2 text-ink-700 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

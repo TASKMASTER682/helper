@@ -17,7 +17,7 @@
     "date-fns": "^4.1.0",
     "framer-motion": "^12.34.3",
     "lucide-react": "^0.575.0",
-    "next": "16.1.6",
+    "next": "^16.2.1",
     "pdfjs-dist": "^3.4.120",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -35,5 +35,21 @@
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
     "typescript": "^5"
-  }
+  },
+  "description": "This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).",
+  "main": "tailwind.config.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TASKMASTER682/helper.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/TASKMASTER682/helper/issues"
+  },
+  "homepage": "https://github.com/TASKMASTER682/helper#readme"
 }

@@ -1,39 +1,36 @@
 'use client';
-import React, { useEffect, useState, useRef } from 'react';
-import { scheduleAPI, trackerAPI, missionsAPI, userAPI, ddayAPI } from '@/lib/api';
+import React, { useEffect, useState } from 'react';
+import { scheduleAPI, trackerAPI, missionsAPI, userAPI, plansAPI, ddayAPI, settingsAPI } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 import CountdownCalendar from '../../componets/CountdownCalender';
+import PlanCalendar from '../../componets/PlanCalendar';
+import PlanGraph from '../../componets/PlanGraph';
 import {
-  Calendar, Clock, Flame, Trophy, BarChart3, Target, AlertTriangle,
-  CheckCircle2, BookOpen, Brain, ChevronLeft, ChevronRight, Zap, TrendingUp, Loader2, Play, Pause
+  Calendar, Flame, Trophy, BarChart3, Target,
+  CheckCircle2, ChevronLeft, ChevronRight, TrendingUp, Brain, Bell, X
 } from 'lucide-react';
-import { format } from 'date-fns';
-import { ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis } from 'recharts';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import toast from 'react-hot-toast';
 
-const TASK_TYPE_COLORS: Record<string, string> = {
-  learning: 'bg-deep-500/20 border-deep-500/40 text-deep-300',
-  revision: 'bg-jade-500/20 border-jade-500/40 text-jade-300',
-  answer_writing: 'bg-red-500/20 border-red-500/40 text-red-300',
-  mcq: 'bg-purple-500/20 border-purple-500/40 text-purple-300',
-  test: 'bg-red-500/20 border-red-500/40 text-red-300',
-  break: 'bg-ink-700/20 border-ink-600/40 text-ink-400',
-  fitness: 'bg-green-500/20 border-green-500/40 text-green-300',
-};
+const format = (date: Date, fmt: string) => {
+  const d = new Date(date);
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  
+  const map: any = {
+    'EEEE': days[d.getDay()],
+    'MMMM': months[d.getMonth()],
+    'MMM': months[d.getMonth()].slice(0, 3),
+    'MM': pad(d.getMonth() + 1),
+    'yyyy': d.getFullYear(),
+    'dd': pad(d.getDate()),
+    'd': d.getDate()
+  };
 
-const CSAT_BLOCK_CLASS = 'bg-teal-500/20 border-teal-500/40 text-teal-200';
-
-const PRIORITY_DOT: Record<string, string> = {
-  high: 'bg-yellow-400',
-  medium: 'bg-jade-400',
-  low: 'bg-ink-500',
-};
-
-const TASK_TYPE_LABELS: Record<string, string> = {
-  learning: 'doing',
+  return fmt.replace(/EEEE|MMMM|MMM|MM|yyyy|dd|d/g, (matched) => map[matched]);
 };
 
 function StatCardSkeleton() {
@@ -49,59 +46,34 @@ function StatCardSkeleton() {
   );
 }
 
-function ScheduleSkeleton() {
-  return (
-    <div className="glass-card p-5 animate-pulse">
-      <div className="h-6 w-40 bg-ink-800 rounded mb-4" />
-      <div className="space-y-3">
-        {[1, 2, 3].map(i => (
-          <div key={i} className="h-16 bg-ink-900/50 rounded-lg" />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function SidebarSkeleton() {
-  return (
-    <div className="space-y-4 animate-pulse">
-      <div className="glass-card p-4 h-48 bg-ink-900/30 rounded-xl" />
-      <div className="glass-card p-4 h-32 bg-ink-900/30 rounded-xl" />
-      <div className="glass-card p-4 h-24 bg-ink-900/30 rounded-xl" />
-    </div>
-  );
-}
-
 export default function DashboardPage() {
-  const router = useRouter();
   const { user } = useAuthStore();
   const [schedule, setSchedule] = useState<any>(null);
   const [stats, setStats] = useState<any>(null);
   const [missions, setMissions] = useState<any[]>([]);
   const [trackerData, setTrackerData] = useState<any[]>([]);
   const [dDayTargets, setDDayTargets] = useState<any[]>([]);
+  const [isSubmittedToday, setIsSubmittedToday] = useState(false);
   
-  // Individual loading states
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingSchedule, setLoadingSchedule] = useState(true);
   const [loadingTracker, setLoadingTracker] = useState(true);
   const [loadingMissions, setLoadingMissions] = useState(true);
   const [loadingDDay, setLoadingDDay] = useState(true);
+  const [plans, setPlans] = useState<any[]>([]);
+  const [planStats, setPlanStats] = useState<any>(null);
+  const [announcements, setAnnouncements] = useState<any[]>([]);
   
-  const [generatingSchedule, setGeneratingSchedule] = useState(false);
-  const [isSubmittedToday, setIsSubmittedToday] = useState(false);
-  const [scheduleRefineInput, setScheduleRefineInput] = useState('');
-  const [refiningSchedule, setRefiningSchedule] = useState(false);
   const [activeTargetIndex, setActiveTargetIndex] = useState(0);
   const [targetForm, setTargetForm] = useState({ targetName: '', targetDate: '' });
   const [savingTarget, setSavingTarget] = useState(false);
-  
-  // Timer state
-  const [activeTimer, setActiveTimer] = useState<number | null>(null);
-  const [elapsedTime, setElapsedTime] = useState<Record<number, number>>({});
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Load stats first (most important)
+  useEffect(() => {
+    settingsAPI.getAnnouncements()
+      .then(res => setAnnouncements(res.data))
+      .catch(err => console.error("Announcements Error:", err));
+  }, []);
+
   useEffect(() => {
     if (!user?.id) return;
     setLoadingStats(true);
@@ -111,29 +83,15 @@ export default function DashboardPage() {
       .finally(() => setLoadingStats(false));
   }, [user?.id]);
 
-  // Load schedule
   useEffect(() => {
     if (!user?.id) return;
     setLoadingSchedule(true);
-    const todayISO = format(new Date(), 'yyyy-MM-dd');
-    scheduleAPI.getDate(todayISO)
-      .then(res => {
-        setSchedule(res.data);
-        if (res.data?.blocks) {
-          const blocks = res.data.blocks;
-          const nonOptionalBlocks = blocks.filter((b: any) => {
-            const type = b?.taskType || '';
-            return type !== 'break' && type !== 'fitness';
-          });
-          const allCompleted = nonOptionalBlocks.length > 0 && nonOptionalBlocks.every((b: any) => b.completed);
-          if (allCompleted) setIsSubmittedToday(true);
-        }
-      })
+    scheduleAPI.getPlan()
+      .then(res => setSchedule(res.data))
       .catch(err => console.error("Schedule Error:", err))
       .finally(() => setLoadingSchedule(false));
   }, [user?.id]);
 
-  // Load tracker
   useEffect(() => {
     if (!user?.id) return;
     setLoadingTracker(true);
@@ -143,13 +101,12 @@ export default function DashboardPage() {
         setTrackerData([...entries].reverse());
         const todayISOStr = new Date().toISOString().slice(0, 10);
         const submitted = entries.some((e: any) => new Date(e.date).toISOString().slice(0, 10) === todayISOStr);
-        setIsSubmittedToday(prev => prev || submitted);
+        setIsSubmittedToday(submitted);
       })
       .catch(err => console.error("Tracker Error:", err))
       .finally(() => setLoadingTracker(false));
   }, [user?.id]);
 
-  // Load missions
   useEffect(() => {
     if (!user?.id) return;
     setLoadingMissions(true);
@@ -159,7 +116,6 @@ export default function DashboardPage() {
       .finally(() => setLoadingMissions(false));
   }, [user?.id]);
 
-  // Load D-Day
   useEffect(() => {
     if (!user?.id) return;
     setLoadingDDay(true);
@@ -181,102 +137,51 @@ export default function DashboardPage() {
       .finally(() => setLoadingDDay(false));
   }, [user?.id]);
 
-  const isAllCompleted = schedule?.blocks ? schedule.blocks.filter((b: any) => {
-    const type = b?.taskType || '';
-    return type !== 'break' && type !== 'fitness';
-  }).every((b: any) => b.completed) : false;
-
-  // Timer effect
   useEffect(() => {
-    if (activeTimer === null) {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-      return;
-    }
+    plansAPI.getPlans()
+      .then(res => {
+        const allPlans = res.data;
+        setPlans(allPlans);
+        
+        if (allPlans.length > 0) {
+          const today = format(new Date(), 'yyyy-MM-dd');
+          
+          // Calculate Aggregated Stats
+          let totalTodayTasks = 0;
+          let completedTodayTasks = 0;
+          let combinedOnTrackScore = 0;
+          let activePlansCount = 0;
+          
+          // Simplified streak: just take the max from any plan for now, 
+          // or we could calculate a unified one. Max is safer for motivation.
+          let maxStreak = 0;
 
-    timerRef.current = setInterval(() => {
-      setElapsedTime(prev => ({
-        ...prev,
-        [activeTimer]: (prev[activeTimer] || 0) + 1
-      }));
-    }, 1000);
+          const statsPromises = allPlans.map((p: any) => plansAPI.getStats(p._id));
+          
+          Promise.all(statsPromises).then(statsResponses => {
+            statsResponses.forEach(res => {
+              const s = res.data;
+              combinedOnTrackScore += s.trackScore;
+              if (s.streak > maxStreak) maxStreak = s.streak;
+            });
+            
+            allPlans.forEach((p: any) => {
+              const todayLog = p.dailyLogs?.filter((l: any) => l.date === today) || [];
+              totalTodayTasks += p.tasks?.length || 0;
+              completedTodayTasks += todayLog.filter((l: any) => l.status === 'completed').length;
+              activePlansCount++;
+            });
 
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, [activeTimer]);
-
-  const handleStartTimer = async (index: number) => {
-    setActiveTimer(index);
-    try {
-      await scheduleAPI.timerAction(index, 'start');
-    } catch (err) {
-      console.error('Timer start error:', err);
-    }
-  };
-
-  const handleStopTimer = async (index: number) => {
-    const elapsed = elapsedTime[index] || 0;
-    setActiveTimer(null);
-    try {
-      const { data } = await scheduleAPI.timerAction(index, 'stop');
-      // Mark as completed
-      await scheduleAPI.completeBlock(index, Math.ceil(elapsed / 60));
-      // Refresh schedule
-      const todayISO = format(new Date(), 'yyyy-MM-dd');
-      const res = await scheduleAPI.getDate(todayISO);
-      setSchedule(res.data);
-      toast.success('Task completed!');
-    } catch (err) {
-      console.error('Timer stop error:', err);
-    }
-  };
-
-  const handleToggleComplete = async (index: number, currentlyCompleted: boolean) => {
-    try {
-      if (currentlyCompleted) {
-        await scheduleAPI.incompleteBlock(index);
-      } else {
-        await scheduleAPI.completeBlock(index, 0);
-      }
-      // Refresh schedule
-      const todayISO = format(new Date(), 'yyyy-MM-dd');
-      const res = await scheduleAPI.getDate(todayISO);
-      setSchedule(res.data);
-    } catch (err) {
-      console.error('Toggle error:', err);
-      toast.error('Failed to update');
-    }
-  };
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const handleGenerateSchedule = async () => {
-    setGeneratingSchedule(true);
-    try {
-      const todayISO = format(new Date(), 'yyyy-MM-dd');
-      const res = await scheduleAPI.generate(todayISO);
-      setSchedule(res.data);
-    } catch (err) {
-      console.error("Generation Error:", err);
-    } finally {
-      setGeneratingSchedule(false);
-    }
-  };
-
-
-  const chartData = trackerData.map((entry: any) => ({
-    date: format(new Date(entry.date), 'MM/dd'),
-    completion: entry.completionRate,
-  }));
+            setPlanStats({
+              streak: maxStreak,
+              trackScore: activePlansCount > 0 ? combinedOnTrackScore / activePlansCount : 0,
+              todayRatio: totalTodayTasks > 0 ? completedTodayTasks / totalTodayTasks : 0
+            });
+          });
+        }
+      })
+      .catch(err => console.error("Plans Error:", err));
+  }, []);
 
   const handleSaveTarget = async () => {
     const targetName = targetForm.targetName.trim();
@@ -286,7 +191,6 @@ export default function DashboardPage() {
     setSavingTarget(true);
     try {
       await ddayAPI.setTarget({ targetName, targetDate });
-      // Reload D-Day targets
       const res = await ddayAPI.getAll();
       const targets = Array.isArray(res.data) ? res.data : [];
       setDDayTargets(targets);
@@ -296,8 +200,6 @@ export default function DashboardPage() {
         if (activeTarget) {
           setTargetForm({ targetName: activeTarget.targetName || '', targetDate: new Date(activeTarget.targetDate).toISOString().slice(0, 10) });
         }
-      } else {
-        setTargetForm({ targetName: '', targetDate: '' });
       }
       toast.success('D-Day target saved');
     } catch (err) {
@@ -305,30 +207,6 @@ export default function DashboardPage() {
       toast.error('Failed to save D-Day target');
     } finally {
       setSavingTarget(false);
-    }
-  };
-
-  const handleRefineSchedule = async () => {
-    const instruction = scheduleRefineInput.trim();
-    if (!instruction) return;
-
-    const used = Number(schedule?.refinementCount) || 0;
-    if (used >= 2) {
-      toast.error('You can refine schedule only 2 times per day.');
-      return;
-    }
-
-    setRefiningSchedule(true);
-    try {
-      const todayISO = format(new Date(), 'yyyy-MM-dd');
-      const { data } = await scheduleAPI.refine(instruction, todayISO);
-      setSchedule(data);
-      setScheduleRefineInput('');
-      toast.success('Schedule updated with your instruction');
-    } catch (err: any) {
-      toast.error(err?.response?.data?.error || 'Failed to refine schedule');
-    } finally {
-      setRefiningSchedule(false);
     }
   };
 
@@ -340,7 +218,6 @@ export default function DashboardPage() {
     setSavingTarget(true);
     try {
       await ddayAPI.deleteTarget(String(current._id));
-      // Reload D-Day targets
       const res = await ddayAPI.getAll();
       const targets = Array.isArray(res.data) ? res.data : [];
       setDDayTargets(targets);
@@ -361,28 +238,27 @@ export default function DashboardPage() {
       setSavingTarget(false);
     }
   };
+
   const selectedTarget = dDayTargets[activeTargetIndex] || null;
   const calendarTargetDate = selectedTarget?.targetDate ? new Date(selectedTarget.targetDate).toISOString().slice(0, 10) : null;
   const calendarExamName = selectedTarget?.targetName || '';
+
   const handlePrevTarget = () => {
     if (dDayTargets.length <= 1) return;
     setActiveTargetIndex((prev) => (prev - 1 + dDayTargets.length) % dDayTargets.length);
   };
+
   const handleNextTarget = () => {
     if (dDayTargets.length <= 1) return;
     setActiveTargetIndex((prev) => (prev + 1) % dDayTargets.length);
   };
 
   const activeMissions = missions.filter((m: any) => m.status === 'active');
-  const openFocusMode = (block: any) => {
-    const title = `${block?.subject || 'Focus'}${block?.topic ? ` - ${block.topic}` : ''}`;
-    const minutes = Number(block?.duration) > 0 ? Number(block.duration) : 50;
-    const params = new URLSearchParams({
-      title,
-      minutes: String(Math.max(1, Math.round(minutes))),
-    });
-    router.push(`/dashboard/focus?${params.toString()}`);
-  };
+
+  const chartData = trackerData.map((entry: any) => ({
+    date: format(new Date(entry.date), 'MM/dd'),
+    completion: entry.completionRate,
+  }));
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -403,6 +279,48 @@ export default function DashboardPage() {
           </Link>
         )}
       </div>
+
+      {/* Announcements Carousel/List */}
+      {announcements.length > 0 && (
+        <div className="space-y-3">
+          {announcements.map((a) => (
+            <div 
+              key={a._id} 
+              className={clsx(
+                "p-4 rounded-2xl border flex items-start gap-4 animate-in slide-in-from-top-4 duration-500",
+                a.type === 'discount' ? "bg-teal-500/10 border-teal-500/20 text-teal-100" :
+                a.type === 'alert' ? "bg-red-500/10 border-red-500/20 text-red-100" :
+                a.type === 'update' ? "bg-blue-500/10 border-blue-500/20 text-blue-100" :
+                "bg-yellow-500/5 border-yellow-500/10 text-yellow-100"
+              )}
+            >
+              <div className={clsx(
+                "p-2 rounded-xl shrink-0",
+                a.type === 'discount' ? "bg-teal-500/20 text-teal-400" :
+                a.type === 'alert' ? "bg-red-500/20 text-red-400" :
+                a.type === 'update' ? "bg-blue-500/20 text-blue-400" :
+                "bg-yellow-500/20 text-yellow-400"
+              )}>
+                <Bell className="w-4 h-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <h4 className="text-xs font-black uppercase tracking-tight">{a.title}</h4>
+                  <span className="text-[8px] opacity-50 font-bold uppercase tracking-widest">{new Date(a.createdAt).toLocaleDateString()}</span>
+                </div>
+                <p className="text-[11px] leading-relaxed opacity-80">{a.content}</p>
+              </div>
+              <button 
+                onClick={() => setAnnouncements(prev => prev.filter(item => item._id !== a._id))}
+                className="p-1 hover:bg-white/5 rounded-lg transition-colors"
+              >
+                <X className="w-3.5 h-3.5 opacity-30 hover:opacity-100" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {loadingStats ? (
           <>
@@ -413,208 +331,104 @@ export default function DashboardPage() {
           </>
         ) : (
           <>
-            <StatCard icon={<Flame className="w-5 h-5 text-yellow-400" />} label="Study Streak" value={stats?.studyStreak || 0} suffix="days" color="yellow" />
-            <StatCard icon={<Trophy className="w-5 h-5 text-jade-400" />} label="Confidence" value={stats?.confidenceScore || 50} suffix="/100" color="jade" />
-            <StatCard icon={<BarChart3 className="w-5 h-5 text-deep-400" />} label="Weekly Avg" value={stats?.weeklyProductivity || 0} suffix="%" color="deep" />
-            <StatCard icon={<Target className="w-5 h-5 text-purple-400" />} label="Missions" value={activeMissions.length} suffix="active" color="purple" />
+            <StatCard icon={<Flame className="w-5 h-5 text-yellow-400" />} label="Plan Streak" value={planStats?.streak || 0} suffix="days" color="yellow" />
+            <StatCard icon={<Trophy className="w-5 h-5 text-teal-400" />} label="On Track" value={planStats ? Math.round(planStats.trackScore * 100) : 0} suffix="%" color="teal" />
+            <StatCard icon={<BarChart3 className="w-5 h-5 text-deep-400" />} label="Today" value={planStats ? Math.round(planStats.todayRatio * 100) : 0} suffix="%" color="deep" />
+            <StatCard icon={<Target className="w-5 h-5 text-purple-400" />} label="Plans" value={plans.length} suffix="active" color="purple" />
           </>
         )}
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 glass-card p-5 relative overflow-hidden h-fit">
+
+<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 glass-card p-5">
           <div className="flex items-center justify-between mb-4 border-b border-ink-800 pb-4">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-yellow-400" />
-              <h2 className="font-display text-lg font-semibold text-ink-100">Today's Protocol</h2>
+              <h2 className="font-display text-lg font-semibold text-ink-100">Daily Plan</h2>
             </div>
+            <Link href="/dashboard/plans" className="text-xs text-yellow-400 hover:underline">
+              Manage Plans
+            </Link>
           </div>
 
-          {loadingSchedule ? (
-            <div className="space-y-3 animate-pulse">
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className="h-16 bg-ink-900/50 rounded-lg" />
+          <PlanCalendar plans={plans} />
+          <PlanGraph plans={plans} />
+        </div>
+
+        <div className="space-y-4">
+          {loadingMissions ? (
+            <div className="glass-card p-4 animate-pulse space-y-3">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-10 bg-ink-900/50 rounded-lg" />
               ))}
             </div>
-          ) : schedule && schedule.blocks && schedule.blocks.length > 0 && !isAllCompleted ? (
-            <div className="space-y-4">
-              <div className="p-3 rounded-lg border border-ink-800 bg-ink-900/20">
-                <div className="flex items-center justify-between text-xs mb-2">
-                  <span className="text-ink-400">Progress</span>
-                  <span className="text-teal-400 font-mono">
-                    {schedule.blocks.filter((b: any) => b.completed).length} / {schedule.blocks.filter((b: any) => {
-                      const type = b?.taskType || '';
-                      return type !== 'break' && type !== 'fitness';
-                    }).length} tasks
-                  </span>
-                </div>
-                <div className="h-1.5 bg-ink-950 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-teal-500 transition-all duration-500"
-                    style={{ 
-                      width: `${(schedule.blocks.filter((b: any) => b.completed).length / schedule.blocks.filter((b: any) => {
-                        const type = b?.taskType || '';
-                        return type !== 'break' && type !== 'fitness';
-                      }).length) * 100}%` 
-                    }} 
-                  />
-                </div>
+          ) : (
+            <div className="glass-card p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-sm text-ink-200 flex items-center gap-2">
+                  <Target className="w-4 h-4 text-yellow-400" /> Active Missions
+                </h3>
+                <Link href="/dashboard/missions"><ChevronRight className="w-4 h-4 text-ink-500" /></Link>
               </div>
-
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-mono text-ink-500 uppercase tracking-wider">
-                  Refine Today's Schedule
-                </span>
-                <span className="text-[10px] font-mono text-yellow-400">
-                  {Math.max(0, 2 - (Number(schedule?.refinementCount) || 0))} left
-                </span>
-              </div>
-              <div className="flex gap-2">
-                <input
-                  value={scheduleRefineInput}
-                  onChange={(e) => setScheduleRefineInput(e.target.value)}
-                  placeholder="e.g. Add more Polity, reduce revision"
-                  className="input-field flex-1 text-xs"
-                  disabled={refiningSchedule || (Number(schedule?.refinementCount) || 0) >= 2}
-                />
-                <button
-                  onClick={handleRefineSchedule}
-                  className="btn-primary text-xs px-4"
-                  disabled={refiningSchedule || (Number(schedule?.refinementCount) || 0) >= 2}
-                >
-                  {refiningSchedule ? 'Updating...' : 'Refine'}
-                </button>
-              </div>
-
               <div className="space-y-3">
-                {schedule.blocks.map((block: any, i: number) => {
-                  const safeType = block?.taskType || 'learning';
-                  const subjectLower = String(block?.subject || '').toLowerCase();
-                  const isCsatBlock = subjectLower.includes('csat');
-                  const isCompleted = block?.completed;
-                  const isTimerActive = activeTimer === i;
-                  const timeSpent = block?.timeSpent || 0;
-                  const elapsed = elapsedTime[i] || 0;
-                  const blockClass = isCsatBlock
-                    ? CSAT_BLOCK_CLASS
-                    : (TASK_TYPE_COLORS[safeType] || 'bg-ink-800/30 border-ink-700/30');
-                  return (
-                    <div
-                      key={`block-${i}`}
-                      className={clsx(
-                        'w-full flex items-start gap-3 p-3 rounded-lg border transition-all',
-                        blockClass,
-                        isCompleted && 'opacity-50'
-                      )}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => handleToggleComplete(i, isCompleted)}
-                        className={clsx(
-                          'shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all',
-                          isCompleted 
-                            ? 'bg-teal-500 border-teal-500' 
-                            : 'border-ink-500 hover:border-teal-400'
-                        )}
-                      >
-                        {isCompleted && <CheckCircle2 className="w-4 h-4 text-ink-950" />}
-                      </button>
-                      <div 
-                        className="flex-1 min-w-0 cursor-pointer"
-                        onClick={() => openFocusMode(block)}
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className={clsx('font-semibold text-sm', isCompleted && 'line-through')}>{block.subject}</span>
-                          <span className="text-[10px] uppercase tracking-tighter opacity-70">
-                            {(TASK_TYPE_LABELS[safeType] || safeType).replace('_', ' ')}
-                          </span>
-                          {isCompleted && (
-                            <span className="text-[10px] text-teal-400">Done</span>
-                          )}
-                        </div>
-                        <div className="text-xs opacity-60 mt-0.5 truncate">{block.topic}</div>
-                        {timeSpent > 0 && (
-                          <div className="text-[10px] text-teal-400 mt-1">
-                            Time: {timeSpent} min
-                          </div>
-                        )}
-                      </div>
-                      <div className="shrink-0 flex flex-col items-end gap-2">
-                        {isTimerActive ? (
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-mono text-teal-400">{formatTime(elapsed)}</span>
-                            <button
-                              onClick={() => handleStopTimer(i)}
-                              className="p-1.5 rounded-full bg-teal-500/20 text-teal-400 hover:bg-teal-500/30"
-                            >
-                              <Pause className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        ) : !isCompleted ? (
-                          <button
-                            onClick={() => handleStartTimer(i)}
-                            className="p-1.5 rounded-full bg-ink-800 text-ink-400 hover:text-teal-400 hover:bg-teal-500/20 transition-all"
-                            title="Start Timer"
-                          >
-                            <Play className="w-3.5 h-3.5" />
-                          </button>
-                        ) : null}
-                        <div className="font-mono text-[10px] opacity-50">
-                          Slot {i + 1}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ) : isAllCompleted ? (
-            <div className="py-12 text-center">
-              <div className="w-16 h-16 rounded-full bg-teal-500/20 flex items-center justify-center mx-auto mb-4">
-                <CheckCircle2 className="w-8 h-8 text-teal-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-ink-100 mb-2">Today's Protocol Complete!</h3>
-              <p className="text-ink-500 text-sm mb-6">Great work! Ready for tomorrow?</p>
-              <button onClick={handleGenerateSchedule} disabled={generatingSchedule} className="btn-primary px-8 py-2.5 flex items-center gap-2 mx-auto disabled:opacity-50">
-                {generatingSchedule ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                {activeMissions.length === 0 ? (
+                  <p className="text-ink-600 text-xs text-center py-4 italic border border-dashed border-ink-800 rounded-lg">No missions active</p>
                 ) : (
-                  <Zap className="w-4 h-4 fill-current" />
+                  activeMissions.slice(0, 3).map((m: any) => <MissionMiniCard key={m._id} mission={m} />)
                 )}
-                {generatingSchedule ? 'Generating...' : 'Generate Tomorrow'}
-              </button>
-            </div>
-          ) : (
-            <div className="py-16 text-center">
-              <Brain className="w-12 h-12 text-ink-700 mx-auto mb-4 opacity-20" />
-              <p className="text-ink-500 text-sm mb-6">No active strategy for today. Ready to start?</p>
-              <button onClick={handleGenerateSchedule} disabled={generatingSchedule} className="btn-primary px-8 py-2.5 flex items-center gap-2 mx-auto disabled:opacity-50">
-                {generatingSchedule ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Zap className="w-4 h-4 fill-current" />
-                )}
-                {generatingSchedule ? 'Generating...' : 'Generate Schedule'}
-              </button>
-            </div>
-          )}
-        </div>
-        <div className="space-y-4">
-          {loadingDDay ? (
-            <div className="glass-card p-5 animate-pulse">
-              <div className="h-32 bg-ink-900/50 rounded-xl" />
-            </div>
-          ) : calendarTargetDate ? (
-            <CountdownCalendar
-              targetDate={calendarTargetDate}
-              examName={calendarExamName}
-            />
-          ) : (
-            <div className="glass-card p-5 border border-dashed border-ink-700 text-center">
-              <h3 className="font-semibold text-sm text-ink-200 mb-2">Calendar Target</h3>
-              <p className="text-ink-500 text-xs">No targets saved on calendar</p>
+              </div>
             </div>
           )}
 
+          {loadingTracker ? (
+            <div className="glass-card p-4 animate-pulse">
+              <div className="h-24 bg-ink-900/50 rounded" />
+            </div>
+          ) : (
+            <div className="glass-card p-4">
+              <h3 className="font-semibold text-sm text-ink-200 mb-4 flex items-center gap-2">
+                <Target className="w-4 h-4 text-yellow-400" /> Daily Plans
+              </h3>
+              {plans.length > 0 ? (
+                <div className="space-y-3">
+                  {plans.sort((a, b) => {
+                    const today = format(new Date(), 'yyyy-MM-dd');
+                    const aActive = today >= format(new Date(a.startDate), 'yyyy-MM-dd') && today <= format(new Date(a.endDate), 'yyyy-MM-dd');
+                    const bActive = today >= format(new Date(b.startDate), 'yyyy-MM-dd') && today <= format(new Date(b.endDate), 'yyyy-MM-dd');
+                    if (aActive && !bActive) return -1;
+                    if (!aActive && bActive) return 1;
+                    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                  }).slice(0, 4).map((p: any) => {
+                    const today = format(new Date(), 'yyyy-MM-dd');
+                    const todayLog = p.dailyLogs?.filter((l: any) => l.date === today) || [];
+                    const completed = todayLog.filter((l: any) => l.status === 'completed').length;
+                    const ratio = p.tasks?.length > 0 ? completed / p.tasks.length : 0;
+                    return (
+                      <div key={p._id}>
+                        <div className="flex justify-between text-[10px] mb-1">
+                          <span className="text-ink-400 truncate">{p.planName}</span>
+                          <span className="text-jade-400 font-bold">{Math.round(ratio * 100)}%</span>
+                        </div>
+                        <div className="h-1.5 bg-ink-900 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-gradient-to-r from-yellow-500 to-jade-500" 
+                            style={{ width: `${ratio * 100}%` }} 
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="h-[80px] flex items-center justify-center text-ink-600 text-xs">
+                  <Link href="/dashboard/plans" className="text-yellow-400 hover:underline">
+                    + Add Daily Plan
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
+          
           {loadingDDay ? (
             <div className="glass-card p-4 animate-pulse space-y-3">
               <div className="h-8 bg-ink-900/50 rounded" />
@@ -667,57 +481,6 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
-          
-          {loadingMissions ? (
-            <div className="glass-card p-4 animate-pulse space-y-3">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="h-10 bg-ink-900/50 rounded-lg" />
-              ))}
-            </div>
-          ) : (
-            <div className="glass-card p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-sm text-ink-200 flex items-center gap-2">
-                  <Target className="w-4 h-4 text-yellow-400" /> Active Missions
-                </h3>
-                <Link href="/dashboard/missions"><ChevronRight className="w-4 h-4 text-ink-500" /></Link>
-              </div>
-              <div className="space-y-3">
-                {activeMissions.length === 0 ? (
-                  <p className="text-ink-600 text-xs text-center py-4 italic border border-dashed border-ink-800 rounded-lg">No missions active</p>
-                ) : (
-                  activeMissions.slice(0, 3).map((m: any) => <MissionMiniCard key={m._id} mission={m} />)
-                )}
-              </div>
-            </div>
-          )}
-
-          {loadingTracker ? (
-            <div className="glass-card p-4 animate-pulse">
-              <div className="h-24 bg-ink-900/50 rounded" />
-            </div>
-          ) : (
-            <div className="glass-card p-4">
-              <h3 className="font-semibold text-sm text-ink-200 mb-4 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-jade-400" /> Efficiency Trend
-              </h3>
-            {chartData.length > 0 ? (
-              <div className="h-[100px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData}>
-                    <defs>
-                      <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#ff7c0a" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#ff7c0a" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <Area type="monotone" dataKey="completion" stroke="#ff7c0a" fill="url(#chartGrad)" strokeWidth={2} dot={false} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            ) : <div className="h-20 flex items-center justify-center text-ink-700 text-[10px]">Data pending...</div>}
-          </div>
-          )}
         </div>
       </div>
     </div>
@@ -728,7 +491,8 @@ function StatCard({ icon, label, value, suffix, color }: any) {
   const colorMap: Record<string, string> = {
     yellow: 'yellow-card',
     jade: 'jade-card',
-    deep: 'deep-card',
+    deep: 'bg-deep-900/10 border border-deep-700/30 rounded-xl',
+    teal: 'bg-teal-900/10 border border-teal-700/30 rounded-xl',
     purple: 'bg-purple-900/10 border border-purple-700/30 rounded-xl',
   };
   return (
@@ -746,16 +510,21 @@ function StatCard({ icon, label, value, suffix, color }: any) {
 }
 
 function MissionMiniCard({ mission }: { mission: any }) {
+  const name = mission.name || mission.title || 'Untitled';
+  const progress = mission.progressPercent ?? mission.progressPercentage ?? 0;
+  
   return (
     <div className="p-2.5 bg-ink-900/40 border border-ink-800 rounded-lg hover:border-ink-700 transition-colors">
       <div className="flex justify-between text-[11px] mb-1.5 font-medium text-ink-200">
-        <span className="truncate pr-2">{mission.title}</span>
-        <span className="text-yellow-400 shrink-0">{mission.progressPercentage}%</span>
+        <span className="truncate pr-2">{name}</span>
+        <span className="text-yellow-400 shrink-0">{progress}%</span>
       </div>
       <div className="w-full h-1 bg-ink-800 rounded-full overflow-hidden">
-        <div className="h-full bg-yellow-500" style={{ width: `${mission.progressPercentage}%` }} />
+        <div 
+          className="h-full bg-yellow-500 transition-all duration-500" 
+          style={{ width: `${progress}%` }} 
+        />
       </div>
     </div>
   );
 }
-

@@ -4,21 +4,20 @@ import { useState, useEffect } from 'react'; // Toggle state ke liye
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard, BookOpen, Target, BarChart3, MessageCircle,
+  LayoutDashboard, Target, BarChart3, MessageCircle,
   FlaskConical, User, LogOut, Flame, Trophy, Zap, Brain, FileSearch, 
-  ChevronRight, Menu, X, Shield, Youtube, File
+  ChevronRight, Menu, X, Shield, Youtube, File, Play, Calendar
 } from 'lucide-react';
-import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/store/authStore';
 import clsx from 'clsx';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/dashboard/library', icon: BookOpen, label: 'Library shelf' },
+  { href: '/dashboard/plans', icon: Calendar, label: 'Daily Plans' },
+  { href: '/dashboard/missions', icon: Trophy, label: 'Missions' },
   { href: '/dashboard/youtube', icon: Youtube, label: 'YouTube Courses' },
-  { href: '/dashboard/missions', icon: Target, label: 'Missions' },
-  { href: '/dashboard/tracker', icon: BarChart3, label: 'Daily Tracker' },
-  { href: '/dashboard/pdf-reader-list', icon: File, label: 'Smart PDF Reader' },
+  { href: '/dashboard/courses', icon: Play, label: 'Premium Courses' },
   {
     href: '/dashboard/tests',
     icon: FlaskConical,

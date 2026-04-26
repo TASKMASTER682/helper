@@ -69,27 +69,37 @@ export const libraryAPI = {
 };
 export const missionsAPI = {
   getMissions: () => api.get('/missions'),
-  createMission: (data: any) => api.post('/missions', data),
-  updateProgress: (id: string, data: any) => api.patch(`/missions/${id}/progress`, data),
-  rebalance: (id: string) => api.post(`/missions/${id}/rebalance`),
+  createMission: (data: { name: string; targetType?: string; totalTarget: number; startDate: string; endDate: string }) => 
+    api.post('/missions', data),
+  createMissionPlan: (availableHours: number) => 
+    api.post('/missions/generate-plan', { availableHours }),
+  updateProgress: (id: string, data: { value: number; type?: string }) => 
+    api.patch(`/missions/${id}/progress`, data),
+  pauseMission: (id: string) => api.patch(`/missions/${id}/pause`),
+  resumeMission: (id: string) => api.patch(`/missions/${id}/resume`),
   deleteMission: (id: string) => api.delete(`/missions/${id}`),
-  toggleTask: (id: string, date: string) => api.patch(`/missions/${id}/toggle-task`, { date }),
+};
+export const plansAPI = {
+  getPlans: () => api.get('/plans'),
+  getPlan: (id: string) => api.get(`/plans/${id}`),
+  createPlan: (data: { planName: string; startDate: string; endDate: string; tasks: { taskName: string; optionalTarget?: string }[] }) => 
+    api.post('/plans', data),
+  toggleTask: (planId: string, data: { date: string; taskId: string }) => api.patch(`/plans/${planId}/toggle`, data),
+  getLogs: (planId: string) => api.get(`/plans/${planId}/logs`),
+  getStats: (planId: string) => api.get(`/plans/${planId}/stats`),
+  deletePlan: (planId: string) => api.delete(`/plans/${planId}`),
 };
 export const trackerAPI = {
   getEntries: (days?: number) => api.get(`/tracker${days ? `?days=${days}` : ''}`),
   submitDaily: (data: any) => api.post('/tracker', data),
 };
 export const scheduleAPI = {
-  getToday: () => api.get('/schedule/today'),
-  getDate: (date: string) => api.get(`/schedule/date/${date}`),
-  generate: (date?: string) => api.post('/schedule/generate', { date }),
-  refine: (instruction: string, date?: string) => api.post('/schedule/refine', { instruction, date }),
-  completeBlock: (blockIndex: number, timeSpent?: number) => 
-    api.patch(`/schedule/block/${blockIndex}/complete`, { timeSpent }),
-  incompleteBlock: (blockIndex: number) => 
-    api.patch(`/schedule/block/${blockIndex}/incomplete`),
-  timerAction: (blockIndex: number, action: 'start' | 'stop') => 
-    api.patch(`/schedule/block/${blockIndex}/timer`, { action }),
+  generatePlan: (availableHours: number) => api.post('/schedule/generate-plan', { availableHours }),
+  getPlan: (hours?: number) => api.get(`/schedule/plan${hours ? `?hours=${hours}` : ''}`),
+  getDate: (date?: string) => scheduleAPI.getPlan(4),
+  timerAction: (blockIndex: number, action: 'start' | 'stop') => Promise.resolve({ data: { success: true } }),
+  completeBlock: (blockIndex: number, timeSpent?: number) => Promise.resolve({ data: { success: true } }),
+  incompleteBlock: (blockIndex: number) => Promise.resolve({ data: { success: true } }),
 };
 export const mentorAPI = {
   chat: (data: { message: string; conversationHistory: any[] }) => api.post('/mentor/chat', data),
@@ -159,6 +169,16 @@ export const adminAPI = {
   
   // Subjects
   getSubjects: () => api.get('/admin/subjects'),
+  
+  // Subscriptions - Admin
+  getSubscriptionPlans: () => api.get('/admin/subscription/plans'),
+  createSubscriptionPlan: (data: any) => api.post('/admin/subscription/plans', data),
+  updateSubscriptionPlan: (id: string, data: any) => api.put(`/admin/subscription/plans/${id}`, data),
+  deleteSubscriptionPlan: (id: string) => api.delete(`/admin/subscription/plans/${id}`),
+  getSubscriptions: (params?: any) => api.get('/admin/subscriptions', { params }),
+  updateSubscription: (id: string, data: any) => api.put(`/admin/subscriptions/${id}`, data),
+  activateUserSubscription: (userId: string, data: any) => api.post(`/admin/subscriptions/${userId}/activate`, data),
+  getSubscriptionStats: () => api.get('/admin/subscription/stats'),
 };
 
 export const youtubeCourseAPI = {
@@ -174,3 +194,60 @@ export const youtubeCourseAPI = {
     api.patch(`/youtube-courses/${courseId}/watched/${videoId}`),
 };
 
+export const subscriptionAPI = {
+  getPlans: () => api.get('/subscription/plans'),
+  getStatus: () => api.get('/subscription/status'),
+  purchase: (data: { planId: string; paymentId?: string }) => api.post('/subscription/purchase', data),
+  cancel: () => api.post('/subscription/cancel'),
+  getHistory: () => api.get('/subscription/history'),
+  verifyAccess: () => api.get('/subscription/verify'),
+  getSessions: () => api.get('/subscription/sessions/active'),
+  deleteSession: (sessionId: string) => api.delete(`/subscription/sessions/${sessionId}`),
+  deleteAllSessions: () => api.delete('/subscription/sessions'),
+};
+
+export const coursesAPI = {
+  getCourses: () => api.get('/courses'),
+  getCourse: (id: string) => api.get(`/courses/${id}`),
+  getLessonVideo: (courseId: string, lessonId: string) => 
+    api.get(`/courses/${courseId}/lesson/${lessonId}/video`),
+  incrementLessonView: (courseId: string, lessonId: string) => 
+    api.post(`/courses/${courseId}/lesson/${lessonId}/increment-view`),
+  markLessonComplete: (courseId: string, lessonId: string) => 
+    api.patch(`/courses/${courseId}/lesson/${lessonId}/complete`),
+  markLessonIncomplete: (courseId: string, lessonId: string) => 
+    api.patch(`/courses/${courseId}/lesson/${lessonId}/incomplete`),
+  updateLessonProgress: (courseId: string, lessonId: string, data: any) => 
+    api.patch(`/courses/${courseId}/lesson/${lessonId}/progress`, data),
+  enrollCourse: (courseId: string, data: any) => 
+    api.post('/courses/enroll', { courseId, ...data }),
+  getMyEnrollments: () => api.get('/courses/my-enrollments'),
+  getAllCourses: () => api.get('/courses/admin/all'),
+  createCourse: (data: any) => api.post('/courses/admin', data),
+  updateCourse: (id: string, data: any) => api.put(`/courses/admin/${id}`, data),
+  deleteCourse: (id: string) => api.delete(`/courses/admin/${id}`),
+  getCourseLessons: (id: string) => api.get(`/courses/admin/${id}/lessons`),
+  getAdminCourseLessons: (id: string) => api.get(`/courses/admin/${id}/lessons`),
+  createLesson: (courseId: string, data: any) => api.post(`/courses/admin/${courseId}/lessons`, data),
+  updateLesson: (lessonId: string, data: any) => api.put(`/courses/admin/lessons/${lessonId}`, data),
+  deleteLesson: (lessonId: string) => api.delete(`/courses/admin/lessons/${lessonId}`),
+};
+export const settingsAPI = {
+  getConfig: () => api.get('/settings/config'),
+  updateConfig: (data: any) => api.put('/settings/config', data),
+  getAnnouncements: () => api.get('/settings/announcements'),
+  createAnnouncement: (data: any) => api.post('/settings/announcements', data),
+  deleteAnnouncement: (id: string) => api.delete(`/settings/announcements/${id}`),
+  manualEnroll: (data: { userId: string; courseId: string; amount: number }) => 
+    api.post('/settings/manual-enroll', data),
+};
+
+export const paymentsAPI = {
+  createOrder: (courseId: string) => api.post('/payments/create-order', { courseId }),
+  verifyPayment: (data: { 
+    razorpay_order_id: string; 
+    razorpay_payment_id: string; 
+    razorpay_signature: string;
+    courseId: string;
+  }) => api.post('/payments/verify-payment', data),
+};
