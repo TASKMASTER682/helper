@@ -2127,6 +2127,15 @@ function CoursesTab() {
     } catch { toast.error('Purge failed'); }
   };
 
+  const handleDeleteLesson = async (id: string) => {
+    if (!confirm('Purge this lesson node?')) return;
+    try {
+      await coursesAPI.deleteLesson(id);
+      toast.success('Lesson purged');
+      if (selectedCourse) loadLessons(selectedCourse._id);
+    } catch { toast.error('Purge failed'); }
+  };
+
   return (
     <div className="space-y-8 relative">
       <div className="flex items-center justify-between mb-4">

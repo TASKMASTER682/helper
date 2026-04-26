@@ -153,7 +153,7 @@ export const adminAPI = {
   
   // Series
   getSeries: (params?: any) => api.get('/admin/series', { params }),
-  addSeries: (data: any) => api.post('/admin/series', data),
+  createSeries: (data: any) => api.post('/admin/series', data),
   updateSeries: (id: string, data: any) => api.put(`/admin/series/${id}`, data),
   deleteSeries: (id: string) => api.delete(`/admin/series/${id}`),
   

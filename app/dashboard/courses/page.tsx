@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { coursesAPI, settingsAPI } from '@/lib/api';
 import { 
   Play, BookOpen, Clock, CheckCircle2, Circle, 
-  ChevronRight, Loader2, Crown, Lock as LockIcon, Shield, CreditCard
+  ChevronRight, Loader2, Crown, Lock as LockIcon, Shield, CreditCard, X
 } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
