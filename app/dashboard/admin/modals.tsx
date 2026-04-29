@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { adminAPI, coursesAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { X, Video, BookOpen, Clock, Layers, Shield, PlayCircle, Eye, Trash2, Edit2, Plus, Crown } from 'lucide-react';
+import { X, Video, BookOpen, Clock, Layers, Shield, PlayCircle, Eye, Trash2, Edit2, Plus, Crown, Upload } from 'lucide-react';
 
 export function PlanFormModal({ onClose, onSave }: { onClose: () => void; onSave: () => void }) {
   const [form, setForm] = useState({ name: '', price: 0, duration: 1, durationUnit: 'month', description: '', features: [''] });
@@ -181,8 +181,49 @@ export function CourseFormModal({ course, onClose, onSave }: { course?: any; onC
               <input value={form.instructor} onChange={e => setForm({...form, instructor: e.target.value})} className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500/50 outline-none" />
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest">Thumbnail URI</label>
-              <input value={form.thumbnail} onChange={e => setForm({...form, thumbnail: e.target.value})} className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500/50 outline-none" placeholder="https://..." />
+              <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest block mb-2">Module Thumbnail</label>
+              <div className="flex flex-col gap-4">
+                {form.thumbnail && (
+                  <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-ink-800 group">
+                    <img src={form.thumbnail} alt="Preview" className="w-full h-full object-cover" />
+                    <button 
+                      onClick={() => setForm({...form, thumbnail: ''})}
+                      className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+                <div className="relative">
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        if (file.size > 1 * 1024 * 1024) {
+                          toast.error('Image size must be less than 1MB');
+                          return;
+                        }
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setForm({...form, thumbnail: reader.result as string});
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }} 
+                    className="hidden" 
+                    id="course-thumbnail-upload"
+                  />
+                  <label 
+                    htmlFor="course-thumbnail-upload"
+                    className="flex items-center justify-center gap-2 w-full py-3 bg-ink-900 border border-dashed border-ink-700 rounded-xl text-xs font-bold text-ink-400 hover:border-blue-500/50 hover:text-white transition-all cursor-pointer"
+                  >
+                    <Upload className="w-4 h-4" />
+                    {form.thumbnail ? 'Change Thumbnail' : 'Upload Thumbnail (Max 1MB)'}
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -279,8 +320,49 @@ export function LessonFormModal({ courseId, lesson, onClose, onSave }: { courseI
             <input value={form.videoId} onChange={e => setForm({...form, videoId: e.target.value})} className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500/50 outline-none" placeholder="YouTube/Vimeo Video ID" />
           </div>
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest">Thumbnail URL (Optional)</label>
-            <input value={form.thumbnail} onChange={e => setForm({...form, thumbnail: e.target.value})} className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500/50 outline-none" />
+            <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest block mb-2">Lesson Thumbnail (Optional)</label>
+            <div className="flex flex-col gap-4">
+              {form.thumbnail && (
+                <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-ink-800 group">
+                  <img src={form.thumbnail} alt="Preview" className="w-full h-full object-cover" />
+                  <button 
+                    onClick={() => setForm({...form, thumbnail: ''})}
+                    className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+              <div className="relative">
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      if (file.size > 1 * 1024 * 1024) {
+                        toast.error('Image size must be less than 1MB');
+                        return;
+                      }
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setForm({...form, thumbnail: reader.result as string});
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }} 
+                  className="hidden" 
+                  id="lesson-thumbnail-upload"
+                />
+                <label 
+                  htmlFor="lesson-thumbnail-upload"
+                  className="flex items-center justify-center gap-2 w-full py-3 bg-ink-900 border border-dashed border-ink-700 rounded-xl text-xs font-bold text-ink-400 hover:border-blue-500/50 hover:text-white transition-all cursor-pointer"
+                >
+                  <Upload className="w-4 h-4" />
+                  {form.thumbnail ? 'Change Thumbnail' : 'Upload Thumbnail (Max 1MB)'}
+                </label>
+              </div>
+            </div>
           </div>
           <div className="space-y-2">
             <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest">Index Order</label>

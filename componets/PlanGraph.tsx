@@ -99,8 +99,8 @@ export default function PlanGraph({ planId, plans: propPlans }: PlanGraphProps) 
         </div>
       )}
 
-      <div className="h-32">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-32 w-full">
+        <ResponsiveContainer width="100%" height={128}>
           <AreaChart data={graphData}>
             <defs>
               <linearGradient id="colorRatio" x1="0" y1="0" x2="0" y2="1">

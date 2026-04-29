@@ -137,7 +137,7 @@ export default function DashboardPage() {
       .finally(() => setLoadingDDay(false));
   }, [user?.id]);
 
-  useEffect(() => {
+  const fetchPlans = () => {
     plansAPI.getPlans()
       .then(res => {
         const allPlans = res.data;
@@ -152,8 +152,6 @@ export default function DashboardPage() {
           let combinedOnTrackScore = 0;
           let activePlansCount = 0;
           
-          // Simplified streak: just take the max from any plan for now, 
-          // or we could calculate a unified one. Max is safer for motivation.
           let maxStreak = 0;
 
           const statsPromises = allPlans.map((p: any) => plansAPI.getStats(p._id));
@@ -181,6 +179,10 @@ export default function DashboardPage() {
         }
       })
       .catch(err => console.error("Plans Error:", err));
+  };
+
+  useEffect(() => {
+    fetchPlans();
   }, []);
 
   const handleSaveTarget = async () => {
@@ -351,7 +353,7 @@ export default function DashboardPage() {
             </Link>
           </div>
 
-          <PlanCalendar plans={plans} />
+          <PlanCalendar plans={plans} onRefresh={fetchPlans} />
           <PlanGraph plans={plans} />
         </div>
 

@@ -6,6 +6,7 @@ import clsx from 'clsx';
 
 interface PlanCalendarProps {
   plans?: any[];
+  onRefresh?: () => void;
 }
 
 const format = (date: Date, fmt: string) => {
@@ -31,7 +32,7 @@ const eachDayOfInterval = ({ start, end }: { start: Date; end: Date }) => {
   return days;
 };
 
-export default function PlanCalendar({ plans = [] }: PlanCalendarProps) {
+export default function PlanCalendar({ plans = [], onRefresh }: PlanCalendarProps) {
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().slice(0, 10));
   
   // Calculate statuses and overlaps for all plans
@@ -82,10 +83,16 @@ export default function PlanCalendar({ plans = [] }: PlanCalendarProps) {
   }, [plans]);
 
   const handleToggleTask = async (planId: string, taskId: string) => {
+    if (selectedDate < today) {
+      return; // Prevent ticking past tasks
+    }
     try {
       await plansAPI.toggleTask(planId, { date: selectedDate, taskId });
-      // We rely on the parent to refresh the plans prop
-      window.location.reload(); // Quick fix to refresh all states, or better: parent should handle refresh
+      if (onRefresh) {
+        onRefresh();
+      } else {
+        window.location.reload();
+      }
     } catch (err) {
       console.error(err);
     }
@@ -217,11 +224,13 @@ export default function PlanCalendar({ plans = [] }: PlanCalendarProps) {
                       </div>
                       <button
                         onClick={() => handleToggleTask(plan._id, task._id)}
+                        disabled={selectedDate < today}
                         className={clsx(
                           'w-8 h-8 rounded-lg flex items-center justify-center transition-all',
                           isCompleted 
                             ? 'bg-green-500 text-white shadow-lg shadow-green-500/20' 
-                            : 'bg-ink-800 text-ink-500 hover:bg-ink-700'
+                            : 'bg-ink-800 text-ink-500 hover:bg-ink-700',
+                          selectedDate < today && 'opacity-50 cursor-not-allowed'
                         )}
                       >
                         {isCompleted ? <CheckCircle2 size={18} /> : <div className="w-4 h-4 rounded border-2 border-ink-600" />}
