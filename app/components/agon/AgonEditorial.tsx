@@ -36,7 +36,7 @@ const fallbackEditorials = [
   },
 ];
 
-function formatDate(dateStr) {
+function formatDate(dateStr: string) {
   if (!dateStr) return '';
   const d = new Date(dateStr);
   const now = new Date();
