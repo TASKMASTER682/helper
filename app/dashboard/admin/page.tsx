@@ -2709,7 +2709,7 @@ function ArticlesTab() {
   const runScrape = async (source: string, mode: 'today' | 'yesterday') => {
     const key = `${source}-${mode}`;
     setLoadingStates(prev => ({ ...prev, [key]: true }));
-    setResults(prev => ({ ...prev, [key]: undefined }));
+    setResults(prev => { const next = { ...prev }; delete next[key]; return next; });
 
     try {
       const fn = mode === 'today' ? adminAPI.loadTodayArticles : adminAPI.loadYesterdayArticles;

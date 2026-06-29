@@ -39,16 +39,24 @@ const fallbackEditorials = [
 function formatDate(dateStr: string) {
   if (!dateStr) return '';
   const d = new Date(dateStr);
-  const now = new Date();
-  const diff = now - d;
+  const now = Date.now();
+  const diff = now - d.getTime();
   const oneDay = 86400000;
   if (diff < oneDay) return 'Today';
   if (diff < 2 * oneDay) return 'Yesterday';
   return d.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' });
 }
 
+interface EditorialItem {
+  title: string;
+  description?: string;
+  sourceKey: string;
+  publishedAt?: string;
+  runDateKey?: string;
+}
+
 export default function AgonEditorial() {
-  const [items, setItems] = useState(null);
+  const [items, setItems] = useState<EditorialItem[] | null>(null);
 
   useEffect(() => {
     fetch(`${API_BASE}/editorial-engine/public/latest`)
@@ -59,14 +67,14 @@ export default function AgonEditorial() {
       .catch(() => {});
   }, []);
 
-  const sourceLabels = { legacyias: 'PIB' };
+  const sourceLabels: Record<string, string> = { legacyias: 'PIB' };
 
   const editorials = items?.length
-    ? items.map((i) => ({
+    ? items.map((i: EditorialItem) => ({
         category: sourceLabels[i.sourceKey] || i.sourceKey?.replace(/_/g, ' ') || 'Editorial',
         title: i.title,
         dek: i.description || '',
-        date: formatDate(i.publishedAt || i.runDateKey),
+        date: formatDate(i.publishedAt || i.runDateKey || ''),
         read: `${Math.max(3, Math.ceil((i.description?.length || 100) / 200))} min`,
       }))
     : fallbackEditorials;
