@@ -103,7 +103,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           ${playfair.variable}
           ${inter.variable}
           ${jetbrains.variable}
-          bg-ink-800 text-ink-100 font-body antialiased
+          bg-ink-950 text-ink-100 antialiased
         `}
       >
         <PWARegister />
@@ -111,7 +111,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Toaster
           position="top-right"
           toastOptions={{
-            style: { background: '#241d16', color: '#e8e3d8', border: '1px solid #3d3124' },
+            style: { background: '#faf7ee', color: '#1b1510', border: '1px solid #e9e2cf' },
             success: { iconTheme: { primary: '#12b97a', secondary: '#032b20' } },
             error: { iconTheme: { primary: '#ff7c0a', secondary: '#451400' } }
           }}

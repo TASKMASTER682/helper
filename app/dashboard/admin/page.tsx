@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuthStore } from '@/store/authStore';
 import { adminAPI, mockTestAPI, testsAPI, coursesAPI, settingsAPI } from '@/lib/api';
 import {
@@ -9,7 +10,8 @@ import {
   ChevronLeft, ChevronRight, Upload, Settings, BarChart3,
   ToggleLeft, ToggleRight, Save, CheckSquare, Square, Eye, Crown, CreditCard, PlayCircle,
   Zap, Clock, TrendingUp, RefreshCw, Filter, MoreVertical, UserPlus, Database, Mail, Calendar,
-  Activity, Video, Layers, Bell, Percent, MessageSquare, Send, Copy
+  Activity, Video, Layers, Bell, Percent, MessageSquare, Send, Copy,
+  Newspaper, ExternalLink, Code2
 } from 'lucide-react';
 import { 
   PlanFormModal, ActivateUserModal, CourseFormModal, LessonFormModal,
@@ -66,7 +68,7 @@ function renderWithBreaks(text: string): string {
   return text.replace(/\n/g, '<br/>');
 }
 
-type TabType = 'dashboard' | 'tests' | 'series' | 'questions' | 'create-test' | 'users' | 'subscriptions' | 'courses' | 'settings';
+type TabType = 'dashboard' | 'tests' | 'series' | 'questions' | 'create-test' | 'users' | 'subscriptions' | 'courses' | 'settings' | 'articles';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -88,7 +90,7 @@ export default function AdminDashboard() {
           <div className="absolute inset-0 bg-red-500 blur-3xl opacity-20 animate-pulse" />
           <Shield className="w-20 h-20 text-red-500 relative z-10" />
         </div>
-        <h2 className="text-2xl font-black text-white mt-6 uppercase tracking-tighter">Secure Terminal Restricted</h2>
+        <h2 className="text-2xl font-black text-red-800 mt-6 uppercase tracking-tighter">Secure Terminal Restricted</h2>
         <p className="text-ink-500 mt-2 text-xs font-black uppercase tracking-[0.2em]">Level 4 Clearance Required</p>
       </div>
     );
@@ -103,21 +105,22 @@ export default function AdminDashboard() {
     { id: 'users', icon: Users, label: 'Citizens', desc: 'User Management' },
     { id: 'subscriptions', icon: Crown, label: 'Nexus Plans', desc: 'Monetization' },
     { id: 'courses', icon: PlayCircle, label: 'Academy', desc: 'Video Courses' },
+    { id: 'articles', icon: Newspaper, label: 'Articles', desc: 'Scraper Loader' },
     { id: 'settings', icon: Settings, label: 'System', desc: 'Configurations' },
   ] as const;
 
   return (
     <div className="min-h-screen animate-fade-in pb-20">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 p-8 rounded-3xl bg-ink-900 border border-ink-800 relative overflow-hidden shadow-2xl">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-500/5 blur-[100px] rounded-full" />
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 p-8 rounded-3xl bg-ink-900 border border-ink-600 relative overflow-hidden shadow-2xl">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/5 blur-[100px] rounded-full" />
         <div className="relative z-10">
           <div className="flex items-center gap-4 mb-2">
-            <div className="p-3 bg-yellow-500 text-ink-950 rounded-2xl shadow-lg shadow-yellow-500/20">
+            <div className="p-3 bg-red-500 text-white rounded-2xl shadow-lg shadow-red-500/20">
               <Shield className="w-8 h-8" />
             </div>
             <div>
-              <h1 className="text-3xl font-black text-white tracking-tighter uppercase">Command Center</h1>
+              <h1 className="text-3xl font-black text-red-800 tracking-tighter uppercase">Command Center</h1>
               <div className="flex items-center gap-2 mt-1">
                 <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
                 <p className="text-ink-500 text-[10px] font-black uppercase tracking-[0.3em]">System Admin v4.0.2</p>
@@ -128,7 +131,7 @@ export default function AdminDashboard() {
         
         {/* Quick Actions or Status */}
         <div className="flex items-center gap-3 relative z-10">
-          <div className="px-4 py-2 bg-ink-950/50 border border-ink-800 rounded-xl">
+          <div className="px-4 py-2 bg-ink-950/50 border border-ink-600 rounded-xl">
             <div className="text-[10px] text-ink-600 font-black uppercase tracking-widest mb-1">Server Status</div>
             <div className="text-teal-400 text-xs font-bold flex items-center gap-2">
               <RefreshCw className="w-3 h-3 animate-spin-slow" /> Operational
@@ -148,8 +151,8 @@ export default function AdminDashboard() {
                 className={clsx(
                   'w-full group px-5 py-4 rounded-2xl flex items-center gap-4 transition-all duration-300 border text-left',
                   activeTab === tab.id 
-                    ? 'bg-yellow-500 border-yellow-400 text-ink-950 shadow-xl shadow-yellow-500/10 scale-[1.02]' 
-                    : 'bg-ink-900/40 border-ink-800 text-ink-500 hover:bg-ink-900 hover:border-ink-700'
+                    ? 'bg-red-500 border-red-400 text-white shadow-xl shadow-red-500/10 scale-[1.02]' 
+                    : 'bg-ink-900/40 border-ink-600 text-ink-500 hover:bg-ink-900 hover:border-ink-500'
                 )}
               >
                 <div className={clsx(
@@ -184,6 +187,7 @@ export default function AdminDashboard() {
             {activeTab === 'users' && <UsersTab />}
             {activeTab === 'subscriptions' && <SubscriptionsTab />}
             {activeTab === 'courses' && <CoursesTab />}
+            {activeTab === 'articles' && <ArticlesTab />}
             {activeTab === 'settings' && <SettingsTab />}
           </div>
         </div>
@@ -208,7 +212,7 @@ function OverviewTab() {
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-40 gap-4">
-      <Loader2 className="w-10 h-10 text-yellow-500 animate-spin" />
+      <Loader2 className="w-10 h-10 text-red-500 animate-spin" />
       <p className="text-ink-500 font-mono text-xs animate-pulse uppercase tracking-[0.3em]">Querying Mainframe...</p>
     </div>
   );
@@ -225,10 +229,10 @@ function OverviewTab() {
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {CARDS.map(item => (
-          <div key={item.label} className="group relative glass-card p-8 border-ink-800 hover:border-yellow-500/30 transition-all duration-500 overflow-hidden">
+          <div key={item.label} className="group relative glass-card p-8 border-ink-600 hover:border-pink-300/30 transition-all duration-500 overflow-hidden">
             <div className={clsx(
               "absolute -bottom-10 -right-10 w-40 h-40 blur-[80px] opacity-10 group-hover:opacity-20 transition-opacity rounded-full",
-              item.color === 'yellow' ? 'bg-yellow-500' : 
+              item.color === 'yellow' ? 'bg-red-500' : 
               item.color === 'teal' ? 'bg-teal-500' : 
               item.color === 'orange' ? 'bg-orange-500' :
               item.color === 'purple' ? 'bg-purple-500' : 'bg-blue-500'
@@ -236,8 +240,8 @@ function OverviewTab() {
             
             <div className="relative z-10 flex items-start justify-between">
               <div>
-                <div className="text-[10px] font-black text-ink-500 uppercase tracking-[0.2em] mb-6">{item.label}</div>
-                <div className="text-5xl font-black text-white mb-2 tabular-nums tracking-tighter">
+                <div className="text-[10px] font-black text-red-8000 uppercase tracking-[0.2em] mb-6">{item.label}</div>
+                <div className="text-5xl font-black text-red-800 mb-2 tabular-nums tracking-tighter">
                   {item.value}
                 </div>
                 <div className="flex items-center gap-2">
@@ -247,7 +251,7 @@ function OverviewTab() {
               </div>
               <div className={clsx(
                 "p-4 rounded-2xl",
-                item.color === 'yellow' ? 'bg-yellow-500/10 text-yellow-500' : 
+                item.color === 'yellow' ? 'bg-red-500/10 text-red-500' : 
                 item.color === 'teal' ? 'bg-teal-500/10 text-teal-400' : 
                 item.color === 'orange' ? 'bg-orange-500/10 text-orange-400' :
                 item.color === 'purple' ? 'bg-purple-500/10 text-purple-400' : 'bg-blue-500/10 text-blue-400'
@@ -260,20 +264,20 @@ function OverviewTab() {
       </div>
 
       {/* System Health */}
-      <div className="glass-card p-8 border-ink-800">
-        <h3 className="text-sm font-black text-white uppercase tracking-widest mb-6 flex items-center gap-3">
-          <Settings className="w-4 h-4 text-yellow-500" /> Live System Metrics
+      <div className="glass-card p-8 border-ink-600">
+        <h3 className="text-sm font-black text-red-800 uppercase tracking-widest mb-6 flex items-center gap-3">
+          <Settings className="w-4 h-4 text-red-500" /> Live System Metrics
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
             { label: 'CPU Load', value: stats?.system?.cpu || '0%', color: 'bg-teal-500' },
-            { label: 'API Latency', value: stats?.system?.latency || '0ms', color: 'bg-yellow-500' },
+            { label: 'API Latency', value: stats?.system?.latency || '0ms', color: 'bg-red-500' },
             { label: 'Memory Usage', value: stats?.system?.memory || '0%', color: 'bg-purple-500', detail: stats?.system?.memRaw },
           ].map(m => (
             <div key={m.label} className="space-y-3">
-              <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-ink-500">
+              <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-red-8000">
                 <span>{m.label} {m.detail && <span className="text-[8px] opacity-50 ml-1">({m.detail})</span>}</span>
-                <span className="text-white">{m.value}</span>
+                <span className="text-ink-50">{m.value}</span>
               </div>
               <div className="h-1 w-full bg-ink-950 rounded-full overflow-hidden">
                 <div className={clsx("h-full rounded-full", m.color)} style={{ width: m.value }} />
@@ -291,6 +295,15 @@ function TestsTab() {
   const [loading, setLoading] = useState(true);
   const [editingTest, setEditingTest] = useState<any>(null);
   const [filters, setFilters] = useState({ subject: '', testType: '', mode: '' });
+  const [showHtmlForm, setShowHtmlForm] = useState(false);
+  const [htmlQuestions, setHtmlQuestions] = useState('');
+  const [htmlSolutions, setHtmlSolutions] = useState('');
+  const [uploadingHtml, setUploadingHtml] = useState(false);
+  const [htmlFormData, setHtmlFormData] = useState({
+    name: '', testType: 'prelims_gs', totalQuestions: '100',
+    durationMinutes: '120', markCorrect: '2.0', markWrong: '-0.66',
+    subject: '', year: new Date().getFullYear().toString(),
+  });
 
   useEffect(() => { loadTests(); }, [pagination.page, filters]);
 
@@ -321,12 +334,39 @@ function TestsTab() {
     } catch { toast.error('State transition failed'); }
   };
 
+  const handleHtmlUpload = async () => {
+    if (!htmlQuestions.trim()) return toast.error('Paste questions HTML');
+    setUploadingHtml(true);
+    try {
+      const payload = {
+        ...htmlFormData,
+        totalQuestions: parseInt(htmlFormData.totalQuestions),
+        durationMinutes: parseInt(htmlFormData.durationMinutes),
+        markCorrect: parseFloat(htmlFormData.markCorrect),
+        markWrong: parseFloat(htmlFormData.markWrong),
+        year: parseInt(htmlFormData.year),
+        questionsHtml: htmlQuestions,
+        solutionsHtml: htmlSolutions,
+      };
+      await mockTestAPI.uploadStructuredHtml(payload);
+      toast.success('HTML test created!');
+      setShowHtmlForm(false);
+      setHtmlQuestions('');
+      setHtmlSolutions('');
+      loadTests();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'HTML upload failed');
+    } finally {
+      setUploadingHtml(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Control Bar */}
-      <div className="flex items-center justify-between gap-4 flex-wrap bg-ink-900/50 p-4 rounded-2xl border border-ink-800">
+      <div className="flex items-center justify-between gap-4 flex-wrap bg-ink-900/50 p-4 rounded-2xl border border-ink-600">
         <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-ink-950 rounded-xl border border-ink-800">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-ink-950 rounded-xl border border-ink-600">
             <Search className="w-3.5 h-3.5 text-ink-500" />
             <select
               className="bg-transparent text-xs text-ink-300 outline-none min-w-[120px]"
@@ -337,7 +377,7 @@ function TestsTab() {
               {SUBJECTS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-ink-950 rounded-xl border border-ink-800">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-ink-950 rounded-xl border border-ink-600">
             <FileText className="w-3.5 h-3.5 text-ink-500" />
             <select
               className="bg-transparent text-xs text-ink-300 outline-none"
@@ -349,18 +389,27 @@ function TestsTab() {
             </select>
           </div>
         </div>
-        <div className="text-[10px] font-black text-ink-600 uppercase tracking-widest">
-          Showing {tests.length} of {pagination.total} Records
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowHtmlForm(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black uppercase tracking-widest transition-all"
+          >
+            <Code2 className="w-4 h-4" />
+            HTML Upload
+          </button>
+          <div className="text-[10px] font-black text-ink-600 uppercase tracking-widest">
+            Showing {tests.length} of {pagination.total} Records
+          </div>
         </div>
       </div>
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <Loader2 className="w-8 h-8 text-yellow-500 animate-spin" />
+          <Loader2 className="w-8 h-8 text-red-500 animate-spin" />
           <p className="text-ink-500 font-mono text-xs">Syncing nodes...</p>
         </div>
       ) : tests.length === 0 ? (
-        <div className="glass-card p-20 text-center border-dashed border-ink-800">
+        <div className="glass-card p-20 text-center border-dashed border-ink-600">
           <FileText className="w-16 h-16 text-ink-800 mx-auto mb-4 opacity-20" />
           <p className="text-ink-500 font-display text-lg">No Data Streams Found</p>
           <p className="text-ink-600 text-sm mt-2 font-mono">Adjust your filters to see more content</p>
@@ -369,20 +418,20 @@ function TestsTab() {
         <div className="space-y-3">
           {tests.map(test => (
             <div key={test._id} className={clsx(
-              'group relative glass-card p-5 border-ink-800 hover:border-yellow-500/40 transition-all duration-300',
+              'group relative glass-card p-5 border-ink-600 hover:border-pink-300/40 transition-all duration-300',
               !test.isActive && 'opacity-60 grayscale-[0.5]'
             )}>
               <div className="flex items-center gap-6">
                 <div className={clsx(
                   'w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-inner border',
-                  test.mode === 'structured' ? 'bg-teal-500/10 border-teal-500/20 text-teal-400' : 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500'
+                  test.mode === 'structured' ? 'bg-teal-500/10 border-teal-500/20 text-teal-400' : 'bg-red-500/10 border-red-500/20 text-red-500'
                 )}>
                   {test.mode === 'structured' ? <Zap className="w-7 h-7" /> : <FileText className="w-7 h-7" />}
                 </div>
                 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-1">
-                    <h4 className="text-lg font-black text-white truncate leading-none">{test.name}</h4>
+                    <h4 className="text-lg font-black text-red-800 truncate leading-none">{test.name}</h4>
                     {!test.isActive && (
                       <span className="px-2 py-0.5 rounded-full bg-red-500/10 text-red-500 text-[8px] font-black uppercase tracking-widest border border-red-500/20">
                         Inactive
@@ -426,14 +475,14 @@ function TestsTab() {
                   </button>
                   <button
                     onClick={() => setEditingTest(test)}
-                    className="p-3 bg-ink-800 text-ink-400 hover:bg-yellow-500/20 hover:text-yellow-500 rounded-xl transition-all"
+                    className="p-3 bg-ink-800 text-ink-400 hover:bg-pink-200/20 hover:text-pink-400 rounded-xl transition-all"
                     title="Reconfigure Parameters"
                   >
                     <Settings className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => handleDelete(test._id)}
-                    className="p-3 bg-ink-800 text-ink-500 hover:bg-red-500/20 hover:text-red-500 rounded-xl transition-all"
+                    className="p-3 bg-ink-800 text-ink-500 hover:bg-pink-200/20 hover:text-pink-400 rounded-xl transition-all"
                     title="Purge Protocol"
                   >
                     <Trash2 className="w-5 h-5" />
@@ -450,17 +499,17 @@ function TestsTab() {
           <button
             onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))}
             disabled={pagination.page === 1}
-            className="p-3 bg-ink-900 border border-ink-800 rounded-xl text-ink-500 hover:text-white disabled:opacity-30 transition-all"
+            className="p-3 bg-ink-900 border border-ink-600 rounded-xl text-ink-500 hover:text-ink-100 disabled:opacity-30 transition-all"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <div className="text-xs font-black text-ink-500 uppercase tracking-[0.2em]">
-            Page <span className="text-yellow-500">{pagination.page}</span> / {pagination.pages}
+          <div className="text-xs font-black text-red-8000 uppercase tracking-[0.2em]">
+            Page <span className="text-red-500">{pagination.page}</span> / {pagination.pages}
           </div>
           <button
             onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))}
             disabled={pagination.page === pagination.pages}
-            className="p-3 bg-ink-900 border border-ink-800 rounded-xl text-ink-500 hover:text-white disabled:opacity-30 transition-all"
+            className="p-3 bg-ink-900 border border-ink-600 rounded-xl text-ink-500 hover:text-ink-100 disabled:opacity-30 transition-all"
           >
             <ChevronRight className="w-5 h-5" />
           </button>
@@ -469,6 +518,54 @@ function TestsTab() {
 
       {editingTest && (
         <EditTestModal test={editingTest} onClose={() => setEditingTest(null)} onSave={() => { setEditingTest(null); loadTests(); }} />
+      )}
+
+      {showHtmlForm && (
+        <div className="fixed inset-0 bg-ink-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="glass-card p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-lg text-purple-400">HTML Test Upload</h3>
+              <X className="cursor-pointer text-ink-400 hover:text-ink-100" onClick={() => setShowHtmlForm(false)} />
+            </div>
+            <div className="space-y-4 mb-4">
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase font-bold text-red-8000">Questions HTML *</label>
+                <textarea
+                  className="input-field w-full h-40 resize-none font-mono text-xs"
+                  placeholder='<div class="ata-question-item" data-question-no="1">...'
+                  value={htmlQuestions}
+                  onChange={(e) => setHtmlQuestions(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase font-bold text-red-8000">Solutions HTML</label>
+                <textarea
+                  className="input-field w-full h-32 resize-none font-mono text-xs"
+                  placeholder='<div class="ata-question-item" data-question-no="1"><div data-answer>A</div>...'
+                  value={htmlSolutions}
+                  onChange={(e) => setHtmlSolutions(e.target.value)}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <input placeholder="Test Name" className="input-field" value={htmlFormData.name} onChange={e => setHtmlFormData({...htmlFormData, name: e.target.value})} />
+                <select className="input-field" value={htmlFormData.testType} onChange={e => setHtmlFormData({...htmlFormData, testType: e.target.value})}>
+                  {TEST_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
+                <input type="number" placeholder="Total Questions" className="input-field" value={htmlFormData.totalQuestions} onChange={e => setHtmlFormData({...htmlFormData, totalQuestions: e.target.value})} />
+                <input type="number" placeholder="Duration (min)" className="input-field" value={htmlFormData.durationMinutes} onChange={e => setHtmlFormData({...htmlFormData, durationMinutes: e.target.value})} />
+                <input placeholder="Subject" className="input-field" value={htmlFormData.subject} onChange={e => setHtmlFormData({...htmlFormData, subject: e.target.value})} />
+                <input type="number" placeholder="Year" className="input-field" value={htmlFormData.year} onChange={e => setHtmlFormData({...htmlFormData, year: e.target.value})} />
+              </div>
+            </div>
+            <button
+              disabled={uploadingHtml}
+              onClick={handleHtmlUpload}
+              className="w-full py-3 flex items-center justify-center gap-2 rounded-xl font-bold transition-all mt-4 bg-purple-600 text-white hover:bg-purple-700"
+            >
+              {uploadingHtml ? <><Loader2 className="animate-spin w-4 h-4" /> Processing...</> : 'Upload HTML Questions'}
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -522,7 +619,7 @@ function SeriesTab() {
   return (
     <div className="space-y-6">
       {/* Header Toolbar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-ink-900/50 p-6 rounded-3xl border border-ink-800">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-ink-900/50 p-6 rounded-3xl border border-ink-600">
         <div className="flex items-center gap-4 flex-1">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-600" />
@@ -530,11 +627,11 @@ function SeriesTab() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search Series Database..."
-              className="w-full bg-ink-950 border border-ink-800 rounded-2xl pl-12 pr-4 py-3 text-sm text-white focus:border-yellow-500/50 outline-none transition-all shadow-inner"
+              className="w-full bg-ink-950 border border-ink-600 rounded-2xl pl-12 pr-4 py-3 text-sm text-ink-100 focus:border-red-500/50 outline-none transition-all shadow-inner"
             />
           </div>
           <select
-            className="bg-ink-950 border border-ink-800 rounded-2xl px-4 py-3 text-xs text-ink-300 outline-none focus:border-yellow-500/50"
+            className="bg-ink-950 border border-ink-600 rounded-2xl px-4 py-3 text-xs text-ink-300 outline-none focus:border-red-500/50"
             value={sortBy}
             onChange={e => setSortBy(e.target.value)}
           >
@@ -544,7 +641,7 @@ function SeriesTab() {
         </div>
         <button 
           onClick={() => setShowForm(true)} 
-          className="px-6 py-3 bg-yellow-500 hover:bg-yellow-400 text-ink-950 font-black rounded-2xl transition-all flex items-center gap-2 shadow-lg shadow-yellow-500/10 uppercase text-xs tracking-widest"
+          className="px-6 py-3 bg-teal-500 hover:bg-teal-600 text-white font-black rounded-2xl transition-all flex items-center gap-2 shadow-lg shadow-teal-500/10 uppercase text-xs tracking-widest"
         >
           <Plus className="w-5 h-5" /> New Series
         </button>
@@ -552,11 +649,11 @@ function SeriesTab() {
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <Loader2 className="w-10 h-10 text-yellow-500 animate-spin" />
+          <Loader2 className="w-10 h-10 text-red-500 animate-spin" />
           <p className="text-ink-500 font-mono text-xs">Accessing Archives...</p>
         </div>
       ) : series.length === 0 ? (
-        <div className="glass-card p-20 text-center border-dashed border-ink-800">
+        <div className="glass-card p-20 text-center border-dashed border-ink-600">
           <Target className="w-16 h-16 text-ink-800 mx-auto mb-4 opacity-30" />
           <p className="text-ink-500 font-display text-lg">Empty Cluster Database</p>
           <p className="text-ink-600 text-sm mt-2">Initialize a new series to start populating content</p>
@@ -565,20 +662,20 @@ function SeriesTab() {
         <div className="grid grid-cols-1 gap-4">
           {series.map(s => (
             <div key={s._id} className={clsx(
-              "group glass-card p-6 border-ink-800 hover:border-yellow-500/30 transition-all flex items-center justify-between",
+              "group glass-card p-6 border-ink-600 hover:border-pink-300/30 transition-all flex items-center justify-between",
               !s.isActive && "opacity-60"
             )}>
               <div className="flex items-center gap-6">
-                <div className="w-14 h-14 rounded-2xl bg-ink-950 border border-ink-800 flex items-center justify-center text-yellow-500 shadow-inner group-hover:scale-110 transition-transform">
+                <div className="w-14 h-14 rounded-2xl bg-ink-950 border border-ink-600 flex items-center justify-center text-red-500 shadow-inner group-hover:scale-110 transition-transform">
                   <Target className="w-7 h-7" />
                 </div>
                 <div>
                   <div className="flex items-center gap-3 mb-1">
-                    <h4 className="text-lg font-black text-white tracking-tight uppercase">{s.name}</h4>
+                    <h4 className="text-lg font-black text-red-800 tracking-tight uppercase">{s.name}</h4>
                     {s.isActive ? (
                       <span className="px-2 py-0.5 rounded bg-teal-500/10 text-teal-400 text-[8px] font-black uppercase tracking-widest border border-teal-500/20">Active Cluster</span>
                     ) : (
-                      <span className="px-2 py-0.5 rounded bg-ink-800 text-ink-500 text-[8px] font-black uppercase tracking-widest border border-ink-700">Offline</span>
+                      <span className="px-2 py-0.5 rounded bg-ink-800 text-ink-500 text-[8px] font-black uppercase tracking-widest border border-ink-500">Offline</span>
                     )}
                   </div>
                   <div className="flex items-center gap-4 text-[10px] font-bold text-ink-600 uppercase tracking-widest">
@@ -591,13 +688,13 @@ function SeriesTab() {
                 </div>
               </div>
               <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                <button onClick={() => handleToggleActive(s)} className="p-3 bg-ink-950 text-ink-500 hover:text-white rounded-xl border border-ink-800 transition-all">
+                <button onClick={() => handleToggleActive(s)} className="p-3 bg-ink-950 text-ink-500 hover:text-ink-100 rounded-xl border border-ink-600 transition-all">
                   {s.isActive ? <ToggleRight className="w-5 h-5 text-teal-400" /> : <ToggleLeft className="w-5 h-5" />}
                 </button>
-                <button onClick={() => setEditingSeries(s)} className="p-3 bg-ink-950 text-ink-500 hover:text-yellow-500 rounded-xl border border-ink-800 transition-all">
+                <button onClick={() => setEditingSeries(s)} className="p-3 bg-ink-950 text-ink-500 hover:text-pink-400 rounded-xl border border-ink-600 transition-all">
                   <Edit2 className="w-5 h-5" />
                 </button>
-                <button onClick={() => handleDelete(s._id)} className="p-3 bg-ink-950 text-ink-600 hover:text-red-500 rounded-xl border border-ink-800 transition-all">
+                <button onClick={() => handleDelete(s._id)} className="p-3 bg-ink-950 text-ink-600 hover:text-pink-400 rounded-xl border border-ink-600 transition-all">
                   <Trash2 className="w-5 h-5" />
                 </button>
               </div>
@@ -609,12 +706,12 @@ function SeriesTab() {
       {/* Pagination Styled */}
       {pagination.pages > 1 && (
         <div className="flex items-center justify-center gap-6 pt-10">
-          <button onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))} disabled={pagination.page === 1} className="p-4 bg-ink-900 border border-ink-800 rounded-2xl text-ink-500 hover:text-white disabled:opacity-20 transition-all shadow-lg"><ChevronLeft className="w-5 h-5"/></button>
+          <button onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))} disabled={pagination.page === 1} className="p-4 bg-ink-900 border border-ink-600 rounded-2xl text-ink-500 hover:text-ink-100 disabled:opacity-20 transition-all shadow-lg"><ChevronLeft className="w-5 h-5"/></button>
           <div className="flex flex-col items-center">
             <span className="text-[10px] font-black text-ink-600 uppercase tracking-[0.3em] mb-1">Index Navigation</span>
-            <span className="text-sm font-black text-white">{pagination.page} <span className="text-ink-600">/</span> {pagination.pages}</span>
+            <span className="text-sm font-black text-red-800">{pagination.page} <span className="text-ink-600">/</span> {pagination.pages}</span>
           </div>
-          <button onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))} disabled={pagination.page === pagination.pages} className="p-4 bg-ink-900 border border-ink-800 rounded-2xl text-ink-500 hover:text-white disabled:opacity-20 transition-all shadow-lg"><ChevronRight className="w-5 h-5"/></button>
+          <button onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))} disabled={pagination.page === pagination.pages} className="p-4 bg-ink-900 border border-ink-600 rounded-2xl text-ink-500 hover:text-ink-100 disabled:opacity-20 transition-all shadow-lg"><ChevronRight className="w-5 h-5"/></button>
         </div>
       )}
 
@@ -644,8 +741,8 @@ function SeriesFormModal({ onClose, onSave }: { onClose: () => void; onSave: () 
     <div className="fixed inset-0 bg-ink-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="glass-card p-6 w-full max-w-lg">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-lg">Initialize New Series</h3>
-          <X className="cursor-pointer text-ink-400 hover:text-white" onClick={onClose} />
+          <h3 className="font-bold text-lg text-red-800">Initialize New Series</h3>
+          <X className="cursor-pointer text-ink-400 hover:text-ink-100" onClick={onClose} />
         </div>
         <div className="space-y-3">
           <input
@@ -714,8 +811,8 @@ function EditSeriesModal({ series, onClose, onSave }: { series: any; onClose: ()
     <div className="fixed inset-0 bg-ink-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="glass-card p-6 w-full max-w-lg">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-lg">Edit Series</h3>
-          <X className="cursor-pointer text-ink-400 hover:text-white" onClick={onClose} />
+          <h3 className="font-bold text-lg text-red-800">Edit Series</h3>
+          <X className="cursor-pointer text-ink-400 hover:text-ink-100" onClick={onClose} />
         </div>
         <div className="space-y-3">
           <input
@@ -801,7 +898,7 @@ function QuestionsTab() {
   return (
     <div className="space-y-6">
       {/* Control Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-ink-900/50 p-6 rounded-3xl border border-ink-800">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-ink-900/50 p-6 rounded-3xl border border-ink-600">
         <div className="flex items-center gap-3 flex-1 flex-wrap">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-600" />
@@ -809,11 +906,11 @@ function QuestionsTab() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search Question Database..."
-              className="w-full bg-ink-950 border border-ink-800 rounded-2xl pl-12 pr-4 py-3 text-sm text-white focus:border-yellow-500/50 outline-none transition-all"
+              className="w-full bg-ink-950 border border-ink-600 rounded-2xl pl-12 pr-4 py-3 text-sm text-ink-100 focus:border-red-500/50 outline-none transition-all"
             />
           </div>
           <select
-            className="bg-ink-950 border border-ink-800 rounded-2xl px-4 py-3 text-xs text-ink-300 outline-none"
+            className="bg-ink-950 border border-ink-600 rounded-2xl px-4 py-3 text-xs text-ink-300 outline-none"
             value={subjectFilter}
             onChange={e => setSubjectFilter(e.target.value)}
           >
@@ -824,13 +921,13 @@ function QuestionsTab() {
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setShowBulkForm(true)} 
-            className="px-5 py-3 bg-ink-800 hover:bg-ink-700 text-ink-200 font-bold rounded-2xl transition-all flex items-center gap-2 border border-ink-700 uppercase text-[10px] tracking-widest"
+            className="px-5 py-3 bg-ink-800 hover:bg-ink-700 text-ink-200 font-bold rounded-2xl transition-all flex items-center gap-2 border border-ink-500 uppercase text-[10px] tracking-widest"
           >
             <Upload className="w-4 h-4" /> Bulk Import
           </button>
           <button 
             onClick={() => setShowForm(true)} 
-            className="px-5 py-3 bg-yellow-500 hover:bg-yellow-400 text-ink-950 font-black rounded-2xl transition-all flex items-center gap-2 shadow-lg shadow-yellow-500/10 uppercase text-[10px] tracking-widest"
+            className="px-5 py-3 bg-teal-500 hover:bg-teal-600 text-white font-black rounded-2xl transition-all flex items-center gap-2 shadow-lg shadow-teal-500/10 uppercase text-[10px] tracking-widest"
           >
             <Plus className="w-4 h-4" /> Add Node
           </button>
@@ -839,16 +936,16 @@ function QuestionsTab() {
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <Loader2 className="w-10 h-10 text-yellow-500 animate-spin" />
+          <Loader2 className="w-10 h-10 text-red-500 animate-spin" />
           <p className="text-ink-500 font-mono text-xs uppercase tracking-widest">Querying database...</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4">
           {questions.map(q => (
-            <div key={q._id} className="group glass-card p-6 border-ink-800 hover:border-ink-600 transition-all relative">
+            <div key={q._id} className="group glass-card p-6 border-ink-600 hover:border-ink-600 transition-all relative">
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-ink-950 border border-ink-800 flex items-center justify-center text-yellow-500 font-black text-xs">
+                  <div className="w-10 h-10 rounded-xl bg-ink-950 border border-ink-600 flex items-center justify-center text-red-500 font-black text-xs">
                     #{q.questionNumber}
                   </div>
                   <div className="flex flex-col">
@@ -856,7 +953,7 @@ function QuestionsTab() {
                       <span className="px-2 py-0.5 rounded bg-teal-500/10 text-teal-400 text-[9px] font-black uppercase tracking-widest border border-teal-500/20">
                         {q.subject}
                       </span>
-                      <span className="px-2 py-0.5 rounded bg-ink-800 text-ink-500 text-[9px] font-black uppercase tracking-widest border border-ink-700">
+                      <span className="px-2 py-0.5 rounded bg-ink-800 text-ink-500 text-[9px] font-black uppercase tracking-widest border border-ink-500">
                         {q.year}
                       </span>
                     </div>
@@ -865,13 +962,13 @@ function QuestionsTab() {
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={() => setEditingQuestion(q)}
-                    className="p-2.5 bg-ink-950 text-ink-400 hover:text-yellow-500 rounded-xl border border-ink-800 hover:border-yellow-500/30 transition-all"
+                    className="p-2.5 bg-ink-950 text-ink-400 hover:text-pink-400 rounded-xl border border-ink-600 hover:border-pink-300/30 transition-all"
                   >
                     <Eye className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleDelete(q._id)}
-                    className="p-2.5 bg-ink-950 text-ink-500 hover:text-red-500 rounded-xl border border-ink-800 hover:border-red-500/30 transition-all"
+                    className="p-2.5 bg-ink-950 text-ink-500 hover:text-pink-400 rounded-xl border border-ink-600 hover:border-pink-300/30 transition-all"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -879,7 +976,7 @@ function QuestionsTab() {
               </div>
 
               <div className="space-y-4">
-                <p className="text-white text-sm leading-relaxed font-medium">
+                <p className="text-ink-100 text-sm leading-relaxed font-medium">
                   {cleanHtml(q.text)}
                 </p>
                 
@@ -891,7 +988,7 @@ function QuestionsTab() {
                         "flex items-center gap-3 p-3 rounded-xl border transition-all",
                         q.correctAnswer?.toLowerCase() === opt.toLowerCase()
                           ? "bg-teal-500/10 border-teal-500/30 text-teal-100"
-                          : "bg-ink-950 border-ink-800 text-ink-400"
+                          : "bg-ink-950 border-ink-600 text-ink-400"
                       )}
                     >
                       <span className={clsx(
@@ -918,12 +1015,12 @@ function QuestionsTab() {
       {/* Pagination Styled */}
       {pagination.pages > 1 && (
         <div className="flex items-center justify-center gap-6 pt-10">
-          <button onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))} disabled={pagination.page === 1} className="p-4 bg-ink-900 border border-ink-800 rounded-2xl text-ink-500 hover:text-white disabled:opacity-20 transition-all shadow-lg"><ChevronLeft className="w-5 h-5"/></button>
+          <button onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))} disabled={pagination.page === 1} className="p-4 bg-ink-900 border border-ink-600 rounded-2xl text-ink-500 hover:text-ink-100 disabled:opacity-20 transition-all shadow-lg"><ChevronLeft className="w-5 h-5"/></button>
           <div className="flex flex-col items-center">
             <span className="text-[10px] font-black text-ink-600 uppercase tracking-[0.3em] mb-1">Index Navigation</span>
-            <span className="text-sm font-black text-white">{pagination.page} <span className="text-ink-600">/</span> {pagination.pages}</span>
+            <span className="text-sm font-black text-red-800">{pagination.page} <span className="text-ink-600">/</span> {pagination.pages}</span>
           </div>
-          <button onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))} disabled={pagination.page === pagination.pages} className="p-4 bg-ink-900 border border-ink-800 rounded-2xl text-ink-500 hover:text-white disabled:opacity-20 transition-all shadow-lg"><ChevronRight className="w-5 h-5"/></button>
+          <button onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))} disabled={pagination.page === pagination.pages} className="p-4 bg-ink-900 border border-ink-600 rounded-2xl text-ink-500 hover:text-ink-100 disabled:opacity-20 transition-all shadow-lg"><ChevronRight className="w-5 h-5"/></button>
         </div>
       )}
 
@@ -963,43 +1060,43 @@ function UsersTab() {
   return (
     <div className="space-y-6">
       {/* Registry Header */}
-      <div className="bg-ink-900/50 p-6 rounded-3xl border border-ink-800 flex items-center justify-between gap-4">
+      <div className="bg-ink-900/50 p-6 rounded-3xl border border-ink-600 flex items-center justify-between gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-600" />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search Citizen Registry..."
-            className="w-full bg-ink-950 border border-ink-800 rounded-2xl pl-12 pr-4 py-3 text-sm text-white focus:border-yellow-500/50 outline-none transition-all shadow-inner"
+            className="w-full bg-ink-950 border border-ink-600 rounded-2xl pl-12 pr-4 py-3 text-sm text-ink-100 focus:border-red-500/50 outline-none transition-all shadow-inner"
           />
         </div>
         <div className="text-[10px] font-black text-ink-600 uppercase tracking-[0.2em] text-right">
-          <div className="text-white text-lg">{pagination.total}</div>
+          <div className="text-ink-50 text-lg">{pagination.total}</div>
           Total Registered Users
         </div>
       </div>
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="w-10 h-10 text-yellow-500 animate-spin" />
+          <Loader2 className="w-10 h-10 text-red-500 animate-spin" />
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-3">
           {users.map(u => (
-            <div key={u._id} className="group glass-card p-4 border-ink-800 hover:bg-ink-900 transition-all flex items-center gap-6">
-              <div className="w-12 h-12 rounded-2xl bg-ink-950 border border-ink-800 flex items-center justify-center text-xl font-black text-ink-500 shadow-inner group-hover:text-yellow-500 transition-colors uppercase">
+            <div key={u._id} className="group glass-card p-4 border-ink-600 hover:bg-ink-900 transition-all flex items-center gap-6">
+              <div className="w-12 h-12 rounded-2xl bg-ink-950 border border-ink-600 flex items-center justify-center text-xl font-black text-red-8000 shadow-inner group-hover:text-pink-400 transition-colors uppercase">
                 {u.name?.charAt(0) || 'U'}
               </div>
               
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3">
-                  <h4 className="font-black text-white truncate">{u.name}</h4>
+                  <h4 className="font-black text-red-800 truncate">{u.name}</h4>
                   {u.role === 'admin' ? (
-                    <span className="px-2 py-0.5 rounded-lg bg-yellow-500/10 text-yellow-500 text-[8px] font-black uppercase tracking-widest border border-yellow-500/20">
+                    <span className="px-2 py-0.5 rounded-lg bg-red-500/10 text-red-500 text-[8px] font-black uppercase tracking-widest border border-red-500/20">
                       Level 4 Admin
                     </span>
                   ) : (
-                    <span className="px-2 py-0.5 rounded-lg bg-ink-800 text-ink-500 text-[8px] font-black uppercase tracking-widest border border-ink-700">
+                    <span className="px-2 py-0.5 rounded-lg bg-ink-800 text-ink-500 text-[8px] font-black uppercase tracking-widest border border-ink-500">
                       Standard Citizen
                     </span>
                   )}
@@ -1013,9 +1110,9 @@ function UsersTab() {
                     navigator.clipboard.writeText(u._id);
                     toast.success('ID Copied to Clipboard');
                   }}
-                  className="mt-2 flex items-center gap-2 px-2 py-1 bg-ink-950 border border-ink-800 rounded-lg hover:border-yellow-500/30 transition-all group/id"
+                  className="mt-2 flex items-center gap-2 px-2 py-1 bg-ink-950 border border-ink-600 rounded-lg hover:border-pink-300/30 transition-all group/id"
                 >
-                  <Copy className="w-3 h-3 text-ink-700 group-hover/id:text-yellow-500" />
+                  <Copy className="w-3 h-3 text-ink-700 group-hover/id:text-red-500" />
                   <span className="text-[10px] font-black text-ink-600 uppercase tracking-widest group-hover/id:text-ink-400">Copy Citizen ID</span>
                 </button>
               </div>
@@ -1031,7 +1128,7 @@ function UsersTab() {
                 <select
                   value={u.role}
                   onChange={e => handleRoleChange(u._id, e.target.value)}
-                  className="bg-ink-950 border border-ink-800 rounded-xl px-4 py-2 text-[10px] font-black text-ink-300 outline-none focus:border-yellow-500/50 uppercase tracking-widest"
+                  className="bg-ink-950 border border-ink-600 rounded-xl px-4 py-2 text-[10px] font-black text-ink-300 outline-none focus:border-red-500/50 uppercase tracking-widest"
                 >
                   <option value="user">Assign Citizen</option>
                   <option value="admin">Promote Admin</option>
@@ -1045,9 +1142,9 @@ function UsersTab() {
       {/* Pagination remains consistent */}
       {pagination.pages > 1 && (
         <div className="flex justify-center gap-4 pt-10">
-          <button onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))} disabled={pagination.page === 1} className="p-3 bg-ink-900 border border-ink-800 rounded-xl disabled:opacity-20 transition-all"><ChevronLeft className="w-5 h-5"/></button>
-          <span className="py-3 text-xs font-black text-ink-500 uppercase tracking-widest">{pagination.page} <span className="text-ink-800">/</span> {pagination.pages}</span>
-          <button onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))} disabled={pagination.page === pagination.pages} className="p-3 bg-ink-900 border border-ink-800 rounded-xl disabled:opacity-20 transition-all"><ChevronRight className="w-5 h-5"/></button>
+          <button onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))} disabled={pagination.page === 1} className="p-3 bg-ink-900 border border-ink-600 rounded-xl disabled:opacity-20 transition-all"><ChevronLeft className="w-5 h-5"/></button>
+          <span className="py-3 text-xs font-black text-red-8000 uppercase tracking-widest">{pagination.page} <span className="text-ink-800">/</span> {pagination.pages}</span>
+          <button onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))} disabled={pagination.page === pagination.pages} className="p-3 bg-ink-900 border border-ink-600 rounded-xl disabled:opacity-20 transition-all"><ChevronRight className="w-5 h-5"/></button>
         </div>
       )}
     </div>
@@ -1088,6 +1185,10 @@ function CreateTestTab_Legacy() {
   const [allSeries, setAllSeries] = useState<any[]>([]);
   const [selectedSeriesId, setSelectedSeriesId] = useState('');
   const [uploadingStructured, setUploadingStructured] = useState(false);
+  const [showHtmlForm, setShowHtmlForm] = useState(false);
+  const [htmlQuestions, setHtmlQuestions] = useState('');
+  const [htmlSolutions, setHtmlSolutions] = useState('');
+  const [uploadingHtml, setUploadingHtml] = useState(false);
 
   useEffect(() => {
     loadQuestions();
@@ -1166,6 +1267,37 @@ function CreateTestTab_Legacy() {
       toast.error(err.response?.data?.error || err.message || 'Upload failed');
     } finally {
       setUploadingStructured(false);
+    }
+  };
+
+  const handleHtmlUpload = async () => {
+    if (!htmlQuestions.trim()) {
+      return toast.error('Paste questions HTML');
+    }
+    setUploadingHtml(true);
+    try {
+      const payload = {
+        name: structuredData.name || `HTML Test ${new Date().toLocaleDateString()}`,
+        testType: structuredData.testType,
+        totalQuestions: parseInt(structuredData.totalQuestions),
+        durationMinutes: parseInt(structuredData.durationMinutes),
+        markCorrect: parseFloat(structuredData.markCorrect),
+        markWrong: parseFloat(structuredData.markWrong),
+        subject: structuredData.subject,
+        year: parseInt(structuredData.year),
+        questionsHtml: htmlQuestions,
+        solutionsHtml: htmlSolutions,
+        testSeriesId: selectedSeriesId
+      };
+      await mockTestAPI.uploadStructuredHtml(payload);
+      toast.success('HTML structured test created!');
+      setShowHtmlForm(false);
+      setHtmlQuestions('');
+      setHtmlSolutions('');
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'HTML upload failed');
+    } finally {
+      setUploadingHtml(false);
     }
   };
 
@@ -1254,7 +1386,7 @@ function CreateTestTab_Legacy() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-bold text-lg">Create Mock Test</h3>
+          <h3 className="font-bold text-lg text-red-800">Create Mock Test</h3>
           <p className="text-sm text-ink-500">Create test from questions or upload structured test</p>
         </div>
         <div className="flex items-center gap-3">
@@ -1264,6 +1396,13 @@ function CreateTestTab_Legacy() {
           >
             <Upload className="w-4 h-4" />
             Structured Upload
+          </button>
+          <button
+            onClick={() => setShowHtmlForm(true)}
+            className="btn-primary flex items-center gap-2 bg-purple-600 hover:bg-purple-500"
+          >
+            <Upload className="w-4 h-4" />
+            HTML Upload
           </button>
         </div>
       </div>
@@ -1289,7 +1428,7 @@ function CreateTestTab_Legacy() {
           onClick={() => setSelectedSubject('')}
           className={clsx(
             'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
-            !selectedSubject ? 'bg-yellow-500 text-ink-950' : 'bg-ink-800 text-ink-400'
+            !selectedSubject ? 'bg-red-500 text-white' : 'bg-ink-800 text-ink-400'
           )}
         >
           All ({questions.length})
@@ -1300,7 +1439,7 @@ function CreateTestTab_Legacy() {
             onClick={() => setSelectedSubject(subject)}
             className={clsx(
               'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
-              selectedSubject === subject ? 'bg-yellow-500 text-ink-950' : 'bg-ink-800 text-ink-400'
+              selectedSubject === subject ? 'bg-red-500 text-white' : 'bg-ink-800 text-ink-400'
             )}
           >
             {subject} ({questionsBySubject[subject]?.length || 0})
@@ -1311,7 +1450,7 @@ function CreateTestTab_Legacy() {
       {loading ? (
         <div className="text-center py-20 text-ink-500">Loading questions...</div>
       ) : questions.length === 0 ? (
-        <div className="glass-card p-12 text-center border-dashed border-ink-800">
+        <div className="glass-card p-12 text-center border-dashed border-ink-600">
           <BookOpen className="w-12 h-12 text-ink-800 mx-auto mb-4" />
           <p className="text-ink-500">No questions found. Upload questions first!</p>
         </div>
@@ -1322,7 +1461,7 @@ function CreateTestTab_Legacy() {
               <div className="flex items-center justify-between mb-3">
                 <button
                   onClick={() => toggleAllInSubject(subject)}
-                  className="flex items-center gap-2 text-sm font-semibold text-ink-200 hover:text-white"
+                  className="flex items-center gap-2 text-sm font-semibold text-red-800 hover:text-ink-50"
                 >
                   {questionsBySubject[subject].every((q: any) => selectedQuestions.includes(q._id)) ? (
                     <CheckSquare className="w-4 h-4 text-teal-400" />
@@ -1344,7 +1483,7 @@ function CreateTestTab_Legacy() {
                       'p-3 rounded-lg border cursor-pointer transition-all',
                       selectedQuestions.includes(q._id)
                         ? 'bg-teal-500/10 border-teal-500/30'
-                        : 'bg-ink-900/30 border-ink-800 hover:border-ink-600'
+                        : 'bg-ink-900/30 border-ink-600 hover:border-ink-600'
                     )}
                   >
                     <div className="flex items-start gap-2">
@@ -1382,7 +1521,7 @@ function CreateTestTab_Legacy() {
                     'p-3 rounded-lg border cursor-pointer transition-all',
                     selectedQuestions.includes(q._id)
                       ? 'bg-teal-500/10 border-teal-500/30'
-                      : 'bg-ink-900/30 border-ink-800 hover:border-ink-600'
+                      : 'bg-ink-900/30 border-ink-600 hover:border-ink-600'
                   )}
                 >
                   <div className="flex items-start gap-2">
@@ -1415,8 +1554,8 @@ function CreateTestTab_Legacy() {
         <div className="fixed inset-0 bg-ink-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="glass-card p-6 w-full max-w-lg">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-lg">Create Mock Test</h3>
-              <X className="cursor-pointer text-ink-400 hover:text-white" onClick={() => setShowForm(false)} />
+              <h3 className="font-bold text-lg text-red-800">Create Mock Test</h3>
+              <X className="cursor-pointer text-ink-400 hover:text-ink-100" onClick={() => setShowForm(false)} />
             </div>
             <div className="space-y-3">
               <div>
@@ -1512,13 +1651,13 @@ function CreateTestTab_Legacy() {
         <div className="fixed inset-0 bg-ink-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="glass-card p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-lg text-teal-400">Structured Test Upload</h3>
-              <X className="cursor-pointer text-ink-400 hover:text-white" onClick={() => setShowStructuredForm(false)} />
+              <h3 className="font-bold text-lg text-red-800">Structured Test Upload</h3>
+              <X className="cursor-pointer text-ink-400 hover:text-ink-100" onClick={() => setShowStructuredForm(false)} />
             </div>
 
             <div className="space-y-4 mb-4">
               <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold text-ink-500">Question Paper (Raw Text) *</label>
+                <label className="text-[10px] uppercase font-bold text-red-8000">Question Paper (Raw Text) *</label>
                 <textarea
                   className="input-field w-full h-32 resize-none font-mono text-xs"
                   placeholder="Paste full question paper text here..."
@@ -1529,7 +1668,7 @@ function CreateTestTab_Legacy() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold text-ink-500">Solutions & Answers (Raw Text) *</label>
+                <label className="text-[10px] uppercase font-bold text-red-8000">Solutions & Answers (Raw Text) *</label>
                 <textarea
                   className="input-field w-full h-32 resize-none font-mono text-xs"
                   placeholder="Paste solutions/answers text here..."
@@ -1540,7 +1679,7 @@ function CreateTestTab_Legacy() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-[10px] uppercase font-bold text-ink-500">Link to Test Series</label>
+                  <label className="text-[10px] uppercase font-bold text-red-8000">Link to Test Series</label>
                   <select
                     className="input-field w-full mt-1"
                     value={selectedSeriesId}
@@ -1579,7 +1718,7 @@ function CreateTestTab_Legacy() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-bold text-ink-500">Subject</label>
+                    <label className="text-[10px] uppercase font-bold text-red-8000">Subject</label>
                     <select
                       className="input-field w-full"
                       value={structuredData.subject}
@@ -1590,7 +1729,7 @@ function CreateTestTab_Legacy() {
                     </select>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-bold text-ink-500">Year</label>
+                    <label className="text-[10px] uppercase font-bold text-red-8000">Year</label>
                     <input
                       type="number"
                       placeholder="e.g. 2024"
@@ -1602,7 +1741,7 @@ function CreateTestTab_Legacy() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-ink-500">Specific Topics</label>
+                  <label className="text-[10px] uppercase font-bold text-red-8000">Specific Topics</label>
                   <input 
                     placeholder="e.g. Parliament, Governor" 
                     className="input-field w-full" 
@@ -1616,9 +1755,115 @@ function CreateTestTab_Legacy() {
             <button 
               disabled={uploadingStructured} 
               onClick={handleStructuredUpload} 
-              className="w-full py-3 flex items-center justify-center gap-2 rounded-xl font-bold transition-all mt-4 bg-teal-500 text-ink-950 hover:bg-teal-600"
+              className="w-full py-3 flex items-center justify-center gap-2 rounded-xl font-bold transition-all mt-4 bg-teal-500 text-white hover:bg-teal-600"
             >
               {uploadingStructured ? <><Loader2 className="animate-spin w-4 h-4" /> Processing...</> : 'Frame Knowledge Bank'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showHtmlForm && (
+        <div className="fixed inset-0 bg-ink-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="glass-card p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-lg text-purple-400">HTML Structured Upload</h3>
+              <X className="cursor-pointer text-ink-400 hover:text-ink-100" onClick={() => setShowHtmlForm(false)} />
+            </div>
+
+            <div className="space-y-4 mb-4">
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase font-bold text-red-8000">Questions HTML *</label>
+                <textarea
+                  className="input-field w-full h-40 resize-none font-mono text-xs"
+                  placeholder='<div class="ata-question-item" data-question-no="1">...'
+                  value={htmlQuestions}
+                  onChange={(e) => setHtmlQuestions(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase font-bold text-red-8000">Solutions HTML</label>
+                <textarea
+                  className="input-field w-full h-32 resize-none font-mono text-xs"
+                  placeholder='<div class="ata-question-item" data-question-no="1"><div data-answer>A</div>...'
+                  value={htmlSolutions}
+                  onChange={(e) => setHtmlSolutions(e.target.value)}
+                />
+                <p className="text-[10px] text-ink-600">Use data-answer and data-explanation attributes</p>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-[10px] uppercase font-bold text-red-8000">Link to Test Series</label>
+                  <select
+                    className="input-field w-full mt-1"
+                    value={selectedSeriesId}
+                    onChange={e => setSelectedSeriesId(e.target.value)}
+                  >
+                    <option value="">Standalone Test (No Series)</option>
+                    {allSeries.map(s => (
+                      <option key={s._id} value={s._id}>{s.name} - {s.provider}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <input 
+                  placeholder="Test Name" 
+                  className="input-field w-full" 
+                  value={structuredData.name} 
+                  onChange={e => setStructuredData({ ...structuredData, name: e.target.value })} 
+                />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <select 
+                    className="input-field" 
+                    value={structuredData.testType} 
+                    onChange={e => setStructuredData({ ...structuredData, testType: e.target.value })}
+                  >
+                    {TEST_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  </select>
+                  <input 
+                    type="number" 
+                    placeholder="Total Questions" 
+                    className="input-field" 
+                    value={structuredData.totalQuestions} 
+                    onChange={e => setStructuredData({ ...structuredData, totalQuestions: e.target.value })} 
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase font-bold text-red-8000">Subject</label>
+                    <select
+                      className="input-field w-full"
+                      value={structuredData.subject}
+                      onChange={e => setStructuredData({ ...structuredData, subject: e.target.value })}
+                    >
+                      <option value="">Select Subject</option>
+                      {SUBJECTS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase font-bold text-red-8000">Year</label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 2024"
+                      className="input-field w-full"
+                      value={structuredData.year}
+                      onChange={e => setStructuredData({ ...structuredData, year: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button 
+              disabled={uploadingHtml} 
+              onClick={handleHtmlUpload} 
+              className="w-full py-3 flex items-center justify-center gap-2 rounded-xl font-bold transition-all mt-4 bg-purple-600 text-white hover:bg-purple-700"
+            >
+              {uploadingHtml ? <><Loader2 className="animate-spin w-4 h-4" /> Processing...</> : 'Upload HTML Questions'}
             </button>
           </div>
         </div>
@@ -1650,6 +1895,10 @@ function CreateTestTab() {
   const [allSeries, setAllSeries] = useState<any[]>([]);
   const [selectedSeriesId, setSelectedSeriesId] = useState('');
   const [uploadingStructured, setUploadingStructured] = useState(false);
+  const [showHtmlForm, setShowHtmlForm] = useState(false);
+  const [htmlQuestions, setHtmlQuestions] = useState('');
+  const [htmlSolutions, setHtmlSolutions] = useState('');
+  const [uploadingHtml, setUploadingHtml] = useState(false);
 
   useEffect(() => {
     loadQuestions();
@@ -1710,13 +1959,42 @@ function CreateTestTab() {
     }
   };
 
+  const handleHtmlUpload = async () => {
+    if (!htmlQuestions.trim()) {
+      return toast.error('Paste questions HTML');
+    }
+    setUploadingHtml(true);
+    try {
+      const payload = {
+        ...structuredData,
+        totalQuestions: parseInt(structuredData.totalQuestions),
+        durationMinutes: parseInt(structuredData.durationMinutes),
+        markCorrect: parseFloat(structuredData.markCorrect),
+        markWrong: parseFloat(structuredData.markWrong),
+        year: parseInt(structuredData.year),
+        questionsHtml: htmlQuestions,
+        solutionsHtml: htmlSolutions,
+        testSeriesId: selectedSeriesId
+      };
+      await mockTestAPI.uploadStructuredHtml(payload);
+      toast.success('HTML test created!');
+      setShowHtmlForm(false);
+      setHtmlQuestions('');
+      setHtmlSolutions('');
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'HTML upload failed');
+    } finally {
+      setUploadingHtml(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Launchpad Header */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div 
           onClick={() => setShowStructuredForm(true)}
-          className="group glass-card p-8 border-ink-800 hover:border-teal-500/50 transition-all cursor-pointer relative overflow-hidden"
+          className="group glass-card p-8 border-ink-600 hover:border-teal-500/50 transition-all cursor-pointer relative overflow-hidden"
         >
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity">
             <Zap className="w-20 h-20 text-teal-400" />
@@ -1725,26 +2003,44 @@ function CreateTestTab() {
             <div className="w-12 h-12 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 mb-6">
               <Zap className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-black text-white uppercase tracking-tight mb-2">Structured Synthesis</h3>
+            <h3 className="text-xl font-black text-red-800 uppercase tracking-tight mb-2">Structured Synthesis</h3>
             <p className="text-sm text-ink-500 leading-relaxed max-w-[280px]">
               Upload raw text data to automatically generate full-scale mock tests with AI-powered parsing.
             </p>
           </div>
         </div>
 
-        <div className="group glass-card p-8 border-ink-800 hover:border-yellow-500/50 transition-all cursor-not-allowed opacity-60 relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-10">
-            <Layers className="w-20 h-20 text-yellow-500" />
+        <div 
+          onClick={() => setShowHtmlForm(true)}
+          className="group glass-card p-8 border-ink-600 hover:border-purple-500/50 transition-all cursor-pointer relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity">
+            <Code2 className="w-20 h-20 text-purple-400" />
           </div>
           <div className="relative z-10">
-            <div className="w-12 h-12 rounded-2xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-yellow-500 mb-6">
+            <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 mb-6">
+              <Code2 className="w-6 h-6" />
+            </div>
+            <h3 className="text-xl font-black text-red-800 uppercase tracking-tight mb-2">HTML Upload</h3>
+            <p className="text-sm text-ink-500 leading-relaxed max-w-[280px]">
+              Paste questions as HTML with data-* attributes — no AI needed for parsing.
+            </p>
+          </div>
+        </div>
+
+        <div className="group glass-card p-8 border-ink-600 hover:border-pink-300/50 transition-all cursor-not-allowed opacity-60 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <Layers className="w-20 h-20 text-red-500" />
+          </div>
+          <div className="relative z-10">
+            <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 mb-6">
               <Layers className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-black text-white uppercase tracking-tight mb-2">Manual Constructor</h3>
+            <h3 className="text-xl font-black text-red-800 uppercase tracking-tight mb-2">Manual Constructor</h3>
             <p className="text-sm text-ink-500 leading-relaxed max-w-[280px]">
               Select individual nodes from the question database to construct a custom examination pattern.
             </p>
-            <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ink-950 border border-ink-800 text-[8px] font-black uppercase tracking-widest text-ink-600">
+            <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ink-950 border border-ink-600 text-[8px] font-black uppercase tracking-widest text-ink-600">
               Maintenance Required
             </div>
           </div>
@@ -1754,21 +2050,21 @@ function CreateTestTab() {
       {showStructuredForm && (
         <div className="animate-slide-up space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-3">
+            <h2 className="text-sm font-black text-red-800 uppercase tracking-widest flex items-center gap-3">
               <Settings className="w-4 h-4 text-teal-400" /> Synthesis Parameters
             </h2>
-            <button onClick={() => setShowStructuredForm(false)} className="text-xs text-ink-600 hover:text-white uppercase font-black tracking-widest transition-colors">Abort Launch</button>
+            <button onClick={() => setShowStructuredForm(false)} className="text-xs text-ink-600 hover:text-ink-100 uppercase font-black tracking-widest transition-colors">Abort Launch</button>
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-1 space-y-4">
-              <div className="glass-card p-6 border-ink-800 space-y-4">
+              <div className="glass-card p-6 border-ink-600 space-y-4">
                 <div>
                   <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Test Designation</label>
                   <input 
                     value={structuredData.name}
                     onChange={e => setStructuredData({...structuredData, name: e.target.value})}
-                    className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-3 text-sm text-white focus:border-teal-500/50 outline-none"
+                    className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-3 text-sm text-ink-100 focus:border-teal-500/50 outline-none"
                     placeholder="E.g. Prelims Mock X"
                   />
                 </div>
@@ -1777,7 +2073,7 @@ function CreateTestTab() {
                   <select 
                     value={selectedSeriesId}
                     onChange={e => setSelectedSeriesId(e.target.value)}
-                    className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-3 text-sm text-ink-300 outline-none focus:border-teal-500/50"
+                    className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-3 text-sm text-ink-300 outline-none focus:border-teal-500/50"
                   >
                     <option value="">Independent Node</option>
                     {allSeries.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
@@ -1789,7 +2085,7 @@ function CreateTestTab() {
                     <input 
                       value={structuredData.subject}
                       onChange={e => setStructuredData({...structuredData, subject: e.target.value})}
-                      className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-2 text-xs text-white"
+                      className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-2 text-xs text-ink-100"
                     />
                   </div>
                   <div>
@@ -1797,7 +2093,7 @@ function CreateTestTab() {
                     <input 
                       value={structuredData.year}
                       onChange={e => setStructuredData({...structuredData, year: e.target.value})}
-                      className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-2 text-xs text-white"
+                      className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-2 text-xs text-ink-100"
                     />
                   </div>
                 </div>
@@ -1807,7 +2103,7 @@ function CreateTestTab() {
                     <input 
                       value={structuredData.totalQuestions}
                       onChange={e => setStructuredData({...structuredData, totalQuestions: e.target.value})}
-                      className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-2 text-xs text-white"
+                      className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-2 text-xs text-ink-100"
                     />
                   </div>
                   <div>
@@ -1815,7 +2111,7 @@ function CreateTestTab() {
                     <input 
                       value={structuredData.durationMinutes}
                       onChange={e => setStructuredData({...structuredData, durationMinutes: e.target.value})}
-                      className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-2 text-xs text-white"
+                      className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-2 text-xs text-ink-100"
                     />
                   </div>
                 </div>
@@ -1840,7 +2136,7 @@ function CreateTestTab() {
                   <textarea 
                     value={questionPaperText}
                     onChange={e => setQuestionPaperText(e.target.value)}
-                    className="w-full h-96 bg-ink-950 border border-ink-800 rounded-2xl p-6 text-xs text-ink-300 font-mono focus:border-teal-500/30 outline-none resize-none shadow-inner"
+                    className="w-full h-96 bg-ink-950 border border-ink-600 rounded-2xl p-6 text-xs text-ink-300 font-mono focus:border-teal-500/30 outline-none resize-none shadow-inner"
                     placeholder="Paste Question Data Here..."
                   />
                 </div>
@@ -1852,8 +2148,119 @@ function CreateTestTab() {
                   <textarea 
                     value={solutionText}
                     onChange={e => setSolutionText(e.target.value)}
-                    className="w-full h-96 bg-ink-950 border border-ink-800 rounded-2xl p-6 text-xs text-ink-300 font-mono focus:border-teal-500/30 outline-none resize-none shadow-inner"
+                    className="w-full h-96 bg-ink-950 border border-ink-600 rounded-2xl p-6 text-xs text-ink-300 font-mono focus:border-teal-500/30 outline-none resize-none shadow-inner"
                     placeholder="Paste Solution Data Here..."
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showHtmlForm && (
+        <div className="animate-slide-up space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-black text-red-800 uppercase tracking-widest flex items-center gap-3">
+              <Code2 className="w-4 h-4 text-purple-400" /> HTML Upload Parameters
+            </h2>
+            <button onClick={() => setShowHtmlForm(false)} className="text-xs text-ink-600 hover:text-ink-100 uppercase font-black tracking-widest transition-colors">Abort Launch</button>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-1 space-y-4">
+              <div className="glass-card p-6 border-ink-600 space-y-4">
+                <div>
+                  <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Test Designation</label>
+                  <input 
+                    value={structuredData.name}
+                    onChange={e => setStructuredData({...structuredData, name: e.target.value})}
+                    className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-3 text-sm text-ink-100 focus:border-purple-500/50 outline-none"
+                    placeholder="E.g. Prelims Mock X"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Target Series</label>
+                  <select 
+                    value={selectedSeriesId}
+                    onChange={e => setSelectedSeriesId(e.target.value)}
+                    className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-3 text-sm text-ink-300 outline-none focus:border-purple-500/50"
+                  >
+                    <option value="">Independent Node</option>
+                    {allSeries.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Subject</label>
+                    <input 
+                      value={structuredData.subject}
+                      onChange={e => setStructuredData({...structuredData, subject: e.target.value})}
+                      className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-2 text-xs text-ink-100"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Year</label>
+                    <input 
+                      value={structuredData.year}
+                      onChange={e => setStructuredData({...structuredData, year: e.target.value})}
+                      className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-2 text-xs text-ink-100"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Qs Load</label>
+                    <input 
+                      value={structuredData.totalQuestions}
+                      onChange={e => setStructuredData({...structuredData, totalQuestions: e.target.value})}
+                      className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-2 text-xs text-ink-100"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Time (m)</label>
+                    <input 
+                      value={structuredData.durationMinutes}
+                      onChange={e => setStructuredData({...structuredData, durationMinutes: e.target.value})}
+                      className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-2 text-xs text-ink-100"
+                    />
+                  </div>
+                </div>
+              </div>
+              <button 
+                onClick={handleHtmlUpload}
+                disabled={uploadingHtml}
+                className="w-full py-4 bg-purple-500 hover:bg-purple-400 text-ink-950 font-black rounded-2xl transition-all shadow-xl shadow-purple-500/10 uppercase text-xs tracking-[0.2em] flex items-center justify-center gap-3"
+              >
+                {uploadingHtml ? <Loader2 className="w-4 h-4 animate-spin" /> : <Code2 className="w-4 h-4" />}
+                Upload HTML Questions
+              </button>
+            </div>
+
+            <div className="lg:col-span-2 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest">Questions HTML</label>
+                    <span className="text-[8px] text-ink-700 font-mono">{htmlQuestions.length} Bytes</span>
+                  </div>
+                  <textarea 
+                    value={htmlQuestions}
+                    onChange={e => setHtmlQuestions(e.target.value)}
+                    className="w-full h-96 bg-ink-950 border border-ink-600 rounded-2xl p-6 text-xs text-ink-300 font-mono focus:border-purple-500/30 outline-none resize-none shadow-inner"
+                    placeholder='<div class="ata-question-item" data-question-no="1">...'
+                  />
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest">Solutions HTML</label>
+                    <span className="text-[8px] text-ink-700 font-mono">{htmlSolutions.length} Bytes</span>
+                  </div>
+                  <textarea 
+                    value={htmlSolutions}
+                    onChange={e => setHtmlSolutions(e.target.value)}
+                    className="w-full h-96 bg-ink-950 border border-ink-600 rounded-2xl p-6 text-xs text-ink-300 font-mono focus:border-purple-500/30 outline-none resize-none shadow-inner"
+                    placeholder='<div class="ata-question-item" data-question-no="1"><div data-answer>A</div>...'
                   />
                 </div>
               </div>
@@ -1934,10 +2341,10 @@ function SubscriptionsTab() {
           { label: 'Total Volume', value: stats.total, icon: Activity, color: 'blue' },
           { label: 'Expired Clearances', value: stats.expired, icon: XCircle, color: 'red' },
         ].map(s => (
-          <div key={s.label} className="glass-card p-6 border-ink-800 flex items-center justify-between">
+          <div key={s.label} className="glass-card p-6 border-ink-600 flex items-center justify-between">
             <div>
               <div className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-1">{s.label}</div>
-              <div className="text-3xl font-black text-white">{s.value}</div>
+              <div className="text-3xl font-black text-red-800">{s.value}</div>
             </div>
             <div className={clsx(
               "p-3 rounded-xl",
@@ -1951,21 +2358,21 @@ function SubscriptionsTab() {
       </div>
 
       {/* Subscription Tiers */}
-      <div className="glass-card p-8 border-ink-800">
+      <div className="glass-card p-8 border-ink-600">
         <div className="flex items-center justify-between mb-8">
-          <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-3">
-            <Crown className="w-4 h-4 text-yellow-500" /> Nexus Subscription Tiers
+          <h3 className="text-sm font-black text-red-800 uppercase tracking-widest flex items-center gap-3">
+            <Crown className="w-4 h-4 text-red-500" /> Nexus Subscription Tiers
           </h3>
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setShowActivateModal(true)}
-              className="px-4 py-2 bg-ink-800 hover:bg-ink-700 text-ink-200 text-[10px] font-black uppercase tracking-widest rounded-xl border border-ink-700 transition-all flex items-center gap-2"
+              className="px-4 py-2 bg-ink-800 hover:bg-ink-700 text-ink-200 text-[10px] font-black uppercase tracking-widest rounded-xl border border-ink-500 transition-all flex items-center gap-2"
             >
               <CreditCard className="w-3.5 h-3.5" /> Manual Activation
             </button>
             <button 
               onClick={() => setShowPlanForm(true)} 
-              className="px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-ink-950 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-yellow-500/10"
+              className="px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-teal-500/10"
             >
               New Plan
             </button>
@@ -1976,24 +2383,24 @@ function SubscriptionsTab() {
           {plans.map(plan => (
             <div key={plan._id} className={clsx(
               "p-6 rounded-2xl border transition-all relative overflow-hidden group",
-              plan.isActive ? "bg-ink-900 border-ink-800 hover:border-yellow-500/30" : "bg-ink-950 border-ink-900 opacity-50"
+              plan.isActive ? "bg-ink-900 border-ink-600 hover:border-pink-300/30" : "bg-ink-950 border-ink-900 opacity-50"
             )}>
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-lg font-black text-white uppercase tracking-tight">{plan.name}</h4>
+                <h4 className="text-lg font-black text-red-800 uppercase tracking-tight">{plan.name}</h4>
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button onClick={() => togglePlan(plan)} className="p-2 bg-ink-950 rounded-lg text-ink-500 hover:text-white">
+                  <button onClick={() => togglePlan(plan)} className="p-2 bg-ink-950 rounded-lg text-ink-500 hover:text-ink-100">
                     {plan.isActive ? <ToggleRight className="w-4 h-4 text-teal-400" /> : <ToggleLeft className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
               <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-3xl font-black text-yellow-500">₹{plan.price}</span>
+                <span className="text-3xl font-black text-red-500">₹{plan.price}</span>
                 <span className="text-[10px] text-ink-600 font-bold uppercase tracking-widest">/ {plan.duration} {plan.durationUnit}</span>
               </div>
-              <div className="pt-4 border-t border-ink-800 flex items-center justify-between">
+              <div className="pt-4 border-t border-ink-600 flex items-center justify-between">
                 <span className={clsx(
                   "text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border",
-                  plan.isActive ? "bg-teal-500/10 text-teal-400 border-teal-500/20" : "bg-ink-800 text-ink-600 border-ink-700"
+                  plan.isActive ? "bg-teal-500/10 text-teal-400 border-teal-500/20" : "bg-ink-800 text-ink-600 border-ink-500"
                 )}>
                   {plan.isActive ? 'Active' : 'Locked'}
                 </span>
@@ -2005,9 +2412,9 @@ function SubscriptionsTab() {
       </div>
 
       {/* Registry of Contracts */}
-      <div className="glass-card p-8 border-ink-800">
+      <div className="glass-card p-8 border-ink-600">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <h3 className="text-sm font-black text-white uppercase tracking-widest">Clearance Registry</h3>
+          <h3 className="text-sm font-black text-red-800 uppercase tracking-widest">Clearance Registry</h3>
           <div className="flex items-center gap-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-ink-600" />
@@ -2015,13 +2422,13 @@ function SubscriptionsTab() {
                 value={filter.search}
                 onChange={e => setFilter({...filter, search: e.target.value})}
                 placeholder="Search Citizens..."
-                className="bg-ink-950 border border-ink-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:border-yellow-500/30 outline-none"
+                className="bg-ink-950 border border-ink-600 rounded-xl pl-9 pr-4 py-2 text-xs text-ink-100 focus:border-red-500/30 outline-none"
               />
             </div>
             <select 
               value={filter.status}
               onChange={e => setFilter({...filter, status: e.target.value})}
-              className="bg-ink-950 border border-ink-800 rounded-xl px-3 py-2 text-[10px] font-black text-ink-500 outline-none uppercase tracking-widest"
+              className="bg-ink-950 border border-ink-600 rounded-xl px-3 py-2 text-[10px] font-black text-red-8000 outline-none uppercase tracking-widest"
             >
               <option value="">All Status</option>
               <option value="active">Active Only</option>
@@ -2032,18 +2439,18 @@ function SubscriptionsTab() {
 
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 text-yellow-500 animate-spin" />
+            <Loader2 className="w-8 h-8 text-red-500 animate-spin" />
           </div>
         ) : (
           <div className="space-y-3">
             {subscriptions.map(sub => (
-              <div key={sub._id} className="group flex items-center gap-6 p-4 bg-ink-900/40 border border-ink-900 hover:bg-ink-900 hover:border-ink-800 rounded-2xl transition-all">
-                <div className="w-10 h-10 rounded-xl bg-ink-950 border border-ink-800 flex items-center justify-center text-ink-500 font-black group-hover:text-yellow-500 transition-colors">
+              <div key={sub._id} className="group flex items-center gap-6 p-4 bg-ink-900/40 border border-ink-900 hover:bg-ink-900 hover:border-ink-600 rounded-2xl transition-all">
+                <div className="w-10 h-10 rounded-xl bg-ink-950 border border-ink-600 flex items-center justify-center text-ink-500 font-black group-hover:text-pink-400 transition-colors">
                   {(sub.userId?.name || 'U').charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-1">
-                    <h4 className="text-sm font-black text-white truncate">{sub.userId?.name || 'Unknown Subject'}</h4>
+                    <h4 className="text-sm font-black text-red-800 truncate">{sub.userId?.name || 'Unknown Subject'}</h4>
                     <span className={clsx(
                       "px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border",
                       sub.status === 'active' ? "bg-teal-500/10 text-teal-400 border-teal-500/20" : "bg-red-500/10 text-red-500 border-red-500/20"
@@ -2061,7 +2468,7 @@ function SubscriptionsTab() {
                 </div>
                 <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
                   {sub.status === 'active' ? (
-                    <button onClick={() => updateSubscriptionStatus(sub, 'cancelled')} className="p-2.5 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-xl border border-red-500/20 transition-all">
+                    <button onClick={() => updateSubscriptionStatus(sub, 'cancelled')} className="p-2.5 bg-red-500/10 text-red-500 hover:bg-pink-200/20 rounded-xl border border-red-500/20 transition-all">
                       <XCircle className="w-4 h-4" />
                     </button>
                   ) : (
@@ -2139,12 +2546,12 @@ function CoursesTab() {
   return (
     <div className="space-y-8 relative">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-3">
+        <h2 className="text-sm font-black text-red-800 uppercase tracking-widest flex items-center gap-3">
           <PlayCircle className="w-4 h-4 text-blue-400" /> Academy Management
         </h2>
         <button 
           onClick={() => setShowCourseForm(true)} 
-          className="relative z-[40] px-6 py-3 bg-yellow-500 hover:bg-yellow-400 active:scale-95 text-ink-950 font-black rounded-2xl transition-all shadow-lg shadow-yellow-500/10 flex items-center gap-2 uppercase text-xs tracking-widest cursor-pointer"
+          className="relative z-[40] px-6 py-3 bg-teal-500 hover:bg-teal-600 active:scale-95 text-white font-black rounded-2xl transition-all shadow-lg shadow-teal-500/10 flex items-center gap-2 uppercase text-xs tracking-widest cursor-pointer"
         >
           <Plus className="w-5 h-5" /> New Module
         </button>
@@ -2152,33 +2559,33 @@ function CoursesTab() {
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-10 h-10 text-yellow-500 animate-spin" />
+          <Loader2 className="w-10 h-10 text-red-500 animate-spin" />
         </div>
       ) : courses.length === 0 ? (
-        <div className="glass-card p-20 text-center border-dashed border-ink-800">
+        <div className="glass-card p-20 text-center border-dashed border-ink-600">
           <PlayCircle className="w-16 h-16 text-ink-800 mx-auto mb-4 opacity-30" />
           <p className="text-ink-500 font-display text-lg">Empty Academy Archive</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {courses.map(course => (
-            <div key={course._id} className="group glass-card p-6 border-ink-800 hover:border-blue-500/30 transition-all flex flex-col justify-between">
+            <div key={course._id} className="group glass-card p-6 border-ink-600 hover:border-blue-500/30 transition-all flex flex-col justify-between">
               <div>
                 <div className="flex items-start justify-between mb-4">
                   <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 relative">
                     <Video className="w-6 h-6" />
                     {course.isPremium && (
-                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center border-2 border-ink-950">
-                        <Crown className="w-2 h-2 text-ink-950" />
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center border-2 border-ink-950">
+                        <Crown className="w-2 h-2 text-white" />
                       </div>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <button onClick={() => setEditingCourse(course)} className="p-2 bg-ink-950 text-ink-500 hover:text-yellow-500 rounded-xl border border-ink-800 transition-all"><Edit2 className="w-3.5 h-3.5"/></button>
-                    <button onClick={() => handleDeleteCourse(course._id)} className="p-2 bg-ink-950 text-ink-600 hover:text-red-500 rounded-xl border border-ink-800 transition-all"><Trash2 className="w-3.5 h-3.5"/></button>
+                    <button onClick={() => setEditingCourse(course)} className="p-2 bg-ink-950 text-ink-500 hover:text-pink-400 rounded-xl border border-ink-600 transition-all"><Edit2 className="w-3.5 h-3.5"/></button>
+                    <button onClick={() => handleDeleteCourse(course._id)} className="p-2 bg-ink-950 text-ink-600 hover:text-pink-400 rounded-xl border border-ink-600 transition-all"><Trash2 className="w-3.5 h-3.5"/></button>
                   </div>
                 </div>
-                <h4 className="text-xl font-black text-white tracking-tight mb-2 group-hover:text-blue-400 transition-colors">{course.title}</h4>
+                <h4 className="text-xl font-black text-red-800 tracking-tight mb-2 group-hover:text-blue-400 transition-colors">{course.title}</h4>
                 <p className="text-xs text-ink-500 line-clamp-2 mb-4 leading-relaxed">{course.description}</p>
                 <div className="flex items-center gap-4 mb-4">
                   <button 
@@ -2186,7 +2593,7 @@ function CoursesTab() {
                       navigator.clipboard.writeText(course._id);
                       toast.success('Module ID Copied');
                     }}
-                    className="flex items-center gap-2 px-2 py-1 bg-ink-950 border border-ink-800 rounded-lg hover:border-blue-500/30 transition-all group/id"
+                    className="flex items-center gap-2 px-2 py-1 bg-ink-950 border border-ink-600 rounded-lg hover:border-blue-500/30 transition-all group/id"
                   >
                     <Copy className="w-3 h-3 text-ink-700 group-hover/id:text-blue-500" />
                     <span className="text-[10px] font-black text-ink-600 uppercase tracking-widest group-hover/id:text-ink-400">Copy Module ID</span>
@@ -2194,7 +2601,7 @@ function CoursesTab() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-6 border-t border-ink-800 mt-auto">
+              <div className="flex items-center justify-between pt-6 border-t border-ink-600 mt-auto">
                 <div className="flex items-center gap-4">
                   <div className="flex flex-col">
                     <span className="text-[8px] text-ink-700 font-black uppercase tracking-widest mb-1">Status</span>
@@ -2208,7 +2615,7 @@ function CoursesTab() {
                   <div className="w-px h-6 bg-ink-800" />
                   <div className="flex flex-col">
                     <span className="text-[8px] text-ink-700 font-black uppercase tracking-widest mb-1">Index</span>
-                    <span className="text-[9px] font-black text-white uppercase tracking-widest">{course.lessonCount || 0} Nodes</span>
+                    <span className="text-[9px] font-black text-red-800 uppercase tracking-widest">{course.lessonCount || 0} Nodes</span>
                   </div>
                 </div>
                 
@@ -2217,7 +2624,7 @@ function CoursesTab() {
                     onClick={() => handleTogglePublished(course)}
                     className={clsx(
                       "p-2 rounded-xl transition-all border",
-                      course.isPublished ? "bg-teal-500/10 border-teal-500/20 text-teal-400" : "bg-ink-800 border-ink-700 text-ink-500"
+                      course.isPublished ? "bg-teal-500/10 border-teal-500/20 text-teal-400" : "bg-ink-800 border-ink-500 text-ink-500"
                     )}
                   >
                     {course.isPublished ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
@@ -2242,18 +2649,18 @@ function CoursesTab() {
 
       {/* Lesson Index Drawer */}
       {selectedCourse && (
-        <div className="fixed inset-y-0 right-0 w-full md:w-[450px] bg-ink-950 border-l border-ink-800 p-8 overflow-y-auto z-[100] shadow-2xl animate-slide-left">
+        <div className="fixed inset-y-0 right-0 w-full md:w-[450px] bg-ink-950 border-l border-ink-600 p-8 overflow-y-auto z-[100] shadow-2xl animate-slide-left">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-blue-500/10 text-blue-400 rounded-2xl border border-blue-500/20">
                 <BookOpen className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-xl font-black text-white tracking-tight">Index Manager</h3>
+                <h3 className="text-xl font-black text-red-800 tracking-tight">Index Manager</h3>
                 <p className="text-[10px] text-ink-600 font-black uppercase tracking-widest">{selectedCourse.title}</p>
               </div>
             </div>
-            <button onClick={() => setSelectedCourse(null)} className="p-3 bg-ink-900 text-ink-400 hover:text-white rounded-2xl hover:bg-ink-800 transition-all">
+            <button onClick={() => setSelectedCourse(null)} className="p-3 bg-ink-900 text-ink-400 hover:text-ink-100 rounded-2xl hover:bg-ink-800 transition-all">
               <X className="w-6 h-6" />
             </button>
           </div>
@@ -2267,23 +2674,204 @@ function CoursesTab() {
 
           <div className="space-y-4">
             {lessons.map((lesson, idx) => (
-              <div key={lesson._id} className="group p-5 bg-ink-900/50 border border-ink-800 hover:border-blue-500/30 rounded-2xl transition-all flex items-center justify-between">
+              <div key={lesson._id} className="group p-5 bg-ink-900/50 border border-ink-600 hover:border-blue-500/30 rounded-2xl transition-all flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="text-[10px] font-black text-ink-700 font-mono w-4">{String(idx + 1).padStart(2, '0')}</div>
                   <div>
-                    <h5 className="text-sm font-black text-white group-hover:text-blue-400 transition-colors">{lesson.title}</h5>
+                    <h5 className="text-sm font-black text-red-800 group-hover:text-blue-400 transition-colors">{lesson.title}</h5>
                     <span className="text-[9px] text-ink-600 font-bold uppercase tracking-widest">{lesson.duration || 'Video Node'}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button onClick={() => setEditingLesson(lesson)} className="p-2 text-ink-600 hover:text-yellow-500"><Edit2 className="w-3.5 h-3.5" /></button>
-                  <button onClick={() => handleDeleteLesson(lesson._id)} className="p-2 text-ink-700 hover:text-red-500"><Trash2 className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => setEditingLesson(lesson)} className="p-2 text-ink-600 hover:text-pink-400"><Edit2 className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => handleDeleteLesson(lesson._id)} className="p-2 text-ink-700 hover:text-pink-400"><Trash2 className="w-3.5 h-3.5" /></button>
                 </div>
               </div>
             ))}
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function ArticlesTab() {
+  const SOURCES = [
+    { id: 'vajiram', name: 'Vajiram Mandravi', type: 'Editorial', icon: BookOpen, color: 'blue' },
+    { id: 'pw', name: 'PW OnlyIAS', type: 'Editorial', icon: BookOpen, color: 'teal' },
+    { id: 'legacyias', name: 'Legacy IAS', type: 'PIB Summary', icon: FileText, color: 'yellow' },
+    { id: 'greaterkashmir', name: 'Greater Kashmir', type: 'Opinion', icon: Newspaper, color: 'orange' },
+  ] as const;
+
+  const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
+  const [results, setResults] = useState<Record<string, { success: boolean; count?: number; date?: string; error?: string }>>({});
+
+  const runScrape = async (source: string, mode: 'today' | 'yesterday') => {
+    const key = `${source}-${mode}`;
+    setLoadingStates(prev => ({ ...prev, [key]: true }));
+    setResults(prev => ({ ...prev, [key]: undefined }));
+
+    try {
+      const fn = mode === 'today' ? adminAPI.loadTodayArticles : adminAPI.loadYesterdayArticles;
+      const { data } = await fn(source);
+      if (data.success) {
+        setResults(prev => ({ ...prev, [key]: { success: true, count: data.savedCount, date: data.runDateKey } }));
+        toast.success(`${data.savedCount} articles loaded from ${source} for ${data.runDateKey}`);
+      } else {
+        setResults(prev => ({ ...prev, [key]: { success: false, error: 'Unexpected response' } }));
+        toast.error('Failed to load articles');
+      }
+    } catch (err: any) {
+      const msg = err?.response?.data?.error || err?.message || 'Unknown error';
+      setResults(prev => ({ ...prev, [key]: { success: false, error: msg } }));
+      toast.error(msg);
+    } finally {
+      setLoadingStates(prev => ({ ...prev, [key]: false }));
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="bg-ink-900/50 p-6 rounded-3xl border border-ink-600">
+        <div className="flex items-center gap-4 mb-2">
+          <div className="p-3 bg-ink-800 rounded-2xl">
+            <Newspaper className="w-6 h-6 text-red-500" />
+          </div>
+          <div>
+            <h2 className="text-xl font-black text-red-800 uppercase tracking-tight">Article Scraper</h2>
+            <p className="text-ink-500 text-xs font-bold uppercase tracking-widest mt-1">
+              Load articles from UPSC sources individually
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Source Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {SOURCES.map(s => {
+          const todayKey = `${s.id}-today`;
+          const yesterdayKey = `${s.id}-yesterday`;
+          const tLoading = loadingStates[todayKey];
+          const yLoading = loadingStates[yesterdayKey];
+          const tRes = results[todayKey];
+          const yRes = results[yesterdayKey];
+
+          return (
+            <div
+              key={s.id}
+              className="group glass-card p-6 border-ink-600 hover:border-pink-300/30 transition-all duration-300 relative overflow-hidden"
+            >
+              <div className={clsx(
+                "absolute -top-20 -right-20 w-40 h-40 blur-[100px] opacity-5 rounded-full",
+                s.color === 'blue' ? 'bg-blue-500' :
+                s.color === 'teal' ? 'bg-teal-500' :
+                s.color === 'yellow' ? 'bg-yellow-500' : 'bg-orange-500'
+              )} />
+
+              <div className="relative z-10">
+                {/* Source Header */}
+                <div className="flex items-center gap-4 mb-5">
+                  <div className={clsx(
+                    "p-3 rounded-2xl",
+                    s.color === 'blue' ? 'bg-blue-500/10 text-blue-400' :
+                    s.color === 'teal' ? 'bg-teal-500/10 text-teal-400' :
+                    s.color === 'yellow' ? 'bg-yellow-500/10 text-yellow-400' : 'bg-orange-500/10 text-orange-400'
+                  )}>
+                    <s.icon className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-red-800 uppercase tracking-tight">{s.name}</h3>
+                    <span className="text-[10px] font-bold text-ink-500 uppercase tracking-widest">{s.type}</span>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => runScrape(s.id, 'today')}
+                      disabled={tLoading || yLoading}
+                      className={clsx(
+                        "w-full py-3 px-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all duration-200 flex items-center justify-center gap-2",
+                        tLoading
+                          ? 'bg-ink-800 text-ink-500 cursor-not-allowed'
+                          : 'bg-teal-500/10 text-teal-400 border border-teal-500/20 hover:bg-teal-500/20 hover:border-teal-500/40 active:scale-[0.97]'
+                      )}
+                    >
+                      {tLoading ? (
+                        <><Loader2 className="w-4 h-4 animate-spin" /> Scraping...</>
+                      ) : (
+                        <><Zap className="w-4 h-4" /> Load Today</>
+                      )}
+                    </button>
+                    {tRes && (
+                      <div className={clsx(
+                        "text-[10px] font-bold px-3 py-1.5 rounded-xl text-center",
+                        tRes.success ? "bg-teal-500/10 text-teal-400" : "bg-red-500/10 text-red-400"
+                      )}>
+                        {tRes.success
+                          ? `${tRes.count} articles · ${tRes.date}`
+                          : tRes.error}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => runScrape(s.id, 'yesterday')}
+                      disabled={tLoading || yLoading}
+                      className={clsx(
+                        "w-full py-3 px-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all duration-200 flex items-center justify-center gap-2",
+                        yLoading
+                          ? 'bg-ink-800 text-ink-500 cursor-not-allowed'
+                          : 'bg-ink-800 border border-ink-600 text-ink-300 hover:bg-ink-700 hover:border-ink-500 active:scale-[0.97]'
+                      )}
+                    >
+                      {yLoading ? (
+                        <><Loader2 className="w-4 h-4 animate-spin" /> Scraping...</>
+                      ) : (
+                        <><Clock className="w-4 h-4" /> Load Yesterday</>
+                      )}
+                    </button>
+                    {yRes && (
+                      <div className={clsx(
+                        "text-[10px] font-bold px-3 py-1.5 rounded-xl text-center",
+                        yRes.success ? "bg-teal-500/10 text-teal-400" : "bg-red-500/10 text-red-400"
+                      )}>
+                        {yRes.success
+                          ? `${yRes.count} articles · ${yRes.date}`
+                          : yRes.error}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Link to Editorial Engine */}
+      <div className="bg-ink-900/50 p-5 rounded-2xl border border-ink-600 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-ink-800 rounded-xl">
+            <ExternalLink className="w-5 h-5 text-ink-500" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-ink-300">Manage loaded articles</p>
+            <p className="text-[10px] text-ink-600 font-bold uppercase tracking-widest">
+              Edit, analyze, and generate speech for all loaded articles
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/dashboard/editorial-engine"
+          className="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all active:scale-[0.97]"
+        >
+          Open Editorial Engine
+        </Link>
+      </div>
     </div>
   );
 }
@@ -2366,7 +2954,7 @@ function SettingsTab() {
 
   if (loading) return (
     <div className="flex items-center justify-center py-40">
-      <Loader2 className="w-10 h-10 text-yellow-500 animate-spin" />
+      <Loader2 className="w-10 h-10 text-red-500 animate-spin" />
     </div>
   );
 
@@ -2374,25 +2962,25 @@ function SettingsTab() {
     <div className="space-y-8 animate-slide-up pb-20">
       {/* Payment Gateway Toggle */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="glass-card p-8 border-ink-800 relative overflow-hidden">
+        <div className="glass-card p-8 border-ink-600 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-5">
-            <CreditCard className="w-24 h-24 text-yellow-500" />
+            <CreditCard className="w-24 h-24 text-red-500" />
           </div>
-          <h3 className="text-sm font-black text-white uppercase tracking-[0.2em] mb-8 flex items-center gap-3">
-            <CreditCard className="w-4 h-4 text-yellow-500" /> Financial Protocols
+          <h3 className="text-sm font-black text-red-800 uppercase tracking-[0.2em] mb-8 flex items-center gap-3">
+            <CreditCard className="w-4 h-4 text-red-500" /> Financial Protocols
           </h3>
           
           <div className="space-y-6 relative z-10">
-            <div className="flex items-center justify-between p-4 bg-ink-950/50 rounded-2xl border border-ink-800">
+            <div className="flex items-center justify-between p-4 bg-ink-950/50 rounded-2xl border border-ink-600">
               <div>
-                <div className="text-xs font-black text-white uppercase tracking-wider mb-1">Razorpay Integration</div>
+                <div className="text-xs font-black text-red-800 uppercase tracking-wider mb-1">Razorpay Integration</div>
                 <div className="text-[10px] text-ink-500 font-bold uppercase tracking-widest">Automatic UPI & Card Processing</div>
               </div>
               <button 
                 onClick={() => handleUpdateConfig({ paymentMethod: config.paymentMethod === 'razorpay' ? 'manual' : 'razorpay' })}
                 className={clsx(
                   "p-2 rounded-xl border transition-all",
-                  config.paymentMethod === 'razorpay' ? "bg-teal-500/10 border-teal-500/50 text-teal-400" : "bg-ink-800 border-ink-700 text-ink-600"
+                  config.paymentMethod === 'razorpay' ? "bg-teal-500/10 border-teal-500/50 text-teal-400" : "bg-ink-800 border-ink-500 text-ink-600"
                 )}
               >
                 {config.paymentMethod === 'razorpay' ? <ToggleRight className="w-6 h-6" /> : <ToggleLeft className="w-6 h-6" />}
@@ -2407,7 +2995,7 @@ function SettingsTab() {
                     value={config.razorpayKeyId}
                     onChange={e => setConfig({...config, razorpayKeyId: e.target.value})}
                     onBlur={() => handleUpdateConfig({ razorpayKeyId: config.razorpayKeyId })}
-                    className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-3 text-sm text-white focus:border-yellow-500/50 outline-none"
+                    className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-3 text-sm text-ink-100 focus:border-red-500/50 outline-none"
                     placeholder="rzp_live_..."
                   />
                 </div>
@@ -2418,7 +3006,7 @@ function SettingsTab() {
                     value={config.razorpayKeySecret}
                     onChange={e => setConfig({...config, razorpayKeySecret: e.target.value})}
                     onBlur={() => handleUpdateConfig({ razorpayKeySecret: config.razorpayKeySecret })}
-                    className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-3 text-sm text-white focus:border-yellow-500/50 outline-none"
+                    className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-3 text-sm text-ink-100 focus:border-red-500/50 outline-none"
                     placeholder="••••••••••••••••"
                   />
                 </div>
@@ -2431,7 +3019,7 @@ function SettingsTab() {
                     value={config.telegramHandle}
                     onChange={e => setConfig({...config, telegramHandle: e.target.value})}
                     onBlur={() => handleUpdateConfig({ telegramHandle: config.telegramHandle })}
-                    className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500/50 outline-none"
+                    className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-3 text-sm text-ink-100 focus:border-blue-500/50 outline-none"
                     placeholder="@username"
                   />
                 </div>
@@ -2441,7 +3029,7 @@ function SettingsTab() {
                     value={config.telegramLink}
                     onChange={e => setConfig({...config, telegramLink: e.target.value})}
                     onBlur={() => handleUpdateConfig({ telegramLink: config.telegramLink })}
-                    className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500/50 outline-none"
+                    className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-3 text-sm text-ink-100 focus:border-blue-500/50 outline-none"
                     placeholder="https://t.me/..."
                   />
                 </div>
@@ -2458,11 +3046,11 @@ function SettingsTab() {
           </div>
         </div>
 
-        <div className="glass-card p-8 border-ink-800 relative overflow-hidden">
+        <div className="glass-card p-8 border-ink-600 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-5">
             <Percent className="w-24 h-24 text-teal-500" />
           </div>
-          <h3 className="text-sm font-black text-white uppercase tracking-[0.2em] mb-8 flex items-center gap-3">
+          <h3 className="text-sm font-black text-red-800 uppercase tracking-[0.2em] mb-8 flex items-center gap-3">
             <Percent className="w-4 h-4 text-teal-500" /> Global Economy
           </h3>
           
@@ -2472,7 +3060,7 @@ function SettingsTab() {
                 <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest block">Global Platform Discount</label>
                 <div className={clsx(
                   "px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border",
-                  config.globalDiscount?.isActive ? "bg-teal-500/10 text-teal-400 border-teal-500/20" : "bg-ink-800 text-ink-500 border-ink-700"
+                  config.globalDiscount?.isActive ? "bg-teal-500/10 text-teal-400 border-teal-500/20" : "bg-ink-800 text-ink-500 border-ink-500"
                 )}>
                   {config.globalDiscount?.isActive ? 'Operational' : 'Disabled'}
                 </div>
@@ -2484,7 +3072,7 @@ function SettingsTab() {
                     type="number"
                     value={config.globalDiscount?.percentage}
                     onChange={e => setConfig({...config, globalDiscount: {...config.globalDiscount, percentage: parseInt(e.target.value)}})}
-                    className="w-full bg-ink-950 border border-ink-800 rounded-xl pl-12 pr-4 py-3 text-lg font-black text-white focus:border-teal-500/50 outline-none"
+                    className="w-full bg-ink-950 border border-ink-600 rounded-xl pl-12 pr-4 py-3 text-lg font-black text-red-800 focus:border-teal-500/50 outline-none"
                     placeholder="0"
                   />
                 </div>
@@ -2492,7 +3080,7 @@ function SettingsTab() {
                   onClick={() => handleUpdateConfig({ globalDiscount: {...config.globalDiscount, isActive: !config.globalDiscount?.isActive} })}
                   className={clsx(
                     "px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border",
-                    config.globalDiscount?.isActive ? "bg-teal-500 text-ink-950 border-teal-400" : "bg-ink-800 border-ink-700 text-ink-500"
+                    config.globalDiscount?.isActive ? "bg-teal-500 text-ink-950 border-teal-400" : "bg-ink-800 border-ink-500 text-ink-500"
                   )}
                 >
                   {config.globalDiscount?.isActive ? 'Deactivate' : 'Apply Globally'}
@@ -2503,19 +3091,19 @@ function SettingsTab() {
               </p>
             </div>
 
-            <div className="pt-8 border-t border-ink-800">
-              <h4 className="text-[10px] font-black text-white uppercase tracking-widest mb-4">Manual Citizen Enrollment</h4>
+            <div className="pt-8 border-t border-ink-600">
+              <h4 className="text-[10px] font-black text-red-800 uppercase tracking-widest mb-4">Manual Citizen Enrollment</h4>
               <div className="space-y-3">
                 <input 
                   value={manualEnroll.userId}
                   onChange={e => setManualEnroll({...manualEnroll, userId: e.target.value})}
-                  className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-2 text-xs text-white focus:border-yellow-500/30 outline-none"
+                  className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-2 text-xs text-ink-100 focus:border-red-500/30 outline-none"
                   placeholder="Citizen ID (User MongoDB ID)"
                 />
                 <input 
                   value={manualEnroll.courseId}
                   onChange={e => setManualEnroll({...manualEnroll, courseId: e.target.value})}
-                  className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-2 text-xs text-white focus:border-yellow-500/30 outline-none"
+                  className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-2 text-xs text-ink-100 focus:border-red-500/30 outline-none"
                   placeholder="Module ID (Course MongoDB ID)"
                 />
                 <div className="flex gap-3">
@@ -2523,12 +3111,12 @@ function SettingsTab() {
                     type="number"
                     value={manualEnroll.amount}
                     onChange={e => setManualEnroll({...manualEnroll, amount: parseInt(e.target.value)})}
-                    className="flex-1 bg-ink-950 border border-ink-800 rounded-xl px-4 py-2 text-xs text-white focus:border-yellow-500/30 outline-none"
+                    className="flex-1 bg-ink-950 border border-ink-600 rounded-xl px-4 py-2 text-xs text-ink-100 focus:border-red-500/30 outline-none"
                     placeholder="Paid Amount (INR)"
                   />
                   <button 
                     onClick={handleManualEnroll}
-                    className="px-6 py-2 bg-yellow-500 hover:bg-yellow-400 text-ink-950 font-black rounded-xl transition-all shadow-lg shadow-yellow-500/10 uppercase text-[10px] tracking-widest"
+                    className="px-6 py-2 bg-red-500 hover:bg-pink-200 text-white font-black rounded-xl transition-all shadow-lg shadow-red-500/10 uppercase text-[10px] tracking-widest"
                   >
                     Enroll Citizen
                   </button>
@@ -2540,31 +3128,31 @@ function SettingsTab() {
       </div>
 
       {/* Announcements Section */}
-      <div className="glass-card p-8 border-ink-800">
-        <h3 className="text-sm font-black text-white uppercase tracking-[0.2em] mb-8 flex items-center gap-3">
+      <div className="glass-card p-8 border-ink-600">
+        <h3 className="text-sm font-black text-red-800 uppercase tracking-[0.2em] mb-8 flex items-center gap-3">
           <Bell className="w-4 h-4 text-purple-500" /> Broadcast Terminal
         </h3>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-1 space-y-4">
-            <div className="p-6 bg-ink-950/50 border border-ink-800 rounded-2xl space-y-4">
+            <div className="p-6 bg-ink-950/50 border border-ink-600 rounded-2xl space-y-4">
               <input 
                 value={newAnnouncement.title}
                 onChange={e => setNewAnnouncement({...newAnnouncement, title: e.target.value})}
-                className="w-full bg-ink-900 border border-ink-800 rounded-xl px-4 py-2 text-xs text-white focus:border-purple-500/50 outline-none"
+                className="w-full bg-ink-900 border border-ink-600 rounded-xl px-4 py-2 text-xs text-ink-100 focus:border-purple-500/50 outline-none"
                 placeholder="Broadcast Headline"
               />
               <textarea 
                 value={newAnnouncement.content}
                 onChange={e => setNewAnnouncement({...newAnnouncement, content: e.target.value})}
-                className="w-full h-32 bg-ink-900 border border-ink-800 rounded-xl p-4 text-xs text-white focus:border-purple-500/50 outline-none resize-none"
+                className="w-full h-32 bg-ink-900 border border-ink-600 rounded-xl p-4 text-xs text-ink-100 focus:border-purple-500/50 outline-none resize-none"
                 placeholder="Message Payload..."
               />
               <div className="grid grid-cols-2 gap-3">
                 <select 
                   value={newAnnouncement.type}
                   onChange={e => setNewAnnouncement({...newAnnouncement, type: e.target.value})}
-                  className="bg-ink-900 border border-ink-800 rounded-xl px-4 py-2 text-[10px] font-black text-ink-400 outline-none uppercase"
+                  className="bg-ink-900 border border-ink-600 rounded-xl px-4 py-2 text-[10px] font-black text-ink-400 outline-none uppercase"
                 >
                   <option value="info">Information</option>
                   <option value="alert">Alert</option>
@@ -2590,7 +3178,7 @@ function SettingsTab() {
             ) : (
               <div className="grid grid-cols-1 gap-4">
                 {announcements.map(a => (
-                  <div key={a._id} className="group p-5 bg-ink-900/40 border border-ink-800 hover:border-purple-500/30 rounded-2xl transition-all flex items-start justify-between">
+                  <div key={a._id} className="group p-5 bg-ink-900/40 border border-ink-600 hover:border-purple-500/30 rounded-2xl transition-all flex items-start justify-between">
                     <div className="flex gap-4">
                       <div className={clsx(
                         "p-3 rounded-xl",
@@ -2602,7 +3190,7 @@ function SettingsTab() {
                       </div>
                       <div>
                         <div className="flex items-center gap-3 mb-1">
-                          <h4 className="text-sm font-black text-white uppercase tracking-tight">{a.title}</h4>
+                          <h4 className="text-sm font-black text-red-800 uppercase tracking-tight">{a.title}</h4>
                           <span className="text-[8px] font-bold text-ink-600 uppercase">{new Date(a.createdAt).toLocaleDateString()}</span>
                         </div>
                         <p className="text-xs text-ink-400 leading-relaxed max-w-lg">{a.content}</p>
@@ -2610,7 +3198,7 @@ function SettingsTab() {
                     </div>
                     <button 
                       onClick={() => handleDeleteAnnouncement(a._id)}
-                      className="p-2 text-ink-700 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                      className="p-2 text-ink-700 hover:text-pink-400 opacity-0 group-hover:opacity-100 transition-all"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

@@ -217,7 +217,7 @@ export default function CoursePlayerPage() {
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-yellow-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-red-500" />
       </div>
     );
   }
@@ -227,14 +227,14 @@ export default function CoursePlayerPage() {
       <div className="space-y-6 animate-fade-in">
         <button
           onClick={() => router.push('/dashboard/courses')}
-          className="flex items-center gap-2 text-ink-400 hover:text-yellow-500 transition-colors"
+          className="flex items-center gap-2 text-ink-400 hover:text-pink-400 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Courses
         </button>
         
         <div className="glass-card p-12 text-center border border-red-500/20">
-          <h2 className="text-xl font-bold text-ink-100 mb-2">
+          <h2 className="text-xl font-bold text-red-800 mb-2">
             {error === 'Subscription required' ? 'Subscription Required' : 'Error Loading Course'}
           </h2>
           <p className="text-ink-400 mb-4">
@@ -251,45 +251,52 @@ export default function CoursePlayerPage() {
     <div className="space-y-6 animate-fade-in pb-20">
       <DevToolsGuard />
       
-      {/* Top Header / Navigation */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Top Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative">
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push('/dashboard/courses')}
-            className="p-2.5 bg-ink-900 border border-ink-800 rounded-xl text-ink-400 hover:text-yellow-500 hover:border-yellow-500/30 transition-all shadow-lg"
+            className="p-2.5 bg-ink-900 border border-ink-700/60 rounded-xl text-ink-400 hover:text-pink-400 hover:border-pink-300/30 transition-all"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 bg-yellow-500/10 text-yellow-500 text-[9px] font-bold uppercase tracking-widest rounded-md border border-yellow-500/20">
+              <span className="px-2 py-0.5 bg-red-500/10 text-red-500 text-[9px] font-bold uppercase tracking-widest rounded-md border border-red-500/30">
                 Academy
               </span>
-              <span className="text-[10px] text-ink-500 font-mono">•</span>
-              <span className="text-[10px] text-ink-500 font-mono uppercase tracking-widest">{course.subject}</span>
+              <span className="text-[9px] text-ink-400 font-mono">•</span>
+              <span className="text-[9px] text-ink-400 font-mono uppercase tracking-widest">{course.subject}</span>
             </div>
-            <h1 className="text-xl font-display font-bold text-ink-100 truncate max-w-md">
+            <h1 className="text-xl font-display font-bold text-red-800 truncate max-w-lg">
               {course.title}
             </h1>
           </div>
         </div>
         
-        <div className="flex items-center gap-3">
-          <div className="hidden lg:flex flex-col items-end mr-2">
-            <span className="text-[9px] font-mono text-ink-500 uppercase tracking-widest">Global Progress</span>
-            <span className="text-sm font-black text-yellow-500">{course.progress?.percentage || 0}%</span>
+        <div className="flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-3 px-4 py-2 bg-ink-900 border border-ink-700/60 rounded-xl">
+            <div className="flex flex-col">
+              <span className="text-[8px] font-mono text-ink-500 uppercase tracking-widest">Progress</span>
+              <span className="text-sm font-black text-teal-500">{course.progress?.percentage || 0}%</span>
+            </div>
+            <div className="w-px h-8 bg-ink-700/60" />
+            <div className="flex flex-col">
+              <span className="text-[8px] font-mono text-ink-500 uppercase tracking-widest">Modules</span>
+              <span className="text-sm font-black text-ink-100">{course.progress?.completedLessons || 0}/{course.progress?.totalLessons || 0}</span>
+            </div>
           </div>
           <button
             onClick={() => setShowSidebar(!showSidebar)}
             className={clsx(
-              "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all border shadow-lg",
+              "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all border",
               showSidebar 
-                ? "bg-yellow-500/10 border-yellow-500/30 text-yellow-500" 
-                : "bg-ink-900 border-ink-800 text-ink-400 hover:text-ink-100 hover:border-ink-700"
+                ? "bg-red-500/10 border-red-500/30 text-red-500" 
+                : "bg-ink-900 border-ink-700/60 text-ink-400 hover:text-ink-100 hover:border-ink-500"
             )}
           >
             {showSidebar ? <X className="w-4 h-4" /> : <List className="w-4 h-4" />}
-            {showSidebar ? 'Close Modules' : 'View Modules'}
+            {showSidebar ? 'Modules' : 'Modules'}
           </button>
         </div>
       </div>
@@ -299,10 +306,10 @@ export default function CoursePlayerPage() {
         <div className="flex-1 space-y-6">
           {currentLesson && (
             <div className="space-y-6">
-              {/* Theater Video Container */}
+              {/* Video Container */}
               <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-yellow-500/20 to-teal-500/20 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                <div className="relative bg-black rounded-2xl overflow-hidden shadow-2xl ring-1 ring-ink-800">
+                <div className="absolute -inset-1 bg-gradient-to-r from-red-500/15 to-teal-500/15 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                <div className="relative bg-black rounded-2xl overflow-hidden shadow-2xl ring-1 ring-ink-800/60">
                   <ProtectedVideoPlayer
                     courseId={courseId}
                     lessonId={currentLesson._id}
@@ -316,37 +323,37 @@ export default function CoursePlayerPage() {
                 </div>
               </div>
               
-              {/* Player Controls - Navigation */}
-              <div className="flex items-center justify-between p-2 bg-ink-900/50 border border-ink-800 rounded-2xl">
+              {/* Navigation Controls */}
+              <div className="flex items-center justify-between p-2 bg-ink-900/50 border border-ink-700/60 rounded-2xl">
                 <button
                   onClick={goToPrevLesson}
                   disabled={course.lessons.findIndex(l => l._id === currentLesson._id) === 0}
-                  className="flex items-center gap-2 px-6 py-3 bg-ink-950 rounded-xl text-ink-400 hover:text-ink-100 hover:bg-ink-900 transition-all disabled:opacity-30 disabled:cursor-not-allowed font-bold text-xs"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-ink-400 hover:text-ink-100 border border-ink-700/60 hover:border-teal-500/30 hover:bg-teal-500/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed font-bold text-xs"
                 >
                   <ChevronLeft className="w-4 h-4" />
-                  PREVIOUS
+                  <span className="hidden sm:inline">PREVIOUS</span>
                 </button>
                 
                 <div className="hidden sm:flex flex-col items-center">
-                   <div className="flex gap-1 mb-1">
+                   <div className="flex items-center gap-1.5 mb-1.5">
                       {course.lessons.map((l, i) => (
                         <div key={l._id} className={clsx(
-                          "w-1 h-1 rounded-full",
-                          l._id === currentLesson._id ? "bg-yellow-500 scale-150" : l.isCompleted ? "bg-teal-500" : "bg-ink-800"
+                          "w-2 h-2 rounded-full transition-all",
+                          l._id === currentLesson._id ? "bg-red-500 scale-125 shadow-sm shadow-red-500/50" : l.isCompleted ? "bg-teal-500" : "bg-ink-700"
                         )} />
                       ))}
                    </div>
-                   <span className="text-[10px] text-ink-600 font-mono tracking-widest uppercase">
-                    {course.progress?.completedLessons} / {course.progress?.totalLessons} Complete
+                   <span className="text-[9px] text-ink-500 font-mono tracking-widest uppercase">
+                    {course.progress?.completedLessons}/{course.progress?.totalLessons} Complete
                   </span>
                 </div>
                 
                 <button
                   onClick={goToNextLesson}
                   disabled={course.lessons.findIndex(l => l._id === currentLesson._id) >= course.lessons.length - 1}
-                  className="flex items-center gap-2 px-6 py-3 bg-yellow-500 rounded-xl text-black font-black text-xs hover:bg-yellow-400 transition-all shadow-lg shadow-yellow-900/20 disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all bg-red-500 text-white hover:bg-red-600 shadow-sm shadow-red-500/20 disabled:opacity-30 disabled:cursor-not-allowed"
                 >
-                  NEXT MODULE
+                  <span className="hidden sm:inline">NEXT</span>
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
@@ -354,24 +361,28 @@ export default function CoursePlayerPage() {
           )}
           
           {/* Module Description */}
-          <div className="glass-card p-6 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity">
-              <BookOpen className="w-24 h-24 text-yellow-500" />
-            </div>
+          <div className="glass-card p-6 relative overflow-hidden rounded-2xl border border-ink-700/60">
             <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="w-1.5 h-6 bg-yellow-500 rounded-full" />
-                <h2 className="text-2xl font-display font-bold text-ink-100">
-                  {currentLesson?.title}
-                </h2>
+              <div className="flex items-center gap-3 mb-3">
+                <span className="w-1 h-8 bg-teal-500 rounded-full" />
+                <div>
+                  <span className="text-[9px] font-mono text-teal-500 uppercase tracking-widest font-bold">
+                    Module {course.lessons.findIndex(l => l._id === (currentLesson?._id)) + 1} / {course.lessons.length}
+                  </span>
+                  <h2 className="text-xl font-display font-bold text-red-800">
+                    {currentLesson?.title}
+                  </h2>
+                </div>
               </div>
-              <div className="flex items-center gap-4 mb-6 text-xs font-mono text-ink-500 uppercase tracking-widest">
-                <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {currentLesson?.duration} duration</span>
-                <span className="flex items-center gap-1.5"><Play className="w-3.5 h-3.5" /> Module {course.lessons.findIndex(l => l._id === (currentLesson?._id)) + 1}</span>
-              </div>
-              <p className="text-ink-400 text-base leading-relaxed max-w-3xl">
+              <p className="text-ink-400 text-sm leading-relaxed max-w-3xl ml-1">
                 {currentLesson?.description || "In this module, we dive deep into the essential concepts required for your preparation. Follow along with the video and take structured notes."}
               </p>
+              <div className="flex items-center gap-4 mt-4 ml-1">
+                <span className="flex items-center gap-1.5 text-[10px] font-mono text-ink-500"><Clock className="w-3 h-3 text-teal-500" /> {currentLesson?.duration}</span>
+                {currentLesson?.isCompleted && (
+                  <span className="flex items-center gap-1.5 text-[10px] font-mono text-teal-500 font-bold"><CheckCircle2 className="w-3 h-3" /> Completed</span>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -379,21 +390,22 @@ export default function CoursePlayerPage() {
         {/* Course Content Sidebar */}
         {showSidebar && (
           <div className="w-full lg:w-96 shrink-0 space-y-4 animate-in slide-in-from-right-4 duration-500">
-            <div className="glass-card flex flex-col h-full sticky top-4 max-h-[calc(100vh-100px)]">
-              <div className="p-5 border-b border-ink-800">
+            <div className="glass-card flex flex-col h-full sticky top-4 max-h-[calc(100vh-100px)] rounded-2xl border border-ink-700/60">
+              <div className="p-5 border-b border-ink-700/60">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="font-display font-bold text-ink-100 text-lg">Curriculum</h3>
-                    <p className="text-[10px] text-ink-500 font-mono uppercase tracking-widest">{course.lessons.length} Total Modules</p>
+                    <h3 className="font-display font-bold text-red-800 text-lg">Curriculum</h3>
+                    <p className="text-[10px] text-ink-500 font-mono">{course.lessons.length} Modules</p>
                   </div>
-                  <div className="text-right">
-                    <span className="text-xl font-black text-yellow-500">{course.progress?.percentage || 0}%</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl font-black text-teal-500">{course.progress?.percentage || 0}%</span>
+                    <span className="text-[10px] text-ink-400 font-mono">({course.progress?.completedLessons || 0}/{course.progress?.totalLessons || 0})</span>
                   </div>
                 </div>
                 
-                <div className="h-1.5 bg-ink-950 rounded-full overflow-hidden border border-ink-800/50 shadow-inner">
+                <div className="h-1.5 bg-ink-950 rounded-full overflow-hidden border border-ink-700/60 shadow-inner">
                   <div 
-                    className="h-full bg-gradient-to-r from-yellow-600 to-yellow-400 transition-all duration-1000 shadow-[0_0_8px_rgba(234,179,8,0.4)]"
+                    className="h-full bg-gradient-to-r from-teal-500 to-teal-400 transition-all duration-1000"
                     style={{ width: `${course.progress?.percentage || 0}%` }}
                   />
                 </div>
@@ -409,8 +421,8 @@ export default function CoursePlayerPage() {
                       className={clsx(
                         "w-full flex items-start gap-4 p-4 rounded-2xl text-left transition-all group/item border",
                         isActive
-                          ? "bg-yellow-500/10 border-yellow-500/30 shadow-lg shadow-yellow-900/10"
-                          : "bg-transparent border-transparent hover:bg-ink-900/40 hover:border-ink-800/50"
+                          ? "bg-red-500/10 border-red-500/30 shadow-lg shadow-red-900/10"
+                          : "bg-transparent border-transparent hover:bg-ink-900/40 hover:border-ink-600/50"
                       )}
                     >
                       <div className={clsx(
@@ -418,8 +430,8 @@ export default function CoursePlayerPage() {
                         lesson.isCompleted
                           ? "bg-teal-500/20 text-teal-500 border border-teal-500/30"
                           : isActive
-                            ? "bg-yellow-500 text-ink-950 shadow-lg shadow-yellow-500/20"
-                            : "bg-ink-900 text-ink-500 border border-ink-800"
+                            ? "bg-red-500 text-white shadow-lg shadow-red-500/20"
+                            : "bg-ink-900 text-ink-500 border border-ink-600"
                       )}>
                         {lesson.isCompleted ? (
                           <CheckCircle2 className="w-5 h-5" />
@@ -431,7 +443,7 @@ export default function CoursePlayerPage() {
                       <div className="flex-1 min-w-0">
                         <p className={clsx(
                           "text-sm font-bold leading-tight mb-1",
-                          isActive ? "text-yellow-400" : lesson.isCompleted ? "text-ink-400" : "text-ink-100"
+                          isActive ? "text-red-400" : lesson.isCompleted ? "text-ink-400" : "text-ink-100"
                         )}>
                           {lesson.title}
                         </p>
@@ -441,7 +453,7 @@ export default function CoursePlayerPage() {
                             <span>{lesson.duration}</span>
                           </div>
                           {isActive && (
-                            <span className="flex items-center gap-1 text-[10px] text-yellow-500 font-bold uppercase animate-pulse">
+                            <span className="flex items-center gap-1 text-[10px] text-red-500 font-bold uppercase animate-pulse">
                               <Play className="w-2.5 h-2.5 fill-current" /> Now Playing
                             </span>
                           )}

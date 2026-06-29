@@ -191,14 +191,14 @@ export default function PlansPage() {
                 className="glass-card p-5 hover:border-primary cursor-pointer transition-all group relative overflow-hidden">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h3 className="font-display font-semibold text-lg text-ink-100 group-hover:text-primary transition-colors">{plan.planName}</h3>
+                    <h3 className="font-display font-semibold text-lg text-red-800 group-hover:text-primary transition-colors">{plan.planName}</h3>
                     <p className="text-[10px] text-ink-400 font-mono mt-1 flex items-center gap-2">
                       <Calendar className="w-3 h-3" />
                       {format(new Date(plan.startDate), 'dd MMM')} - {format(new Date(plan.endDate), 'dd MMM')}
                     </p>
                   </div>
                   <button onClick={(e) => { e.stopPropagation(); handleDeletePlan(plan._id); }} 
-                    className="text-ink-500 hover:text-red-400 p-1.5 hover:bg-red-500/10 rounded-lg transition-colors">
+                    className="text-ink-500 hover:text-pink-400 p-1.5 hover:bg-pink-200/10 rounded-lg transition-colors">
                     <Trash2 size={16} />
                   </button>
                 </div>
@@ -208,7 +208,7 @@ export default function PlansPage() {
                     <span className="text-[10px] text-ink-500 uppercase font-mono tracking-wider">Overall Progress</span>
                     <span className="text-xs font-bold text-primary">{Math.round(overallRatio * 100)}%</span>
                   </div>
-                  <div className="h-2 bg-ink-800 rounded-full overflow-hidden border border-ink-700/50">
+                  <div className="h-2 bg-ink-800 rounded-full overflow-hidden border border-ink-500/50">
                     <div 
                       className="h-full bg-gradient-to-r from-primary to-primary-focus transition-all duration-500 ease-out" 
                       style={{ width: `${overallRatio * 100}%` }} 
@@ -216,11 +216,11 @@ export default function PlansPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between mt-4 pt-4 border-t border-ink-800/50">
+                <div className="flex items-center justify-between mt-4 pt-4 border-t border-ink-600/50">
                   <div className="flex items-center gap-1.5">
                     <div className={clsx(
                       "w-2 h-2 rounded-full",
-                      todayRatio >= 1 ? "bg-green-500" : todayRatio > 0 ? "bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.4)]" : "bg-ink-700"
+                      todayRatio >= 1 ? "bg-green-500" : todayRatio > 0 ? "bg-red-500 shadow-[0_0_8px_rgba(236,72,153,0.4)]" : "bg-ink-700"
                     )} />
                     <span className="text-[10px] text-ink-400 font-medium">Today: {Math.round(todayRatio * 100)}%</span>
                   </div>
@@ -250,7 +250,7 @@ export default function PlansPage() {
                   disabled={!isPast}
                   className={clsx(
                     'p-2 text-xs rounded-lg transition-all',
-                    isSelected ? 'bg-primary text-white' : ratio >= 0.8 ? 'bg-green-900/30 text-green-400' : ratio > 0 ? 'bg-yellow-900/30 text-yellow-400' : 'bg-ink-800 text-ink-500',
+                    isSelected ? 'bg-teal-500 text-white font-bold' : ratio >= 0.8 ? 'bg-green-900/30 text-green-400' : ratio > 0 ? 'bg-red-900/30 text-red-400' : 'bg-ink-800 text-red-8000',
                     !isPast && 'opacity-30 cursor-not-allowed'
                   )}>
                   {format(day, 'dd')}
@@ -262,7 +262,7 @@ export default function PlansPage() {
           {selectedPlan && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
               <div className="lg:col-span-2 glass-card p-4">
-                <h3 className="font-medium mb-3">Tasks for {format(new Date(selectedDate), 'dd MMM yyyy')}</h3>
+                <h3 className="font-medium text-red-800 mb-3">Tasks for {format(new Date(selectedDate), 'dd MMM yyyy')}</h3>
                 <div className="space-y-2">
                   {selectedPlan.tasks.map((task: any) => {
                     const status = getTaskStatus(task);
@@ -333,7 +333,7 @@ export default function PlansPage() {
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="glass-card w-full max-w-lg p-6 max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">New Daily Plan</h2>
+              <h2 className="text-xl font-bold text-red-800">New Daily Plan</h2>
               <button onClick={() => setShowAddModal(false)} className="text-ink-500 hover:text-ink-300">
                 <X size={24} />
               </button>

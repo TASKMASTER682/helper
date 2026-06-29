@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { mockTestAPI } from '@/lib/api';
-import ResultScreen from '../../../../componets/ResultScreen';
+import ResultScreen from '../../../../components/ResultScreen';
 import {
   Clock, ChevronLeft, ChevronRight, BookmarkPlus, Trash2,
   LayoutGrid, X, Loader2, CheckCircle2, AlertCircle, Send, Eye
@@ -12,11 +12,11 @@ import toast from 'react-hot-toast';
 import dynamic from 'next/dynamic';
 
 // Dynamically import PDF viewer (client-only, no SSR)
-const PDFViewerComponent = dynamic(() => import('../../../../componets/PDFViewerComponent'), {
+const PDFViewerComponent = dynamic(() => import('../../../../components/PDFViewerComponent'), {
   ssr: false,
   loading: () => (
     <div className="flex-1 flex flex-col items-center justify-center bg-ink-950">
-      <Loader2 className="animate-spin text-yellow-400 w-10 h-10 mb-4" />
+      <Loader2 className="animate-spin text-red-400 w-10 h-10 mb-4" />
       <p className="text-ink-500 animate-pulse font-mono text-sm tracking-widest uppercase">DECRYPTING EXAM PROTOCOL...</p>
     </div>
   )
@@ -39,7 +39,7 @@ const OPTION_MAP: Record<string, 'a' | 'b' | 'c' | 'd'> = { A: 'a', B: 'b', C: '
 
 // ─── Status Legend Config ────────────────────────────────────────────────────
 const STATUS_CFG = {
-  'not-visited': { label: 'Not Visited', bg: 'bg-ink-700', text: 'text-ink-300', dot: 'bg-ink-600' },
+  'not-visited': { label: 'Not Visited', bg: 'bg-ink-600', text: 'text-ink-200', dot: 'bg-ink-500' },
   'not-answered': { label: 'Not Answered', bg: 'bg-red-500/20 border border-red-500/40', text: 'text-red-400', dot: 'bg-red-500' },
   'answered': { label: 'Answered', bg: 'bg-teal-500/20 border border-teal-500/40', text: 'text-teal-300', dot: 'bg-teal-500' },
   'marked': { label: 'Marked for Review', bg: 'bg-purple-500/20 border border-purple-500/40', text: 'text-purple-300', dot: 'bg-purple-500' },
@@ -298,7 +298,7 @@ export default function ExamPage() {
   // ── Render guards ──────────────────────────────────────────────────────────
   if (loading) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-ink-950 lg:pt-0 pt-16">
-      <Loader2 className="animate-spin text-yellow-400 w-10 h-10 mb-4" />
+      <Loader2 className="animate-spin text-red-400 w-10 h-10 mb-4" />
       <p className="text-ink-500 font-mono text-xs uppercase tracking-widest animate-pulse">Loading Exam...</p>
     </div>
   );
@@ -318,8 +318,8 @@ export default function ExamPage() {
 
   if (examState === 'submitting') return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-ink-950 gap-6 lg:pt-0 pt-16">
-      <Loader2 className="w-16 h-16 animate-spin text-yellow-400" />
-      <h2 className="text-2xl font-bold text-ink-100">Submitting & Evaluating...</h2>
+      <Loader2 className="w-16 h-16 animate-spin text-red-400" />
+      <h2 className="text-2xl font-bold text-red-800">Submitting & Evaluating...</h2>
       <p className="text-ink-500 text-sm">Arjun AI is Analysing Your Performance</p>
     </div>
   );
@@ -332,17 +332,17 @@ export default function ExamPage() {
     return (
       <div className="relative h-screen w-full bg-ink-950 flex flex-col overflow-hidden lg:pt-0 pt-16">
         {/* Header */}
-        <div className="h-14 shrink-0 flex items-center justify-between px-4 md:px-6 bg-ink-900 border-b border-ink-800 z-50">
+        <div className="h-14 shrink-0 flex items-center justify-between px-4 md:px-6 bg-ink-900 border-b border-ink-600 z-50">
           <div className="flex items-center gap-2 overflow-hidden max-w-[50%]">
             <span className="font-bold text-teal-100 truncate text-sm md:text-base">{test?.name}</span>
           </div>
           <div className="flex items-center gap-3 md:gap-6">
             <div className={clsx('px-3 py-1 rounded-full border font-mono font-bold text-xs md:text-sm flex items-center gap-2',
-              timeLeft < 300 ? 'border-red-500 bg-red-500/10 text-red-400 animate-pulse' : 'border-yellow-500 bg-yellow-500/10 text-yellow-400')}>
+              timeLeft < 300 ? 'border-red-500 bg-red-500/10 text-red-400 animate-pulse' : 'border-red-500 bg-red-500/10 text-red-400')}>
               <Clock className="w-3 h-3" />
               {fmt(timeLeft)}
             </div>
-            <button onClick={() => setShowConfirm(true)} className="bg-teal-600 hover:bg-teal-500 text-ink-950 px-4 py-1.5 rounded-lg font-bold text-xs transition-all active:scale-95">
+            <button onClick={() => setShowConfirm(true)} className="bg-teal-600 hover:bg-teal-500 text-white px-4 py-1.5 rounded-lg font-bold text-xs transition-all active:scale-95">
               Submit
             </button>
           </div>
@@ -356,13 +356,13 @@ export default function ExamPage() {
 
           {/* OMR Sidebar */}
           <div className={clsx(
-            'fixed md:relative inset-y-0 right-0 z-40 w-80 bg-ink-950 border-l border-ink-800 transform transition-transform duration-300 ease-in-out md:translate-x-0 shadow-2xl md:shadow-none',
+            'fixed md:relative inset-y-0 right-0 z-40 w-80 bg-ink-950 border-l border-ink-600 transform transition-transform duration-300 ease-in-out md:translate-x-0 shadow-2xl md:shadow-none',
             isPdfPanelOpen ? 'translate-x-0' : 'translate-x-full'
           )}>
-            <div className="h-full flex flex-col pt-14 md:pt-0 bg-black">
+            <div className="h-full flex flex-col pt-14 md:pt-0 bg-ink-950">
               {/* Current Q answer input */}
-              <div className="p-4 border-b border-ink-800 bg-ink-900/50">
-                <div className="bg-ink-950 p-4 rounded-xl border border-ink-800 shadow-inner">
+              <div className="p-4 border-b border-ink-600 bg-ink-900/50">
+                <div className="bg-ink-950 p-4 rounded-xl border border-ink-600 shadow-inner">
                   <p className="text-[10px] text-ink-500 mb-3 font-bold uppercase tracking-widest text-center">Active Question: {currentIdx + 1}</p>
                   <div className="grid grid-cols-2 gap-2">
                     {(['A', 'B', 'C', 'D'] as const).map(opt => (
@@ -370,8 +370,8 @@ export default function ExamPage() {
                         onClick={() => setAnswers(prev => ({ ...prev, [currentIdx + 1]: prev[currentIdx + 1] === opt ? null : opt }))}
                         className={clsx('py-3 rounded-lg border-2 font-bold transition-all',
                           answers[currentIdx + 1] === opt
-                            ? 'border-blue-500 bg-blue-600 text-white'
-                            : 'border-ink-800 text-ink-400 hover:border-ink-600'
+                            ? 'border-red-500 bg-red-500 text-white'
+                            : 'border-ink-600 text-ink-400 hover:border-ink-600'
                         )}
                       >{opt}</button>
                     ))}
@@ -385,10 +385,10 @@ export default function ExamPage() {
                     onClick={() => { setCurrentIdx(qNum - 1); setIsPdfPanelOpen(false); }}
                     className={clsx('aspect-square rounded-lg text-xs font-mono border-2 transition-all',
                       currentIdx + 1 === qNum
-                        ? 'border-white bg-ink-800 text-white scale-110 z-10'
+                        ? 'border-ink-100 bg-ink-800 text-ink-100 scale-110 z-10'
                         : !!answers[qNum]
-                          ? 'border-yellow-500 bg-yellow-500 text-ink-950 font-bold'
-                          : 'border-ink-800 text-ink-600 hover:border-ink-700'
+                          ? 'border-red-500 bg-red-500 text-white font-bold'
+                          : 'border-ink-600 text-ink-600 hover:border-ink-500'
                     )}
                   >{qNum}</button>
                 ))}
@@ -399,22 +399,22 @@ export default function ExamPage() {
           <button
             onClick={() => setIsPdfPanelOpen(!isPdfPanelOpen)}
             className={clsx('md:hidden fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center transition-all',
-              isPdfPanelOpen ? 'bg-red-500 rotate-90' : 'bg-yellow-500'
+              isPdfPanelOpen ? 'bg-red-500 rotate-90' : 'bg-red-500'
             )}
           >
-            {isPdfPanelOpen ? <X className="text-white w-6 h-6" /> : <LayoutGrid className="text-ink-950 w-6 h-6" />}
+            {isPdfPanelOpen ? <X className="text-white w-6 h-6" /> : <LayoutGrid className="text-white w-6 h-6" />}
           </button>
         </div>
 
         {/* Confirm dialog */}
         {showConfirm && (
           <div className="fixed inset-0 bg-ink-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
-            <div className="bg-black p-8 max-w-sm w-full border border-ink-800 rounded-3xl shadow-2xl">
-              <h2 className="text-xl font-bold text-center text-ink-100 mb-2">Submit Exam?</h2>
-              <p className="text-ink-500 text-sm text-center mb-6">You have answered <span className="text-yellow-400 font-bold">{Object.values(answers).filter(Boolean).length}</span> questions.</p>
+            <div className="bg-ink-900 p-8 max-w-sm w-full border border-ink-700/60 rounded-3xl shadow-2xl">
+              <h2 className="text-xl font-bold text-center text-red-800 mb-2">Submit Exam?</h2>
+              <p className="text-ink-500 text-sm text-center mb-6">You have answered <span className="text-red-400 font-bold">{Object.values(answers).filter(Boolean).length}</span> questions.</p>
               <div className="grid grid-cols-2 gap-3">
                 <button onClick={() => setShowConfirm(false)} className="py-3 rounded-xl bg-ink-800 text-ink-200 font-bold hover:bg-ink-700">Review</button>
-                <button onClick={() => { setShowConfirm(false); void submitExam(); }} className="py-3 rounded-xl bg-yellow-500 text-ink-950 font-bold hover:bg-yellow-400">Submit</button>
+                <button onClick={() => { setShowConfirm(false); void submitExam(); }} className="py-3 rounded-xl bg-red-500 text-white font-bold hover:bg-pink-200">Submit</button>
               </div>
             </div>
           </div>
@@ -426,14 +426,14 @@ export default function ExamPage() {
 
   // ── Structured CBT mode below ───────────────────────────────────────────────
   return (
-    <div className="h-screen w-full bg-[#0d0d0f] flex flex-col overflow-hidden font-sans lg:pt-0 pt-16">
+    <div className="h-screen w-full bg-ink-950 flex flex-col overflow-hidden font-sans lg:pt-0 pt-16">
 
       {/* ── TOP HEADER ─────────────────────────────────────────────────────── */}
-      <header className="h-14 shrink-0 flex items-center justify-between px-3 md:px-6 bg-[#111114] border-b border-ink-800/60 z-50 gap-2 md:gap-4">
+      <header className="h-14 shrink-0 flex items-center justify-between px-3 md:px-6 bg-ink-900 border-b border-ink-700/60 z-50 gap-2 md:gap-4">
         {/* Test name */}
         <div className="flex items-center gap-2 min-w-0">
-          <div className="w-6 h-6 md:w-7 md:h-7 rounded-lg bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center shrink-0">
-            <span className="text-yellow-400 text-[10px] font-black">Q</span>
+          <div className="w-6 h-6 md:w-7 md:h-7 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center justify-center shrink-0">
+            <span className="text-red-400 text-[10px] font-black">Q</span>
           </div>
           <span className="font-bold text-ink-100 truncate text-xs md:text-sm hidden sm:block">{test?.name}</span>
           <span className="text-[10px] text-teal-500 font-mono shrink-0 bg-teal-500/10 px-1.5 py-0.5 rounded border border-teal-500/20">{currentIdx + 1}/{totalQ}</span>
@@ -449,22 +449,22 @@ export default function ExamPage() {
 
         {/* Right: Timer + Submit */}
         <div className="flex items-center gap-1.5 md:gap-3 shrink-0">
-          <div className={clsx('px-2 md:px-3 py-1.5 rounded-xl border font-mono font-black text-[11px] md:text-sm flex items-center gap-1 md:gap-1.5 transition-all',
+          <div           className={clsx('px-2 md:px-3 py-1.5 rounded-xl border font-mono font-black text-[11px] md:text-sm flex items-center gap-1 md:gap-1.5 transition-all',
             timeLeft < 300 ? 'border-red-500 bg-red-500/10 text-red-400 animate-pulse' :
-              timeLeft < 600 ? 'border-orange-500 bg-orange-500/10 text-orange-400' :
-                'border-yellow-500/40 bg-yellow-500/5 text-yellow-400')}>
+              timeLeft < 600 ? 'border-pink-500 bg-pink-500/10 text-pink-400' :
+                'border-red-500/40 bg-red-500/5 text-red-400')}>
             <Clock className="w-3 md:w-3.5 h-3 md:h-3.5" />
             {fmt(timeLeft)}
           </div>
           <button
             onClick={() => setSidebarOpen(o => !o)}
-            className="md:hidden p-2 rounded-lg bg-ink-800/50 text-ink-300 border border-ink-700/50"
+            className="md:hidden p-2 rounded-lg bg-ink-700/50 text-ink-300 border border-ink-600/50"
           >
             <LayoutGrid className="w-4 h-4" />
           </button>
           <button
             onClick={() => setShowConfirm(true)}
-            className="flex items-center gap-1 px-3 md:px-4 py-2 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-ink-950 font-black text-[10px] md:text-xs transition-all active:scale-95 shadow-lg shadow-yellow-500/20"
+            className="flex items-center gap-1 px-3 md:px-4 py-2 rounded-xl bg-red-500 hover:bg-pink-200 text-white font-black text-[10px] md:text-xs transition-all active:scale-95 shadow-lg shadow-red-500/20"
           >
             <Send className="w-3 md:w-3.5 h-3 md:h-3.5" /> <span className="hidden xs:inline">Submit</span>
           </button>
@@ -475,11 +475,11 @@ export default function ExamPage() {
       <div className="flex flex-1 overflow-hidden">
 
         {/* ── QUESTION AREA ── */}
-        <div className="flex-1 flex flex-col overflow-hidden bg-[#0d0d0f]">
+        <div className="flex-1 flex flex-col overflow-hidden">
           {/* Progress bar */}
-          <div className="h-0.5 bg-ink-900 shrink-0">
+          <div className="h-0.5 bg-ink-700/60 shrink-0">
             <div
-              className="h-full bg-gradient-to-r from-yellow-500 to-teal-500 transition-all duration-500"
+              className="h-full bg-gradient-to-r from-red-500 to-teal-500 transition-all duration-500"
               style={{ width: `${((currentIdx + 1) / totalQ) * 100}%` }}
             />
           </div>
@@ -492,7 +492,7 @@ export default function ExamPage() {
               <div className="flex items-center justify-between mb-4 md:mb-6">
                 <div className="flex items-center gap-3">
                   <div className={clsx('w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center font-black text-sm border-2 transition-all',
-                    isMarkedCurrent ? 'bg-purple-500/20 border-purple-500 text-purple-300' : 'bg-yellow-500/10 border-yellow-500/40 text-yellow-400')}>
+                    isMarkedCurrent ? 'bg-purple-500/20 border-purple-500 text-purple-300' : 'bg-red-500/10 border-red-500/40 text-red-400')}>
                     {currentQNum}
                   </div>
                   <span className="text-[9px] md:text-[10px] text-ink-500 font-mono uppercase tracking-[0.15em]">Question {currentIdx + 1} of {totalQ}</span>
@@ -512,7 +512,7 @@ export default function ExamPage() {
               </div>
 
               {/* Question Text */}
-              <div className="mb-6 md:mb-8 p-5 md:p-6 bg-ink-900/40 rounded-2xl border border-yellow-500/30 shadow-inner">
+              <div className="mb-6 md:mb-8 p-5 md:p-6 bg-ink-900/60 rounded-2xl border border-red-500/40 shadow-inner">
                 {currentQ?.text && /<[a-z][\s\S]*>/i.test(currentQ.text) ? (
                   <div className="text-ink-100 text-[14px] md:text-[15px] leading-relaxed font-medium ai-content" dangerouslySetInnerHTML={{ __html: currentQ.text }} />
                 ) : (
@@ -534,22 +534,22 @@ export default function ExamPage() {
                       className={clsx(
                         'w-full text-left p-3.5 md:p-4 rounded-2xl border-2 flex items-start gap-3 md:gap-4 transition-all duration-200 group',
                         isSelected
-                          ? 'border-yellow-500 bg-yellow-500/10 shadow-lg shadow-yellow-500/10'
-                          : 'border-ink-800/60 bg-ink-900/20 hover:border-teal-600 hover:bg-ink-900/50'
+                          ? 'border-red-500 bg-red-500/10 shadow-lg shadow-red-500/10'
+                          : 'border-ink-700/60 bg-ink-900/40 hover:border-teal-600 hover:bg-ink-900/70'
                       )}
                     >
                       {/* Option bubble */}
                       <span className={clsx(
                         'w-7 h-7 md:w-8 md:h-8 shrink-0 rounded-xl flex items-center justify-center font-black text-xs md:text-sm border-2 transition-all',
                         isSelected
-                          ? 'bg-yellow-500 border-yellow-500 text-teal-950'
-                          : 'border-ink-700 text-ink-500 group-hover:border-teal-500 group-hover:text-ink-300'
+                          ? 'bg-red-500 border-red-500 text-white'
+                          : 'border-ink-500 text-ink-500 group-hover:border-teal-500 group-hover:text-ink-300'
                       )}>
                         {opt}
                       </span>
                       <span className={clsx(
-                        'text-[13px] md:text-[14px] leading-relaxed pt-0.5 font-medium transition-colors',
-                        isSelected ? 'text-ink-100' : 'text-ink-400 group-hover:text-ink-200'
+                        'text-[13px] md:text-[14px] leading-relaxed pt-0.5 font-medium font-display transition-colors',
+                        isSelected ? 'text-ink-100'                           : 'text-ink-300 group-hover:text-ink-100'
                       )}>
                         {optText}
                       </span>
@@ -567,7 +567,7 @@ export default function ExamPage() {
                       'flex items-center gap-1.5 px-4 py-2 rounded-xl border text-xs font-bold transition-all',
                       isMarkedCurrent
                         ? 'bg-purple-500/20 border-purple-500/50 text-purple-300 hover:bg-purple-500/30'
-                        : 'border-ink-700 text-ink-400 hover:border-purple-500/50 hover:text-purple-400'
+                        : 'border-ink-500 text-ink-400 hover:border-purple-500/50 hover:text-purple-400'
                     )}
                   >
                     <BookmarkPlus className="w-3.5 h-3.5" />
@@ -576,7 +576,7 @@ export default function ExamPage() {
                   <button
                     onClick={handleClearResponse}
                     disabled={!currentAnswer}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-ink-700 text-ink-500 text-xs font-bold hover:text-red-400 hover:border-red-500/40 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-ink-500 text-ink-500 text-xs font-bold hover:text-pink-400 hover:border-pink-300/40 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     <Trash2 className="w-3.5 h-3.5" /> Clear
                   </button>
@@ -587,7 +587,7 @@ export default function ExamPage() {
                   <button
                     onClick={() => goToQuestion(currentIdx - 1)}
                     disabled={currentIdx === 0}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-ink-700 text-ink-300 text-xs font-bold hover:bg-ink-800 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-ink-600 text-ink-300 text-xs font-bold hover:bg-ink-700 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" /> Previous
                   </button>
@@ -596,7 +596,7 @@ export default function ExamPage() {
                     className={clsx(
                       'flex items-center gap-1.5 px-5 py-2 rounded-xl font-bold text-xs transition-all active:scale-95',
                       isLastQ
-                        ? 'bg-yellow-500 hover:bg-yellow-400 text-ink-950'
+                        ? 'bg-red-500 hover:bg-pink-200 text-white'
                         : 'bg-teal-600 hover:bg-teal-500 text-white'
                     )}
                   >
@@ -610,19 +610,19 @@ export default function ExamPage() {
 
         {/* ── SIDEBAR: Question Palette ── */}
         <aside className={clsx(
-          'fixed md:relative inset-y-0 right-0 z-40 w-72 bg-[#111114] border-l border-ink-800/60 flex flex-col transition-transform duration-300 ease-in-out',
+          'fixed md:relative inset-y-0 right-0 z-40 w-72 bg-ink-900 border-l border-ink-700/60 flex flex-col transition-transform duration-300 ease-in-out',
           sidebarOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'
         )}>
           {/* Sidebar Header */}
-          <div className="p-4 border-b border-ink-800/60 flex items-center justify-between shrink-0">
-            <span className="font-bold text-ink-200 text-sm">Question Palette</span>
-            <button onClick={() => setSidebarOpen(false)} className="md:hidden text-ink-500 hover:text-white">
+          <div className="p-4 border-b border-ink-700/60 flex items-center justify-between shrink-0">
+            <span className="font-bold text-ink-100 text-sm">Question Palette</span>
+            <button onClick={() => setSidebarOpen(false)} className="md:hidden text-ink-500 hover:text-ink-50">
               <X className="w-4 h-4" />
             </button>
           </div>
 
           {/* Legend */}
-          <div className="p-3 border-b border-ink-800/60 grid grid-cols-2 gap-1.5 shrink-0">
+          <div className="p-3 border-b border-ink-700/60 grid grid-cols-2 gap-1.5 shrink-0">
             {(Object.entries(STATUS_CFG) as [QStatus, typeof STATUS_CFG[QStatus]][]).map(([key, cfg]) => (
               <div key={key} className="flex items-center gap-1.5">
                 <span className={clsx('w-2.5 h-2.5 rounded-sm shrink-0', cfg.dot)} />
@@ -632,7 +632,7 @@ export default function ExamPage() {
           </div>
 
           {/* Stats bar */}
-          <div className="grid grid-cols-4 divide-x divide-ink-800/60 border-b border-ink-800/60 shrink-0">
+          <div className="grid grid-cols-4 divide-x divide-ink-700/60 border-b border-ink-700/60 shrink-0">
             {[
               { val: answered, label: 'Ans', color: 'text-teal-400' },
               { val: notAnswered, label: 'Skip', color: 'text-red-400' },
@@ -641,7 +641,7 @@ export default function ExamPage() {
             ].map(({ val, label, color }) => (
               <div key={label} className="py-2 flex flex-col items-center">
                 <span className={clsx('text-base font-black', color)}>{val}</span>
-                <span className="text-[8px] font-bold text-ink-600 uppercase">{label}</span>
+                <span className="text-[8px] font-bold text-ink-400 uppercase">{label}</span>
               </div>
             ))}
           </div>
@@ -661,7 +661,7 @@ export default function ExamPage() {
                     className={clsx(
                       'aspect-square rounded-xl text-xs font-bold transition-all relative',
                       cfg.bg, cfg.text,
-                      isCurrent ? 'ring-2 ring-white ring-offset-1 ring-offset-ink-900 scale-110 z-10' : 'hover:scale-105'
+                      isCurrent ? 'ring-2 ring-ink-50 ring-offset-1 ring-offset-ink-950 scale-110 z-10' : 'hover:scale-105'
                     )}
                   >
                     {qNum}
@@ -681,7 +681,7 @@ export default function ExamPage() {
       {!sidebarOpen && (
         <button
           onClick={() => setSidebarOpen(true)}
-          className="md:hidden fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-yellow-500 text-ink-950 shadow-lg shadow-yellow-500/30 flex items-center justify-center"
+              className="md:hidden fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-teal-500 text-white shadow-lg shadow-teal-500/30 flex items-center justify-center"
         >
           <LayoutGrid className="w-6 h-6" />
         </button>
@@ -689,13 +689,13 @@ export default function ExamPage() {
 
       {/* ── CONFIRM SUBMIT DIALOG ─────────────────────────────────────────── */}
       {showConfirm && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#111114] border border-ink-800 rounded-3xl p-8 max-w-sm w-full shadow-2xl">
+        <div className="fixed inset-0 bg-ink-950/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-ink-900 border border-ink-700/60 rounded-3xl p-8 max-w-sm w-full shadow-2xl">
             <div className="text-center mb-6">
-              <div className="w-16 h-16 rounded-2xl bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center mx-auto mb-4">
-                <Send className="w-7 h-7 text-yellow-400" />
+              <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center mx-auto mb-4">
+                <Send className="w-7 h-7 text-red-400" />
               </div>
-              <h2 className="text-xl font-bold text-ink-100 mb-1">Submit Exam?</h2>
+              <h2 className="text-xl font-bold text-red-800 mb-1">Submit Exam?</h2>
               <p className="text-ink-500 text-sm">This action cannot be undone.</p>
             </div>
 
@@ -704,7 +704,7 @@ export default function ExamPage() {
               {[
                 { val: answered, label: 'Answered', color: 'text-teal-400', bg: 'bg-teal-500/10 border-teal-500/20' },
                 { val: notAnswered, label: 'Skipped', color: 'text-red-400', bg: 'bg-red-500/10 border-red-500/20' },
-                { val: totalQ - answered - notAnswered, label: 'Not Visited', color: 'text-ink-400', bg: 'bg-ink-800/40 border-ink-700/40' },
+                { val: totalQ - answered - notAnswered, label: 'Not Visited', color: 'text-ink-400', bg: 'bg-ink-800/40 border-ink-500/40' },
               ].map(({ val, label, color, bg }) => (
                 <div key={label} className={clsx('p-3 rounded-xl border text-center', bg)}>
                   <p className={clsx('text-2xl font-black', color)}>{val}</p>
@@ -716,13 +716,13 @@ export default function ExamPage() {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => setShowConfirm(false)}
-                className="py-3 rounded-xl border border-ink-700 text-ink-300 font-bold hover:bg-ink-800 transition-all"
+                className="py-3 rounded-xl border border-ink-600 text-ink-300 font-bold hover:bg-ink-700 transition-all"
               >
                 Review
               </button>
               <button
                 onClick={() => { setShowConfirm(false); void submitExam(); }}
-                className="py-3 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-ink-950 font-bold transition-all"
+                className="py-3 rounded-xl bg-red-500 hover:bg-pink-200 text-white font-bold transition-all"
               >
                 Submit Now
               </button>

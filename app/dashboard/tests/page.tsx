@@ -361,10 +361,10 @@ export default function TestsPage() {
 
       {showForm && (
         <div className="glass-card p-6 border-jade-500/30 animate-scale-in relative">
-          <button onClick={() => setShowForm(false)} className="absolute top-4 right-4 text-ink-500 hover:text-white">
+          <button onClick={() => setShowForm(false)} className="absolute top-4 right-4 text-ink-500 hover:text-ink-100">
             <X className="w-5 h-5" />
           </button>
-          <h3 className="font-display text-lg font-bold mb-4 flex items-center gap-2 text-jade-400">
+          <h3 className="font-display text-lg font-bold mb-4 flex items-center gap-2 text-red-800">
             <FlaskConical className="w-5 h-5" /> Configure Test Series
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -382,8 +382,8 @@ export default function TestsPage() {
       )}
 
       {attemptForm && (
-        <div className="glass-card p-6 border-yellow-500/30 animate-scale-in relative">
-          <h3 className="font-display text-lg font-bold mb-4 text-yellow-500">Record Attempt Analysis</h3>
+        <div className="glass-card p-6 border-red-500/30 animate-scale-in relative">
+          <h3 className="font-display text-lg font-bold mb-4 text-red-800">Record Attempt Analysis</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <input value={attemptData.testName} onChange={(e) => setAttemptData((p) => ({ ...p, testName: e.target.value }))} placeholder="Test Name/Number" className="input-field w-full" />
             <div className="flex gap-2">
@@ -397,7 +397,7 @@ export default function TestsPage() {
             </div>
           </div>
           <div className="flex gap-3 mt-6">
-            <button onClick={handleAddAttempt} className="btn-primary bg-yellow-600 hover:bg-yellow-500 text-ink-950 px-8">Save Analysis</button>
+            <button onClick={handleAddAttempt} className="btn-primary bg-teal-600 hover:bg-teal-500 text-white px-8">Save Analysis</button>
             <button onClick={() => setAttemptForm(null)} className="btn-ghost">Cancel</button>
           </div>
         </div>
@@ -406,7 +406,7 @@ export default function TestsPage() {
       {loading ? (
         <div className="flex justify-center py-20"><Clock className="w-10 h-10 animate-spin text-jade-500" /></div>
       ) : filteredSeries.length === 0 ? (
-        <div className="glass-card p-16 text-center border-dashed border-2 border-ink-800">
+        <div className="glass-card p-16 text-center border-dashed border-2 border-ink-600">
           <FlaskConical className="w-14 h-14 text-ink-800 mx-auto mb-4" />
           <h3 className="font-display text-xl text-ink-400 mb-2">No matching series</h3>
           <p className="text-ink-600 text-sm">Adjust filters or add a new test series.</p>
@@ -441,13 +441,13 @@ export default function TestsPage() {
 
             return (
               <div key={s._id} className="glass-card overflow-hidden group hover:border-jade-500/30 transition-all duration-300">
-                <div className="p-5 flex flex-col md:flex-row justify-between gap-4 border-b border-ink-800/50 bg-ink-900/30">
+                <div className="p-5 flex flex-col md:flex-row justify-between gap-4 border-b border-ink-600/50 bg-ink-900/30">
                   <div className="flex gap-4">
                     <div className="w-12 h-12 rounded-xl bg-jade-500/10 border border-jade-500/20 flex items-center justify-center text-jade-500 font-bold text-lg">
                       {s.type ? s.type[0].toUpperCase() : 'T'}
                     </div>
                     <div>
-                      <h3 className="font-display font-bold text-ink-100 flex items-center gap-2">
+                      <h3 className="font-display font-bold text-red-800 flex items-center gap-2">
                         {s.name}
                         <span className="text-[10px] px-2 py-0.5 rounded bg-ink-800 text-ink-400 uppercase tracking-tighter">{s.type}</span>
                       </h3>
@@ -459,7 +459,7 @@ export default function TestsPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <button onClick={() => setAttemptForm({ seriesId: s._id })} className="btn-primary py-1.5 px-4 text-xs">+ Record Test</button>
-                    <button onClick={() => handleDeleteSeries(s._id)} className="p-2 text-ink-600 hover:text-red-500 transition-colors">
+                    <button onClick={() => handleDeleteSeries(s._id)} className="p-2 text-ink-600 hover:text-pink-400 transition-colors">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -488,7 +488,7 @@ export default function TestsPage() {
                           </LineChart>
                         </ResponsiveContainer>
                       ) : (
-                        <div className="h-full flex flex-col items-center justify-center text-ink-700 bg-ink-900/20 rounded-xl border border-dashed border-ink-800">
+                        <div className="h-full flex flex-col items-center justify-center text-ink-700 bg-ink-900/20 rounded-xl border border-dashed border-ink-600">
                           <BarChart3 className="w-8 h-8 mb-2 opacity-20" />
                           <span className="text-xs uppercase tracking-widest font-bold">Waiting for first attempt</span>
                         </div>
@@ -500,13 +500,13 @@ export default function TestsPage() {
                     {lastAttempt ? (
                       <>
                         <div className="grid grid-cols-2 gap-3">
-                          <div className="p-3 rounded-xl bg-ink-900/50 border border-ink-800">
-                            <div className="text-[10px] uppercase font-bold text-ink-500 mb-1">Last Test Score</div>
-                            <div className="text-2xl font-display font-bold text-ink-100">{lastAttempt.score.toFixed(1)}</div>
+                          <div className="p-3 rounded-xl bg-ink-900/50 border border-ink-600">
+                            <div className="text-[10px] uppercase font-bold text-red-8000 mb-1">Last Test Score</div>
+                            <div className="text-2xl font-display font-bold text-red-800">{lastAttempt.score.toFixed(1)}</div>
                             <div className="text-[10px] text-ink-500">out of {lastAttempt.totalMarks}</div>
                           </div>
-                          <div className="p-3 rounded-xl bg-ink-900/50 border border-ink-800">
-                            <div className="text-[10px] uppercase font-bold text-ink-500 mb-1">Accuracy</div>
+                          <div className="p-3 rounded-xl bg-ink-900/50 border border-ink-600">
+                            <div className="text-[10px] uppercase font-bold text-red-8000 mb-1">Accuracy</div>
                             <div className="text-2xl font-display font-bold text-teal-400">{calcAccuracy(lastAttempt).toFixed(1)}%</div>
                             <div className="text-[10px] text-ink-500">
                               {lastAttempt.correctCount || 0}C / {lastAttempt.wrongCount || 0}W
@@ -514,14 +514,14 @@ export default function TestsPage() {
                           </div>
                         </div>
 
-                        <div className="p-3 rounded-xl bg-ink-900/50 border border-ink-800">
-                          <div className="text-[10px] uppercase font-bold text-ink-500 mb-1">Time Spent</div>
+                        <div className="p-3 rounded-xl bg-ink-900/50 border border-ink-600">
+                          <div className="text-[10px] uppercase font-bold text-red-8000 mb-1">Time Spent</div>
                           <div className="text-sm text-ink-300">Last: {toNum(lastAttempt.timeSpent)} min</div>
                           <div className="text-xs text-ink-500">Average: {avgTime} min</div>
                         </div>
                       </>
                     ) : (
-                      <div className="h-full flex items-center justify-center p-6 text-center text-xs text-ink-500 italic bg-ink-900/10 rounded-xl border border-ink-800/30">
+                      <div className="h-full flex items-center justify-center p-6 text-center text-xs text-ink-500 italic bg-ink-900/10 rounded-xl border border-ink-600/30">
                         Analysis will appear after your first recorded attempt.
                       </div>
                     )}

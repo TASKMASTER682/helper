@@ -319,17 +319,17 @@ export default function SmartPDFReader({ pdfId, pdfUrl, pdfName, onBack }: Smart
   }, [highlights]);
 
   const bgClass = darkMode ? 'bg-ink-950' : 'bg-gray-100';
-  const headerBgClass = darkMode ? 'bg-ink-900 border-ink-800' : 'bg-white border-gray-200';
-  const sidebarBgClass = darkMode ? 'bg-ink-900 border-ink-800' : 'bg-white border-gray-200';
-  const cardBgClass = darkMode ? 'bg-ink-950 border-ink-800' : 'bg-gray-50 border-gray-200';
+  const headerBgClass = darkMode ? 'bg-ink-900 border-ink-600' : 'bg-white border-gray-200';
+  const sidebarBgClass = darkMode ? 'bg-ink-900 border-ink-600' : 'bg-white border-gray-200';
+  const cardBgClass = darkMode ? 'bg-ink-950 border-ink-600' : 'bg-gray-50 border-gray-200';
   const textClass = darkMode ? 'text-ink-100' : 'text-gray-900';
   const mutedTextClass = darkMode ? 'text-ink-500' : 'text-gray-500';
-  const borderClass = darkMode ? 'border-ink-800' : 'border-gray-200';
+  const borderClass = darkMode ? 'border-ink-600' : 'border-gray-200';
 
   return (
     <div className={`h-screen flex flex-col ${bgClass}`}>
       {/* Mobile Header */}
-      <div className={`lg:hidden border-b px-3 py-2 flex items-center justify-between gap-2 ${darkMode ? 'bg-[#0a0a0f] border-ink-800' : 'bg-gray-100 border-gray-200'}`}>
+      <div className={`lg:hidden border-b px-3 py-2 flex items-center justify-between gap-2 ${darkMode ? 'bg-[#0a0a0f] border-ink-600' : 'bg-gray-100 border-gray-200'}`}>
         <div className="flex items-center gap-2">
           {onBack && (
             <button onClick={onBack} className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-ink-800 text-ink-400' : 'hover:bg-gray-100 text-gray-600'}`}>
@@ -370,17 +370,17 @@ export default function SmartPDFReader({ pdfId, pdfUrl, pdfName, onBack }: Smart
             </div>
             <div className="flex items-center gap-2 mt-1">
               <div className="flex-1 max-w-[200px] h-2 rounded-full overflow-hidden" style={{ background: darkMode ? '#130f0a' : '#e5e7eb' }}>
-                <div className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 transition-all" style={{ width: `${pageProgress}%` }} />
+                <div className="h-full bg-gradient-to-r from-red-500 to-red-400 transition-all" style={{ width: `${pageProgress}%` }} />
               </div>
               <span className={`text-[10px] font-mono ${mutedTextClass}`}>Pg {currentPage}/{totalPages}</span>
             </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => setMode(mode === 'normal' ? 'quickReview' : 'normal')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${mode === 'quickReview' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40' : darkMode ? 'bg-ink-800 text-ink-300 border border-ink-700' : 'bg-gray-100 text-gray-700 border border-gray-200'}`}>
+          <button onClick={() => setMode(mode === 'normal' ? 'quickReview' : 'normal')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${mode === 'quickReview' ? 'bg-red-500/20 text-red-400 border border-red-500/40' : darkMode ? 'bg-ink-800 text-ink-300 border border-ink-500' : 'bg-gray-100 text-gray-700 border border-gray-200'}`}>
             <Zap className="w-3.5 h-3.5" />{mode === 'normal' ? 'Quick Review' : 'Normal'}
           </button>
-          <button onClick={toggleTimer} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold font-mono transition-all ${!isPaused ? 'bg-green-500/20 text-green-400 border border-green-500/40' : darkMode ? 'bg-ink-800 text-ink-300 border border-ink-700' : 'bg-gray-100 text-gray-700 border border-gray-200'}`}>
+          <button onClick={toggleTimer} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold font-mono transition-all ${!isPaused ? 'bg-green-500/20 text-green-400 border border-green-500/40' : darkMode ? 'bg-ink-800 text-ink-300 border border-ink-500' : 'bg-gray-100 text-gray-700 border border-gray-200'}`}>
             {isPaused ? <Play className="w-5 h-5" /> : <Pause className="w-5 h-5" />}{formatTime(totalTimeSpent)}
           </button>
           <button onClick={() => setDarkMode(!darkMode)} className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-ink-800 text-ink-400' : 'hover:bg-gray-100 text-gray-600'}`}>
@@ -401,15 +401,15 @@ export default function SmartPDFReader({ pdfId, pdfUrl, pdfName, onBack }: Smart
             <div className={`rounded-xl p-4 ${cardBgClass}`}>
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-bold uppercase text-ink-500">Progress</span>
-                <button onClick={() => setShowTargetModal(true)} className="text-[10px] text-yellow-500">Set Target</button>
+                <button onClick={() => setShowTargetModal(true)} className="text-[10px] text-red-500">Set Target</button>
               </div>
               <div className="space-y-3">
                 <div>
                   <div className="flex justify-between text-[10px] text-ink-500 mb-1"><span>Page Progress</span><span>{currentPage}/{totalPages}</span></div>
                   <div className="h-2 rounded-full overflow-hidden" style={{ background: darkMode ? '#130f0a' : '#e5e7eb' }}>
-                    <div className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 transition-all" style={{ width: `${pageProgress}%` }} />
+                    <div className="h-full bg-gradient-to-r from-red-500 to-red-400 transition-all" style={{ width: `${pageProgress}%` }} />
                   </div>
-                  <span className="text-[10px] text-yellow-500">{pageProgress}%</span>
+                  <span className="text-[10px] text-red-500">{pageProgress}%</span>
                 </div>
                 {targetTime ? (
                   <div>
@@ -423,10 +423,10 @@ export default function SmartPDFReader({ pdfId, pdfUrl, pdfName, onBack }: Smart
             </div>
 
             {mode === 'quickReview' ? (
-              <div className={`rounded-xl p-4 border-2 border-yellow-500/30 ${darkMode ? 'bg-yellow-500/10' : 'bg-yellow-50'}`}>
+              <div className={`rounded-xl p-4 border-2 border-red-500/30 ${darkMode ? 'bg-red-500/10' : 'bg-red-50'}`}>
                 <div className="flex items-center gap-2 mb-2">
-                  <Zap className="w-4 h-4 text-yellow-500" />
-                  <span className="text-xs font-bold text-yellow-500">Quick Review</span>
+                  <Zap className="w-4 h-4 text-red-500" />
+                  <span className="text-xs font-bold text-red-500">Quick Review</span>
                 </div>
                 <p className="text-[10px] text-ink-500">{quickReviewStats.pages} pages with highlights</p>
                 <p className="text-[10px] text-ink-500">Est. time: ~{quickReviewStats.time} min</p>
@@ -436,7 +436,7 @@ export default function SmartPDFReader({ pdfId, pdfUrl, pdfName, onBack }: Smart
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase text-ink-500">Highlights ({highlights.length})</span>
-                <button onClick={exportHighlights} className="text-[10px] text-yellow-500 flex items-center gap-1">
+                <button onClick={exportHighlights} className="text-[10px] text-red-500 flex items-center gap-1">
                   <Download className="w-3 h-3" /> Export
                 </button>
               </div>
@@ -448,13 +448,13 @@ export default function SmartPDFReader({ pdfId, pdfUrl, pdfName, onBack }: Smart
                     <div key={page}>
                       <div className="text-[10px] font-mono text-ink-600 uppercase mb-1">Page {page}</div>
                       {groupedHighlights[+page].map(h => (
-                        <div key={h._id} className={`w-full p-2 rounded-lg mb-1 border transition-all group ${darkMode ? 'bg-ink-950 border-ink-800 hover:border-ink-700' : 'bg-gray-50 border-gray-200 hover:border-gray-300'}`}>
+                        <div key={h._id} className={`w-full p-2 rounded-lg mb-1 border transition-all group ${darkMode ? 'bg-ink-950 border-ink-600 hover:border-ink-500' : 'bg-gray-50 border-gray-200 hover:border-gray-300'}`}>
                           <div className="flex items-start gap-2">
                             <div className="w-2 h-2 rounded-full mt-1 shrink-0" style={{ background: COLORS.find(c => c.name === h.color)?.border || '#fde047' }} />
                             <button onClick={() => goToHighlight(h)} className="flex-1 text-left">
                               <p className="text-[11px] text-ink-300 line-clamp-2">{h.text || '(Area)'}</p>
                             </button>
-                            <button onClick={() => deleteHighlight(h._id)} className={`p-1 rounded opacity-0 group-hover:opacity-100 transition-all ${darkMode ? 'hover:bg-red-500/20 text-red-400' : 'hover:bg-red-100 text-red-500'}`}>
+                            <button onClick={() => deleteHighlight(h._id)} className={`p-1 rounded opacity-0 group-hover:opacity-100 transition-all ${darkMode ? 'hover:bg-pink-200/20 text-red-400' : 'hover:bg-pink-200 text-red-500'}`}>
                               <Trash2 className="w-3 h-3" />
                             </button>
                           </div>
@@ -480,13 +480,13 @@ export default function SmartPDFReader({ pdfId, pdfUrl, pdfName, onBack }: Smart
             <div className={`rounded-xl p-4 ${cardBgClass}`}>
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-bold uppercase text-ink-500">Progress</span>
-                <button onClick={() => setShowTargetModal(true)} className="text-[10px] text-yellow-500">Set Target</button>
+                <button onClick={() => setShowTargetModal(true)} className="text-[10px] text-red-500">Set Target</button>
               </div>
               <div className="space-y-2">
                 <div>
                   <div className="flex justify-between text-[10px] text-ink-500 mb-1"><span>Page</span><span>{currentPage}/{totalPages}</span></div>
                   <div className="h-2 rounded-full overflow-hidden" style={{ background: darkMode ? '#130f0a' : '#e5e7eb' }}>
-                    <div className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 transition-all" style={{ width: `${pageProgress}%` }} />
+                    <div className="h-full bg-gradient-to-r from-red-500 to-red-400 transition-all" style={{ width: `${pageProgress}%` }} />
                   </div>
                 </div>
               </div>
@@ -501,7 +501,7 @@ export default function SmartPDFReader({ pdfId, pdfUrl, pdfName, onBack }: Smart
                     <div key={page}>
                       <div className="text-[9px] font-mono text-ink-600 uppercase mb-1">Pg {page}</div>
                       {groupedHighlights[+page].map(h => (
-                        <button key={h._id} onClick={() => { goToHighlight(h); setMobileSidebarOpen(false); }} className={`w-full p-2 rounded-lg mb-1 border text-left ${darkMode ? 'bg-ink-950 border-ink-800' : 'bg-gray-50 border-gray-200'}`}>
+                        <button key={h._id} onClick={() => { goToHighlight(h); setMobileSidebarOpen(false); }} className={`w-full p-2 rounded-lg mb-1 border text-left ${darkMode ? 'bg-ink-950 border-ink-600' : 'bg-gray-50 border-gray-200'}`}>
                           <p className="text-[10px] text-ink-300 line-clamp-2">{h.text || '(Area)'}</p>
                         </button>
                       ))}
@@ -515,11 +515,11 @@ export default function SmartPDFReader({ pdfId, pdfUrl, pdfName, onBack }: Smart
 
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Desktop Tools Bar */}
-          <div className={`hidden lg:flex border-b px-4 py-2 items-center gap-4 ${darkMode ? 'bg-ink-900/50 border-ink-800' : 'bg-gray-50 border-gray-200'}`}>
-            <button onClick={() => setSelectedTool('select')} className={`p-2 rounded-lg transition-all ${selectedTool === 'select' ? 'bg-yellow-500/20 text-yellow-400' : darkMode ? 'text-ink-500 hover:bg-ink-800' : 'text-gray-500 hover:bg-gray-100'}`}>
+          <div className={`hidden lg:flex border-b px-4 py-2 items-center gap-4 ${darkMode ? 'bg-ink-900/50 border-ink-600' : 'bg-gray-50 border-gray-200'}`}>
+            <button onClick={() => setSelectedTool('select')} className={`p-2 rounded-lg transition-all ${selectedTool === 'select' ? 'bg-red-500/20 text-red-400' : darkMode ? 'text-ink-500 hover:bg-ink-800' : 'text-gray-500 hover:bg-gray-100'}`}>
               <FileText className="w-4 h-4" />
             </button>
-            <button onClick={() => setSelectedTool('highlight')} className={`p-2 rounded-lg transition-all ${selectedTool === 'highlight' ? 'bg-yellow-500/20 text-yellow-400' : darkMode ? 'text-ink-500 hover:bg-ink-800' : 'text-gray-500 hover:bg-gray-100'}`}>
+            <button onClick={() => setSelectedTool('highlight')} className={`p-2 rounded-lg transition-all ${selectedTool === 'highlight' ? 'bg-red-500/20 text-red-400' : darkMode ? 'text-ink-500 hover:bg-ink-800' : 'text-gray-500 hover:bg-gray-100'}`}>
               <Highlighter className="w-4 h-4" />
             </button>
             {selectedTool === 'highlight' ? (
@@ -533,7 +533,7 @@ export default function SmartPDFReader({ pdfId, pdfUrl, pdfName, onBack }: Smart
               <button onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} disabled={currentPage <= 1} className={`p-2 rounded-lg transition-all ${currentPage <= 1 ? 'opacity-30' : darkMode ? 'text-ink-400 hover:bg-ink-800' : 'text-gray-600 hover:bg-gray-100'}`}>
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <input type="number" value={currentPage} onChange={e => { const p = +e.target.value; if (p >= 1 && p <= totalPages) setCurrentPage(p); }} className={`w-14 px-2 py-1 text-center text-sm rounded-lg border font-mono ${darkMode ? 'bg-ink-950 border-ink-800 text-ink-200' : 'bg-white border-gray-200 text-gray-800'}`} />
+              <input type="number" value={currentPage} onChange={e => { const p = +e.target.value; if (p >= 1 && p <= totalPages) setCurrentPage(p); }} className={`w-14 px-2 py-1 text-center text-sm rounded-lg border font-mono ${darkMode ? 'bg-ink-950 border-ink-600 text-ink-200' : 'bg-white border-gray-200 text-gray-800'}`} />
               <span className="text-xs text-ink-500">/ {totalPages}</span>
               <button onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage >= totalPages} className={`p-2 rounded-lg transition-all ${currentPage >= totalPages ? 'opacity-30' : darkMode ? 'text-ink-400 hover:bg-ink-800' : 'text-gray-600 hover:bg-gray-100'}`}>
                 <ChevronRight className="w-4 h-4" />
@@ -565,11 +565,11 @@ export default function SmartPDFReader({ pdfId, pdfUrl, pdfName, onBack }: Smart
       </div>
 
       {/* Mobile Bottom Tools Bar */}
-      <div className={`lg:hidden fixed bottom-0 left-0 right-0 border-t px-4 py-2 flex items-center justify-between gap-2 ${darkMode ? 'bg-[#0a0a0f] border-ink-800' : 'bg-gray-100 border-gray-200'}`}>
-        <button onClick={() => setSelectedTool('select')} className={`p-3 rounded-lg transition-all ${selectedTool === 'select' ? 'bg-yellow-500/20 text-yellow-400' : darkMode ? 'text-ink-400 hover:bg-ink-800' : 'text-gray-500 hover:bg-gray-100'}`}>
+      <div className={`lg:hidden fixed bottom-0 left-0 right-0 border-t px-4 py-2 flex items-center justify-between gap-2 ${darkMode ? 'bg-[#0a0a0f] border-ink-600' : 'bg-gray-100 border-gray-200'}`}>
+        <button onClick={() => setSelectedTool('select')} className={`p-3 rounded-lg transition-all ${selectedTool === 'select' ? 'bg-red-500/20 text-red-400' : darkMode ? 'text-ink-400 hover:bg-ink-800' : 'text-gray-500 hover:bg-gray-100'}`}>
           <FileText className="w-5 h-5" />
         </button>
-        <button onClick={() => setSelectedTool('highlight')} className={`p-3 rounded-lg transition-all ${selectedTool === 'highlight' ? 'bg-yellow-500/20 text-yellow-400' : darkMode ? 'text-ink-400 hover:bg-ink-800' : 'text-gray-500 hover:bg-gray-100'}`}>
+        <button onClick={() => setSelectedTool('highlight')} className={`p-3 rounded-lg transition-all ${selectedTool === 'highlight' ? 'bg-red-500/20 text-red-400' : darkMode ? 'text-ink-400 hover:bg-ink-800' : 'text-gray-500 hover:bg-gray-100'}`}>
           <Highlighter className="w-5 h-5" />
         </button>
         {selectedTool === 'highlight' ? (
@@ -586,19 +586,19 @@ export default function SmartPDFReader({ pdfId, pdfUrl, pdfName, onBack }: Smart
         <button onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage >= totalPages} className={`p-3 rounded-lg transition-all ${currentPage >= totalPages ? 'opacity-30' : darkMode ? 'text-ink-400 hover:bg-ink-800' : 'text-gray-500 hover:bg-gray-100'}`}>
           <ChevronRight className="w-5 h-5" />
         </button>
-        <button onClick={() => setMode(mode === 'normal' ? 'quickReview' : 'normal')} className={`p-3 rounded-lg transition-all ${mode === 'quickReview' ? 'bg-yellow-500/20 text-yellow-400' : darkMode ? 'text-ink-400 hover:bg-ink-800' : 'text-gray-500 hover:bg-gray-100'}`}>
+        <button onClick={() => setMode(mode === 'normal' ? 'quickReview' : 'normal')} className={`p-3 rounded-lg transition-all ${mode === 'quickReview' ? 'bg-red-500/20 text-red-400' : darkMode ? 'text-ink-400 hover:bg-ink-800' : 'text-gray-500 hover:bg-gray-100'}`}>
           <Zap className="w-5 h-5" />
         </button>
       </div>
 
       {showNoteModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className={`rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl ${darkMode ? 'bg-ink-900 border border-ink-800' : 'bg-white border border-gray-200'}`}>
+          <div className={`rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl ${darkMode ? 'bg-ink-900 border border-ink-600' : 'bg-white border border-gray-200'}`}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-lg">Add Note</h3>
               <button onClick={() => { setShowNoteModal(false); setActiveHighlightId(null); setNoteContent(''); }} className="p-2 hover:bg-ink-800 rounded-lg"><X className="w-4 h-4 text-ink-400" /></button>
             </div>
-            <textarea value={noteContent} onChange={e => setNoteContent(e.target.value)} placeholder="Write your note..." className={`w-full h-32 p-3 rounded-xl border resize-none text-sm ${darkMode ? 'bg-ink-950 border-ink-800 text-ink-200' : 'bg-gray-50 border-gray-200 text-gray-800'}`} autoFocus />
+            <textarea value={noteContent} onChange={e => setNoteContent(e.target.value)} placeholder="Write your note..." className={`w-full h-32 p-3 rounded-xl border resize-none text-sm ${darkMode ? 'bg-ink-950 border-ink-600 text-ink-200' : 'bg-gray-50 border-gray-200 text-gray-800'}`} autoFocus />
             <div className="flex gap-3 mt-4">
               <button onClick={addNote} disabled={!noteContent.trim()} className="flex-1 btn-primary disabled:opacity-50">Save</button>
               <button onClick={() => { setShowNoteModal(false); setActiveHighlightId(null); setNoteContent(''); }} className="btn-ghost">Cancel</button>
@@ -609,10 +609,10 @@ export default function SmartPDFReader({ pdfId, pdfUrl, pdfName, onBack }: Smart
 
       {showTargetModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className={`rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl ${darkMode ? 'bg-ink-900 border border-ink-800' : 'bg-white border border-gray-200'}`}>
+          <div className={`rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl ${darkMode ? 'bg-ink-900 border border-ink-600' : 'bg-white border border-gray-200'}`}>
             <h3 className="font-bold text-lg mb-4">Set Reading Target</h3>
             <label className="text-xs text-ink-500 uppercase mb-2 block">Target Time (minutes)</label>
-            <input type="number" value={targetMinutes} onChange={e => setTargetMinutes(Math.max(1, +e.target.value || 1))} className={`w-full p-3 rounded-xl border text-lg font-mono text-center ${darkMode ? 'bg-ink-950 border-ink-800 text-ink-200' : 'bg-gray-50 border-gray-200 text-gray-800'}`} />
+            <input type="number" value={targetMinutes} onChange={e => setTargetMinutes(Math.max(1, +e.target.value || 1))} className={`w-full p-3 rounded-xl border text-lg font-mono text-center ${darkMode ? 'bg-ink-950 border-ink-600 text-ink-200' : 'bg-gray-50 border-gray-200 text-gray-800'}`} />
             <div className="flex gap-3 mt-4">
               <button onClick={() => { setTargetTime(targetMinutes * 60); setShowTargetModal(false); toast.success(`Target: ${targetMinutes} min`); }} className="flex-1 btn-primary">Set</button>
               <button onClick={() => setShowTargetModal(false)} className="btn-ghost">Cancel</button>

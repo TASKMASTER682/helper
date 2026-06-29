@@ -6,14 +6,24 @@ import {
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RTooltip } from 'recharts';
 import clsx from 'clsx';
-import QuestionGrid from '@/componets/QuestionGrid';
+import QuestionGrid from '@/components/QuestionGrid';
 import dynamic from 'next/dynamic';
 
-const PDFViewerComponent = dynamic(() => import('@/componets/PDFViewerComponent'), {
+const sanitizeHtml = (html: string): string => {
+  return html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
+    .replace(/on\w+\s*=\s*\S+/gi, '')
+    .replace(/javascript\s*:/gi, '')
+    .replace(/<iframe\b[^>]*>/gi, '')
+    .replace(/<\/iframe>/gi, '');
+};
+
+const PDFViewerComponent = dynamic(() => import('@/components/PDFViewerComponent'), {
   ssr: false,
   loading: () => (
-    <div className="h-full w-full flex items-center justify-center bg-ink-900 border border-ink-800 rounded-2xl">
-      <Loader2 className="animate-spin text-yellow-500 w-6 h-6 mr-2" />
+    <div className="h-full w-full flex items-center justify-center bg-ink-900 border border-ink-600 rounded-2xl">
+      <Loader2 className="animate-spin text-red-500 w-6 h-6 mr-2" />
       <span className="text-ink-500 font-mono text-xs uppercase">Loading PDF...</span>
     </div>
   )
@@ -144,7 +154,7 @@ export default function ResultScreen({
 
     const pollFeedback = async () => {
       try {
-        const response = await fetch(`/api/mock-test/attempts/${result.attemptId}`);
+        const response = await fetch(`/api/mock-tests/attempts/${result.attemptId}`);
         const data = await response.json();
 
         if (data.feedbackStatus === 'completed') {
@@ -193,33 +203,33 @@ export default function ResultScreen({
           </button>
           <div className="flex items-center gap-3">
             {localPollingAI && (
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-ink-900 rounded-lg border border-ink-800">
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-yellow-500" />
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-ink-900 rounded-lg border border-ink-600">
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-red-500" />
                 <span className="text-[10px] text-ink-400 font-bold uppercase tracking-wider">ARJUN is analyzing...</span>
               </div>
             )}
-            <button onClick={onReattempt} className="flex items-center text-black gap-2 px-6 py-2.5 bg-yellow-500 hover:bg-yellow-600 text-ink-950 font-bold rounded-xl transition-all shadow-lg shadow-yellow-500/20">
-              <RefreshCcw className="w-4 h-4 text-teal-600" /> Re-attempt Test
+            <button onClick={onReattempt} className="flex items-center gap-2 px-6 py-2.5 bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-teal-500/20">
+              <RefreshCcw className="w-4 h-4 text-white" /> Re-attempt Test
             </button>
           </div>
         </div>
 
         {/* Top Row: Score Highlights */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-          <div className="lg:col-span-1 glass-card p-8 text-center border border-teal-800 bg-ink-900/40 relative overflow-hidden rounded-2xl">
-            <div className="absolute top-0 left-0 w-full h-1 bg-yellow-500" />
-            <p className="text-[10px] uppercase text-teal-500 font-bold tracking-widest">Net Score</p>
-            <h1 className={clsx("text-6xl font-black my-2", displayScore < 0 ? "text-red-500" : "text-yellow-400")}>
+          <div className="lg:col-span-1 glass-card p-8 text-center border border-red-800/40 relative overflow-hidden rounded-2xl">
+            <div className="absolute top-0 left-0 w-full h-1 bg-red-500" />
+            <p className="text-[10px] uppercase text-red-400 font-bold tracking-widest">Net Score</p>
+            <h1 className={clsx("text-6xl font-black my-2", displayScore < 0 ? "text-red-500" : "text-red-400")}>
               {scoreText}
             </h1>
-            <div className="flex justify-between border-t border-ink-800/50 pt-4 mt-2">
-              <div><p className="text-[8px] text-ink-600 font-bold uppercase mb-1">Correct</p><p className="text-teal-400 font-black">{Number(result?.correctCount) || 0}</p></div>
-              <div><p className="text-[8px] text-ink-600 font-bold uppercase mb-1">Wrong</p><p className="text-red-400 font-black">{Number(result?.wrongCount) || 0}</p></div>
-              <div><p className="text-[8px] text-ink-600 font-bold uppercase mb-1">Accuracy</p><p className="text-white font-black">{displayAccuracy}%</p></div>
+            <div className="flex justify-between border-t border-ink-700/60 pt-4 mt-2">
+              <div><p className="text-[8px] text-ink-400 font-bold uppercase mb-1">Correct</p><p className="text-teal-500 font-black">{Number(result?.correctCount) || 0}</p></div>
+              <div><p className="text-[8px] text-ink-400 font-bold uppercase mb-1">Wrong</p><p className="text-red-500 font-black">{Number(result?.wrongCount) || 0}</p></div>
+              <div><p className="text-[8px] text-ink-400 font-bold uppercase mb-1">Accuracy</p><p className="text-ink-50 font-black">{displayAccuracy}%</p></div>
             </div>
           </div>
 
-          <div className="lg:col-span-3 glass-card p-6 border border-teal-800 bg-ink-900/40 rounded-2xl flex items-center justify-center min-h-[160px]">
+          <div className="lg:col-span-3 glass-card p-6 border border-ink-700/60 rounded-2xl flex items-center justify-center min-h-[160px]">
             <div className="w-full h-32 min-w-0">
               <ResponsiveContainer width="100%" height={128}>
                 <PieChart>
@@ -234,7 +244,7 @@ export default function ResultScreen({
               {pieData.map((d, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full" style={{ background: d.color }} />
-                  <span className="text-[10px] text-ink-400 font-bold uppercase">{d.name}: {d.value}</span>
+                  <span className="text-[10px] text-ink-300 font-bold uppercase">{d.name}: {d.value}</span>
                 </div>
               ))}
             </div>
@@ -247,33 +257,33 @@ export default function ResultScreen({
           {/* Left Column: PDF Viewer (Only if NOT structured) */}
           {!isStructured && (
             <div className="lg:col-span-10 lg:col-start-2 sticky top-4">
-              <div className="glass-card border border-ink-800 bg-ink-900/40 rounded-3xl overflow-hidden shadow-2xl">
-                <div className="p-4 bg-ink-900/60 border-b border-ink-800 flex items-center justify-between">
-                  <h3 className="text-[10px] font-bold text-teal-400 uppercase tracking-[0.2em]">Question Paper</h3>
-                  <span className="text-[9px] text-ink-600 font-mono">Reference View</span>
+              <div className="glass-card border border-ink-700/60 rounded-3xl overflow-hidden shadow-2xl">
+                <div className="p-4 border-b border-ink-700/60 flex items-center justify-between">
+                  <h3 className="text-[10px] font-bold text-teal-500 uppercase tracking-[0.2em]">Question Paper</h3>
+                  <span className="text-[9px] text-ink-400 font-mono">Reference View</span>
                 </div>
-                <div className="h-[800px] w-full bg-black">
+                <div className="h-[400px] md:h-[600px] lg:h-[800px] w-full bg-black">
                   <PDFViewerComponent testId={testId} />
                 </div>
               </div>
-              <p className="mt-4 text-[11px] text-teal-500 font-bold tracking-widest uppercase text-center">Refer to the PDF above to cross-check your mistakes</p>
+              <p className="mt-4 text-[11px] text-teal-600 font-bold tracking-widest uppercase text-center">Refer to the PDF above to cross-check your mistakes</p>
             </div>
           )}
 
           {/* Right Column: Detailed Solutions & AI Analysis (Only if structured) */}
           {isStructured && (
             <div className="lg:col-span-12 space-y-6">
-              <div className="glass-card p-6 md:p-8 border border-teal-800 bg-ink-900/40 rounded-3xl">
+              <div className="glass-card p-6 md:p-8 border border-red-800/40 rounded-3xl">
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="p-3 bg-yellow-500/10 rounded-2xl border border-yellow-500/20"><Brain className="w-6 h-6 text-yellow-400" /></div>
+                  <div className="p-3 bg-red-500/10 rounded-2xl border border-red-500/20"><Brain className="w-6 h-6 text-red-400" /></div>
                   <div>
-                    <h2 className="text-xl font-bold text-teal-500 tracking-tight leading-tight">Digital Evaluation Report</h2>
-                    <p className="text-[10px] text-teal-100 uppercase font-bold tracking-widest mt-1">Detailed Solutions & Analysis</p>
+                    <h2 className="text-xl font-bold text-red-400 tracking-tight leading-tight">Digital Evaluation Report</h2>
+                    <p className="text-[10px] text-ink-400 uppercase font-bold tracking-widest mt-1">Detailed Solutions & Analysis</p>
                   </div>
                 </div>
 
                 {/* Filter Tabs */}
-                <div className="flex gap-2 mb-6 bg-ink-950 p-1.5 rounded-xl border border-teal-800 flex-wrap">
+                <div className="flex gap-2 mb-6 bg-ink-900/70 p-1.5 rounded-xl border border-ink-700/60 flex-wrap">
                   {(['all', 'wrong', 'correct', 'skipped'] as const).map(tab => (
                     <button
                       key={tab}
@@ -281,7 +291,7 @@ export default function ResultScreen({
                       className={clsx(
                         "flex-1 py-2 text-xs font-bold rounded-lg capitalize transition-all",
                         filterMode === tab
-                          ? (tab === 'wrong' ? 'bg-red-500 text-white' : tab === 'correct' ? 'bg-teal-500 text-white' : tab === 'skipped' ? 'bg-blue-600 text-white' : 'bg-yellow-500 text-ink-950')
+                          ? (tab === 'wrong' ? 'bg-red-500 text-white' : tab === 'correct' ? 'bg-teal-500 text-white' : tab === 'skipped' ? 'bg-ink-600 text-white' : 'bg-red-500 text-white')
                           : "text-ink-500 hover:text-ink-300 hover:bg-ink-900"
                       )}
                     >
@@ -294,7 +304,7 @@ export default function ResultScreen({
                 <div className="space-y-6">
                   <div className={clsx(
                     "grid gap-4 overflow-y-auto pr-2 custom-scrollbar",
-                    isStructured ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-2 max-h-250" : "grid-cols-1 max-h-[800px]"
+                    isStructured ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-2 max-h-[250px]" : "grid-cols-1 max-h-[800px]"
                   )}>
                     {filteredAnswers.map((item: any, idx: number) => {
                       const isSkipped = !item.answer;
@@ -302,44 +312,48 @@ export default function ResultScreen({
 
                       const statusColor = isSkipped ? 'blue' : isCorrect ? 'teal' : 'red';
 
+                      const borderClass = isSkipped ? 'border-blue-500/20 hover:border-blue-500/40' : isCorrect ? 'border-teal-500/20 hover:border-teal-500/40' : 'border-red-500/20 hover:border-red-500/40';
+                      const barClass = isSkipped ? 'bg-blue-500/50' : isCorrect ? 'bg-teal-500/50' : 'bg-red-500/50';
+                      const badgeClass = isSkipped ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : isCorrect ? 'bg-teal-500/10 text-teal-400 border-teal-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20';
+
                       return (
                         <div key={idx} className={clsx(
-                          "p-5 bg-ink-950/50 rounded-2xl border transition-all relative overflow-hidden flex flex-col",
-                          `border-${statusColor}-500/20 hover:border-${statusColor}-500/40`
-                        )}>
+                          "p-5 rounded-2xl border transition-all relative overflow-hidden flex flex-col",
+                          borderClass
+                        )} style={{ backgroundColor: '#f5efe1' }}>
                           {/* Status bar top */}
-                          <div className={`absolute top-0 left-0 w-full h-1 bg-${statusColor}-500/50`} />
+                          <div className={clsx("absolute top-0 left-0 w-full h-1", barClass)} />
 
                           <div className="flex items-start justify-between mb-4 mt-1">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className={clsx("text-[10px] font-bold px-2.5 py-1 rounded-md", `bg-${statusColor}-500/10 text-${statusColor}-400 border border-${statusColor}-500/20`)}>
+                              <span className={clsx("text-[10px] font-bold px-2.5 py-1 rounded-md", badgeClass)}>
                                 Q.{item.questionNumber}
                               </span>
 
                               {isSkipped ? (
-                                <span className="text-[10px] font-bold px-2.5 py-1 bg-ink-800 text-ink-400 rounded-md">SKIPPED</span>
+                                <span className="text-[10px] font-bold px-2.5 py-1 bg-ink-800/70 text-ink-400 rounded-md">SKIPPED</span>
                               ) : (
                                 <>
                                   <span className={clsx("text-[10px] font-bold px-2.5 py-1 rounded-md flex items-center gap-1",
-                                    isCorrect ? "bg-teal-500/10 text-teal-400" : "bg-red-500/10 text-red-400"
+                                    isCorrect ? "bg-teal-500/10 text-teal-500" : "bg-red-500/10 text-red-500"
                                   )}>
-                                    Marked: <strong className="text-white ml-1">{item.answer}</strong>
+                                    Marked: <strong className="text-ink-50 ml-1">{item.answer}</strong>
                                   </span>
                                 </>
                               )}
 
-                              <span className="text-[10px] font-bold px-2.5 py-1 bg-ink-800 text-teal-400 rounded-md flex items-center gap-1 border border-ink-700">
-                                Correct: <strong className="text-white ml-1">{item.correctAnswer}</strong>
+                              <span className="text-[10px] font-bold px-2.5 py-1 bg-ink-800/70 text-teal-500 rounded-md flex items-center gap-1 border border-ink-500">
+                                Correct: <strong className="text-ink-50 ml-1">{item.correctAnswer}</strong>
                               </span>
                             </div>
                           </div>
 
-                          {item.questionText && (
-                            <div className="mb-4 p-4 bg-ink-900/30 rounded-xl border-2 border-yellow-800/50">
+                            {item.questionText && (
+                            <div className="mb-4 p-4 rounded-xl border-2 border-red-800/50" style={{ backgroundColor: '#efe7d4' }}>
                               {/<[a-z][\s\S]*>/i.test(item.questionText) ? (
-                                <div className="text-[14px] text-ink-200 leading-relaxed font-medium ai-content" dangerouslySetInnerHTML={{ __html: item.questionText }} />
+                                <div className="text-[14px] text-ink-100 leading-relaxed font-medium ai-content" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.questionText) }} />
                               ) : (
-                                <p className="text-[14px] text-ink-200 leading-relaxed font-medium whitespace-pre-wrap">{item.questionText}</p>
+                                <p className="text-[14px] text-ink-100 leading-relaxed font-medium whitespace-pre-wrap">{item.questionText}</p>
                               )}
                             </div>
                           )}
@@ -361,43 +375,44 @@ export default function ResultScreen({
                                         ? "bg-teal-500/10 border-teal-500/50"
                                         : isMarked
                                           ? "bg-red-500/10 border-red-500/50"
-                                          : "bg-ink-900/30 border-ink-800/50"
+                                          : "border-ink-600/50"
                                     )}
+                                    style={!isCorrect && !isMarked ? { backgroundColor: '#f5efe1' } : undefined}
                                   >
                                     <span className={clsx(
                                       "w-6 h-6 shrink-0 rounded-lg flex items-center justify-center font-bold text-xs border",
                                       isCorrect
-                                        ? "bg-teal-500 border-teal-500 text-teal-950"
+                                        ? "bg-teal-500 border-teal-500 text-white"
                                         : isMarked
                                           ? "bg-red-500 border-red-500 text-white"
-                                          : "bg-ink-800 border-ink-700 text-ink-400"
+                                          : "bg-ink-800 border-ink-500 text-ink-400"
                                     )}>
                                       {optKey}
                                     </span>
                                     <span className={clsx(
-                                      "leading-relaxed font-medium",
-                                      isCorrect ? "text-teal-300" : isMarked ? "text-red-300" : "text-ink-300"
+                                      "leading-relaxed font-medium font-display",
+                                      isCorrect ? "text-teal-600" : isMarked ? "text-red-500" : "text-ink-300"
                                     )}>
                                       {optText}
                                     </span>
-                                    {isCorrect && <span className="ml-auto text-[10px] text-teal-500 font-bold">CORRECT</span>}
-                                    {isMarked && !isCorrect && <span className="ml-auto text-[10px] text-red-500 font-bold">YOUR ANSWER</span>}
+                              {isCorrect && <span className="ml-auto text-[10px] text-teal-500 font-bold">CORRECT ✓</span>}
+                              {isMarked && !isCorrect && <span className="ml-auto text-[10px] text-red-500 font-bold">YOUR ANSWER ⚡</span>}
                                   </div>
                                 );
                               })}
                             </div>
                           )}
 
-                          <div className="mt-auto pt-4 border-t border-ink-800/50 flex flex-col gap-2 relative">
+                            <div className="mt-auto pt-4 border-t border-ink-700/60 flex flex-col gap-2 relative">
                             <div className="flex items-center gap-2 px-1">
-                              <Sparkles className="w-3.5 h-3.5 text-yellow-500" />
-                              <p className="text-[10px] text-yellow-500 font-bold uppercase tracking-widest">Detailed Solution</p>
+                              <Sparkles className="w-3.5 h-3.5 text-red-500" />
+                              <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest">Detailed Solution</p>
                             </div>
-                            <div className="text-[13px] text-ink-200 leading-relaxed bg-black/40 p-4 rounded-xl border border-ink-800/60 overflow-y-auto custom-scrollbar shadow-inner [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1 [&_strong]:text-yellow-400 [&_em]:italic [&_code]:bg-ink-800 [&_code]:px-1 [&_code]:rounded [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-xs" style={{ maxHeight: '180px' }}>
+                            <div className="text-[13px] text-ink-100 leading-relaxed bg-ink-800/30 p-4 rounded-xl border border-ink-700/60 overflow-y-auto custom-scrollbar shadow-inner [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1 [&_strong]:text-red-500 [&_em]:italic [&_code]:bg-ink-800 [&_code]:px-1 [&_code]:rounded [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-xs" style={{ maxHeight: '180px' }}>
                               {item.explanation ? (
-                                <div dangerouslySetInnerHTML={{ __html: item.explanation }} />
+                                <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.explanation) }} />
                               ) : (
-                                <span className="text-ink-600 italic">No detailed explanation available.</span>
+                                <span className="text-ink-400 italic">No detailed explanation available.</span>
                               )}
                             </div>
                           </div>
@@ -406,7 +421,7 @@ export default function ResultScreen({
                     })}
 
                     {filteredAnswers.length === 0 && (
-                      <div className={clsx("text-center py-16 border border-dashed border-ink-800 rounded-3xl", isStructured && "col-span-full")}>
+                      <div className={clsx("text-center py-16 border border-dashed border-ink-600 rounded-3xl", isStructured && "col-span-full")}>
                         <Lightbulb className="w-12 h-12 text-ink-600 mx-auto mb-4 opacity-50" />
                         <p className="text-ink-400 font-bold text-sm">No questions in this category</p>
                       </div>

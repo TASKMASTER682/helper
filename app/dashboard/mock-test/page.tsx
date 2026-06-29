@@ -23,12 +23,12 @@ const SUBJECTS_LIST = [
 
 type Status = 'uploading' | 'processing' | 'ready' | 'error';
 
-const STATUS_CFG: Record<Status, { label: string; color: string; bg: string; icon: any }> = {
-  uploading: { label: 'Uploading', color: 'text-yellow-400', bg: 'bg-yellow-900/20 border-yellow-800/40', icon: Loader2 },
-  processing: { label: 'Extracting Key', color: 'text-deep-400', bg: 'bg-deep-900/20 border-deep-800/40', icon: Loader2 },
-  ready: { label: 'Ready', color: 'text-teal-400', bg: 'bg-teal-900/20 border-teal-800/40', icon: CheckCircle2 },
-  error: { label: 'Error', color: 'text-red-400', bg: 'bg-red-900/20 border-red-800/40', icon: AlertCircle }
-};
+  const STATUS_CFG: Record<Status, { label: string; color: string; bg: string; bar: string; icon: any }> = {
+    uploading: { label: 'Uploading', color: 'text-red-400', bg: 'bg-red-500/10 border-red-500/30', bar: 'bg-red-500', icon: Loader2 },
+    processing: { label: 'Extracting Key', color: 'text-teal-400', bg: 'bg-teal-500/10 border-teal-500/30', bar: 'bg-teal-500', icon: Loader2 },
+    ready: { label: 'Ready', color: 'text-teal-400', bg: 'bg-teal-500/10 border-teal-500/30', bar: 'bg-teal-500', icon: FileText },
+    error: { label: 'Error', color: 'text-red-400', bg: 'bg-red-500/10 border-red-500/30', bar: 'bg-red-500', icon: AlertCircle }
+  };
 
 const TEST_TYPES = [
   { value: 'prelims_gs', label: 'Prelims GS' },
@@ -37,7 +37,7 @@ const TEST_TYPES = [
   { value: 'full_length', label: 'Full Length' },
 ];
 
-const PIE_COLORS = ['#12b97a', '#ef4444', '#4b5563'];
+const PIE_COLORS = ['#10b981', '#ef4444', '#4a3f31'];
 
 const scrollbarStyle = `
   .custom-scrollbar::-webkit-scrollbar { width: 4px; }
@@ -246,7 +246,7 @@ export default function MockTestPage() {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="section-title flex items-center gap-2">
-            <Brain className="w-7 h-7 text-yellow-400" />
+            <Brain className="w-7 h-7 text-red-400" />
             Mock Test Engine
           </h1>
           <p className="text-ink-500 text-sm mt-1">Upload PDFs → AI extracts key → Digital OMR → Review (Max 6MB)</p>
@@ -258,8 +258,8 @@ export default function MockTestPage() {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Tests Ready', value: tests.filter(t => t.status === 'ready').length, icon: BookOpen, color: 'text-yellow-400' },
-          { label: 'Attempts', value: totalAttempts, icon: Target, color: 'text-deep-400' },
+          { label: 'Tests Ready', value: tests.filter(t => t.status === 'ready').length, icon: BookOpen, color: 'text-red-400' },
+          { label: 'Attempts', value: totalAttempts, icon: Target, color: 'text-teal-400' },
           { label: 'Avg Score', value: avgScore.toFixed(1), icon: TrendingUp, color: 'text-teal-400' },
           { label: 'Best Score', value: bestScore.toFixed(1), icon: Zap, color: 'text-purple-400' },
         ].map(item => (
@@ -274,9 +274,9 @@ export default function MockTestPage() {
       </div>
 
       <div className="flex flex-wrap gap-2 items-center justify-between">
-        <div className="flex gap-1 p-1 bg-ink-900 rounded-xl border border-ink-800 w-fit">
+        <div className="flex gap-1 p-1 bg-ink-900 rounded-xl border border-ink-600 w-fit">
           {(['tests', 'analytics'] as const).map(t => (
-            <button key={t} onClick={() => setTab(t)} className={clsx('px-5 py-2 rounded-lg text-sm font-semibold capitalize transition-all', tab === t ? 'bg-yellow-500 text-ink-950' : 'text-ink-500')}>
+            <button key={t} onClick={() => setTab(t)} className={clsx('px-5 py-2 rounded-lg text-sm font-semibold capitalize transition-all', tab === t ? 'bg-red-500 text-white' : 'text-ink-500')}>
               {t}
             </button>
           ))}
@@ -285,7 +285,7 @@ export default function MockTestPage() {
         {tab === 'tests' && (
           <div className="flex gap-2 items-center">
             <select
-              className="bg-ink-900 border border-ink-800 rounded-lg px-3 py-1.5 text-xs text-ink-300 outline-none"
+              className="bg-ink-900 border border-ink-600 rounded-lg px-3 py-1.5 text-xs text-ink-300 outline-none"
               value={filters.subject}
               onChange={e => setFilters({ ...filters, subject: e.target.value })}
             >
@@ -293,7 +293,7 @@ export default function MockTestPage() {
               {availableFilters.subjects.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             <select
-              className="bg-ink-900 border border-ink-800 rounded-lg px-3 py-1.5 text-xs text-ink-300 outline-none"
+              className="bg-ink-900 border border-ink-600 rounded-lg px-3 py-1.5 text-xs text-ink-300 outline-none"
               value={filters.year}
               onChange={e => setFilters({ ...filters, year: e.target.value })}
             >
@@ -303,7 +303,7 @@ export default function MockTestPage() {
             {(filters.subject || filters.year) && (
               <button
                 onClick={() => setFilters({ subject: '', year: '', mode: '' })}
-                className="p-1.5 text-ink-500 hover:text-white transition-colors"
+                className="p-1.5 text-ink-500 hover:text-ink-100 transition-colors"
                 title="Clear Filters"
               >
                 <X className="w-4 h-4" />
@@ -321,7 +321,7 @@ export default function MockTestPage() {
             <>
               {tests.filter(t => !t.testSeriesId).length > 0 && (
                 <div className="space-y-3">
-                  <h3 className="font-display text-sm font-bold text-ink-500 uppercase tracking-widest">Standalone Tests</h3>
+                  <h3 className="font-display text-sm font-bold text-red-800 uppercase tracking-widest">Standalone Tests</h3>
                   {tests.filter(t => !t.testSeriesId).map((test) => (
                     <TestCard
                       key={test._id}
@@ -340,21 +340,21 @@ export default function MockTestPage() {
                 if (seriesTests.length === 0) return null;
 
                 return (
-                  <div key={series._id} className="rounded-xl border transition-all duration-300 overflow-hidden">
+                  <div key={series._id} className="glass-card rounded-xl border border-ink-700/60 transition-all duration-300 overflow-hidden hover:border-ink-600/60">
                     <div
-                      className="p-5 flex items-start gap-4 cursor-pointer"
+                      className="p-5 flex items-start gap-4 cursor-pointer hover:bg-ink-900/30 transition-colors"
                       onClick={() => setExpandedSeries(expandedSeries === series._id ? null : series._id)}
                     >
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 font-mono text-lg font-black shadow-inner bg-ink-800 text-ink-400 border border-ink-700">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-inner bg-red-500/10 text-red-400 border border-red-500/30">
                         <BookOpen className="w-5 h-5" />
                       </div>
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between">
                           <div>
-                            <h3 className="font-display text-lg font-bold text-ink-100">{series.name}</h3>
+                            <h3 className="font-display text-lg font-bold text-red-800">{series.name}</h3>
                             <div className="flex items-center gap-2 mt-1">
-                              <span className="px-2 py-0.5 rounded bg-ink-800 text-ink-400 text-[10px] font-bold uppercase tracking-tighter border border-ink-700">{series.provider}</span>
+                              <span className="px-2 py-0.5 rounded bg-ink-800 text-ink-400 text-[10px] font-bold uppercase tracking-tighter border border-ink-600">{series.provider}</span>
                               <span className="text-[10px] text-ink-500 font-mono">{seriesTests.length} Tests</span>
                             </div>
                           </div>
@@ -367,7 +367,7 @@ export default function MockTestPage() {
                         </div>
                       </div>
 
-                      <div className="shrink-0">
+                      <div className="shrink-0 flex items-center">
                         {expandedSeries === series._id ? (
                           <ChevronUp className="w-5 h-5 text-ink-500" />
                         ) : (
@@ -377,7 +377,7 @@ export default function MockTestPage() {
                     </div>
 
                     {expandedSeries === series._id && (
-                      <div className="border-t border-ink-800 bg-ink-950/50 p-5 space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <div className="border-t border-ink-700/60 bg-ink-950/30 p-4 md:p-5 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                         <div className="grid grid-cols-1 gap-3">
                           {seriesTests.map((test) => (
                             <TestCard
@@ -397,7 +397,7 @@ export default function MockTestPage() {
               })}
 
               {tests.length === 0 && (
-                <div className="glass-card p-12 text-center border-dashed border-ink-800">
+                <div className="glass-card p-12 text-center border-dashed border-ink-600">
                   <BookOpen className="w-12 h-12 text-ink-800 mx-auto mb-4" />
                   <p className="text-ink-500 font-display">No Tests Found</p>
                 </div>
@@ -410,7 +410,7 @@ export default function MockTestPage() {
       {tab === 'analytics' && totalAttempts > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="glass-card p-5 h-64 min-h-[200px]">
-            <h3 className="text-sm font-bold mb-4">Score Trend</h3>
+            <h3 className="text-sm font-bold text-red-800 mb-4">Score Trend</h3>
             <div className="h-[180px] min-h-[180px] w-full min-w-0">
               {scoreTrend.length > 0 ? (
                 <ResponsiveContainer width="100%" height={180}>
@@ -419,7 +419,7 @@ export default function MockTestPage() {
                     <XAxis dataKey="idx" hide />
                     <YAxis stroke="#6b5e52" fontSize={10} />
                     <Tooltip contentStyle={{ background: '#1a1612', border: 'none' }} />
-                    <Line type="monotone" dataKey="score" stroke="#ff7c0a" strokeWidth={2} dot={{ fill: '#ff7c0a' }} />
+                    <Line type="monotone" dataKey="score" stroke="#ef4444" strokeWidth={2} dot={{ fill: '#ef4444' }} />
                   </LineChart>
                 </ResponsiveContainer>
               ) : <div className="h-full flex items-center justify-center text-ink-600 text-xs">No data</div>}
@@ -454,15 +454,15 @@ export default function MockTestPage() {
         <div className="fixed inset-0 bg-ink-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="glass-card p-6 w-full max-w-2xl animate-slide-up">
             <div className="flex justify-between mb-4">
-              <h3 className="font-bold text-lg">Upload Mock Test</h3>
-              <X className="cursor-pointer text-ink-400 hover:text-white" onClick={() => setShowUpload(false)} />
+              <h3 className="font-bold text-lg text-red-800">Upload Mock Test</h3>
+              <X className="cursor-pointer text-ink-400 hover:text-ink-100" onClick={() => setShowUpload(false)} />
             </div>
 
             <div className="space-y-4 mb-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
               <DropZone label="Test PDF" file={testPdf} onChange={setTestPdf} hint="Question Paper" />
 
               <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold text-ink-500">
+                <label className="text-[10px] uppercase font-bold text-red-800">
                   Answer Key (Raw Text)
                 </label>
                 <textarea
@@ -478,7 +478,7 @@ export default function MockTestPage() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-[10px] uppercase font-bold text-ink-500">Link to Test Series</label>
+                  <label className="text-[10px] uppercase font-bold text-red-800">Link to Test Series</label>
                   <select
                     className="input-field w-full mt-1"
                     value={selectedSeriesId}
@@ -502,7 +502,7 @@ export default function MockTestPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-bold text-ink-500">Subject</label>
+                    <label className="text-[10px] uppercase font-bold text-red-800">Subject</label>
                     <select
                       className="input-field w-full"
                       value={formData.subject}
@@ -513,7 +513,7 @@ export default function MockTestPage() {
                     </select>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-bold text-ink-500">Year</label>
+                    <label className="text-[10px] uppercase font-bold text-red-800">Year</label>
                     <input
                       type="number"
                       placeholder="e.g. 2024"
@@ -525,13 +525,13 @@ export default function MockTestPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-ink-500">Specific Topics</label>
+                  <label className="text-[10px] uppercase font-bold text-red-800">Specific Topics</label>
                   <input placeholder="e.g. Parliament, Governor" className="input-field w-full" value={formData.topics} onChange={e => setFormData({ ...formData, topics: e.target.value })} />
                 </div>
               </div>
             </div>
 
-            <button disabled={uploading} onClick={handleUpload} className={clsx('w-full py-3 flex items-center justify-center gap-2 rounded-xl font-bold transition-all mt-4', 'bg-yellow-500 text-ink-950')}>
+            <button disabled={uploading} onClick={handleUpload} className={clsx('w-full py-3 flex items-center justify-center gap-2 rounded-xl font-bold transition-all mt-4', 'bg-red-500 text-white')}>
               {uploading ? <><Loader2 className="animate-spin w-4 h-4" /> Processing...</> : 'Extract PDF Key'}
             </button>
           </div>
@@ -540,10 +540,10 @@ export default function MockTestPage() {
 
       {startConfig && (
         <div className="fixed inset-0 bg-ink-950/90 backdrop-blur-md z-[200] flex items-center justify-center p-4">
-          <div className="glass-card p-8 w-full bg-black max-w-md border-yellow-500/30 animate-scale-in">
+          <div className="glass-card p-8 w-full max-w-md border-red-500/30 animate-scale-in">
             <div className="text-center mb-6">
-              <Clock className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-ink-100">Set Test Duration</h3>
+              <Clock className="w-12 h-12 text-red-400 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-red-800">Set Test Duration</h3>
               <p className="text-ink-500 text-sm mt-2">Adjust time for this attempt</p>
             </div>
 
@@ -551,7 +551,7 @@ export default function MockTestPage() {
               <div className="relative">
                 <input
                   type="number"
-                  className="input-field w-full text-center text-3xl font-bold py-4 bg-ink-950 border-yellow-500/20 focus:border-yellow-500"
+                  className="input-field w-full text-center text-3xl font-bold py-4 bg-ink-950 border-red-500/20 focus:border-red-500"
                   value={startConfig.time}
                   onChange={(e) => setStartConfig({ ...startConfig, time: parseInt(e.target.value) || 0 })}
                 />
@@ -559,12 +559,12 @@ export default function MockTestPage() {
               </div>
 
               <div className="flex gap-3">
-                <button onClick={() => setStartConfig(null)} className="flex-1 px-4 py-3 rounded-xl border border-ink-700 text-ink-300 hover:bg-ink-800 transition-all font-semibold">
+                <button onClick={() => setStartConfig(null)} className="flex-1 px-4 py-3 rounded-xl border border-ink-500 text-ink-300 hover:bg-ink-800 transition-all font-semibold">
                   Cancel
                 </button>
                 <button
                   onClick={() => router.push(`/dashboard/mock-test/${startConfig.id}?customTime=${startConfig.time}&force=true`)}
-                  className="flex-1 px-4 py-3 rounded-xl bg-yellow-500 text-ink-950 hover:bg-yellow-600 transition-all font-bold flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-3 rounded-xl bg-red-500 text-white hover:bg-pink-200 transition-all font-bold flex items-center justify-center gap-2"
                 >
                   <Play className="w-4 h-4" /> Start
                 </button>
@@ -590,33 +590,49 @@ function TestCard({ test, attempts = [], onStart, onViewResult, onDelete }: any)
   const lastAttempt = relatedAttempts[0];
   const lastAttemptId = lastAttempt?._id;
   const lastScore = lastAttempt?.score;
+  const hasAttempts = relatedAttempts.length > 0;
 
   return (
-    <div className="glass-card p-4 hover:border-ink-600 transition-colors">
-      <div className="flex items-center gap-4">
-        <div className={clsx('w-10 h-10 rounded-lg flex items-center justify-center border', cfg.bg)}>
-          <cfg.icon className={clsx('w-5 h-5', cfg.color, test.status === 'processing' && 'animate-spin')} />
+    <div className="relative flex items-stretch gap-0 glass-card overflow-hidden rounded-xl border border-ink-700/60 hover:border-ink-600/60 hover:shadow-md transition-all group">
+      {/* Left status bar */}
+      <div className={clsx('w-1.5 shrink-0 rounded-l-xl', cfg.bar)} />
+
+      <div className="flex-1 flex items-center gap-4 p-4 group-hover:bg-pink-50/40 transition-colors">
+        {/* Status badge */}
+        <div className={clsx('w-9 h-9 rounded-xl flex items-center justify-center border shrink-0', cfg.bg)}>
+          <cfg.icon className={clsx('w-4 h-4', cfg.color, test.status === 'processing' && 'animate-spin')} />
         </div>
+
+        {/* Content */}
         <div className="flex-1 min-w-0">
-          <h4 className="font-bold text-ink-100 truncate">{test.name}</h4>
-          <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-ink-500 mt-1">
-            <span className="flex items-center gap-1"><FileText className="w-3 h-3" /> {test.totalQuestions} Qs</span>
-            <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {test.durationMinutes}m</span>
+          <div className="flex items-center gap-2 mb-1">
+            <h4 className="font-bold text-red-800 truncate text-sm">{test.name}</h4>
+            {hasAttempts && <CheckCircle2 className="w-3.5 h-3.5 text-teal-500 shrink-0" />}
+          </div>
+          <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-ink-500">
+            <span className="flex items-center gap-1"><FileText className="w-3 h-3 text-teal-500" /> {test.totalQuestions} Qs</span>
+            <span className="flex items-center gap-1"><Clock className="w-3 h-3 text-teal-500" /> {test.durationMinutes}m</span>
             <span className={clsx(
-              "px-1.5 py-0.5 rounded text-[8px] font-bold uppercase",
-              test.mode === 'structured' ? "bg-teal-900/40 text-teal-400 border border-teal-800/50" : "bg-yellow-900/40 text-yellow-500 border border-yellow-800/50"
+              "px-1.5 py-0.5 rounded text-[8px] font-bold uppercase border",
+              test.mode === 'structured' ? "bg-teal-500/10 text-teal-600 border-teal-500/30" : "bg-red-500/10 text-red-500 border-red-500/30"
             )}>
               {test.mode === 'structured' ? 'Structured' : 'PDF Mode'}
             </span>
-            {lastAttempt && <span className="text-teal-400 font-bold">Last Score: {lastScore?.toFixed(1) ?? '--'}</span>}
+            {lastAttempt && (
+              <span className="text-teal-600 font-bold flex items-center gap-1">
+                Score: {lastScore?.toFixed(1) ?? '--'}
+              </span>
+            )}
           </div>
         </div>
-        <div className="flex flex-col gap-2 items-end">
-          <div className="flex gap-2">
+
+        {/* Actions */}
+        <div className="flex flex-col items-end gap-1.5 shrink-0">
+          <div className="flex gap-1.5">
             {lastAttempt && lastAttemptId && (
               <button
                 onClick={() => onViewResult(lastAttemptId)}
-                className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg border border-ink-700 text-ink-300 hover:border-yellow-500/50 transition-all"
+                className="px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all bg-pink-100 text-red-800 hover:bg-pink-200 border border-pink-200"
               >
                 Result
               </button>
@@ -626,23 +642,22 @@ function TestCard({ test, attempts = [], onStart, onViewResult, onDelete }: any)
                 <button
                   onClick={onStart}
                   className={clsx(
-                    'px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1',
-                    lastAttempt ? 'bg-teal-600 text-white hover:bg-teal-500' : 'bg-yellow-500 text-ink-950 hover:bg-yellow-600'
+                    'px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1',
+                    lastAttempt
+                      ? 'bg-teal-500 text-white hover:bg-teal-600'
+                      : 'bg-teal-500 text-white hover:bg-teal-600'
                   )}
                 >
                   <Play className="w-3 h-3" /> {lastAttempt ? 'Re-take' : 'Start'}
                 </button>
               ) : (
-                <button
-                  disabled
-                  className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1 bg-gray-500 text-gray-300 cursor-not-allowed opacity-50"
-                >
-                  <Loader2 className="w-3 h-3 animate-spin" /> Processing...
-                </button>
+                <span className="text-[10px] text-ink-400 font-mono flex items-center gap-1">
+                  <Loader2 className="w-3 h-3 animate-spin text-teal-500" /> Processing
+                </span>
               )
             )}
           </div>
-          <button onClick={onDelete} className="text-ink-600 hover:text-red-400 text-[10px] transition-colors">Delete</button>
+          <button onClick={onDelete} className="text-[10px] font-medium text-ink-400 hover:text-pink-500 transition-colors">Delete</button>
         </div>
       </div>
     </div>
@@ -652,10 +667,10 @@ function TestCard({ test, attempts = [], onStart, onViewResult, onDelete }: any)
 function DropZone({ label, file, onChange, hint }: any) {
   return (
     <div className="space-y-1">
-      <label className="text-[10px] uppercase font-bold text-ink-500">{label}</label>
+      <label className="text-[10px] uppercase font-bold text-red-800">{label}</label>
       <div
         onClick={() => document.getElementById(`file-${label}`)?.click()}
-        className={clsx('border-2 border-dashed rounded-xl p-4 text-center cursor-pointer hover:bg-ink-900 transition-colors min-h-[80px] flex flex-col items-center justify-center', file ? 'border-teal-500 bg-teal-900/10' : 'border-ink-800')}
+        className={clsx('border-2 border-dashed rounded-xl p-4 text-center cursor-pointer hover:bg-ink-900 transition-colors min-h-[80px] flex flex-col items-center justify-center', file ? 'border-teal-500 bg-teal-900/10' : 'border-ink-600')}
       >
         <input id={`file-${label}`} type="file" hidden onChange={e => onChange(e.target.files?.[0])} accept=".pdf" />
         {file ? (

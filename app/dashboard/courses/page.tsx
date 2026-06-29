@@ -94,7 +94,7 @@ export default function CoursesPage() {
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-yellow-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-red-500" />
       </div>
     );
   }
@@ -102,19 +102,19 @@ export default function CoursesPage() {
   return (
     <div className="space-y-8 animate-fade-in pb-20">
       {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-ink-900 to-ink-950 border border-ink-800/50 p-8 lg:p-12">
-        <div className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-yellow-500/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-ink-900 to-ink-950 border border-ink-600/50 p-8 lg:p-12">
+        <div className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-red-500/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-72 h-72 bg-teal-500/10 rounded-full blur-[100px] pointer-events-none" />
         
         <div className="relative z-10 max-w-2xl">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
-              <Crown className="w-5 h-5 text-yellow-500" />
+            <div className="p-2 bg-red-500/10 border border-red-500/20 rounded-xl">
+              <Crown className="w-5 h-5 text-red-500" />
             </div>
-            <span className="text-xs font-bold text-yellow-500 uppercase tracking-[0.2em] font-mono">Premium Academy</span>
+            <span className="text-xs font-bold text-red-500 uppercase tracking-[0.2em] font-mono">Premium Academy</span>
           </div>
-          <h1 className="text-4xl lg:text-5xl font-display font-black text-ink-100 leading-tight mb-4">
-            Master Your Craft with <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">Expert Courses</span>
+          <h1 className="text-4xl lg:text-5xl font-display font-black text-red-800 leading-tight mb-4">
+            Master Your Craft with <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-600">Expert Courses</span>
           </h1>
           <p className="text-ink-400 text-base lg:text-lg max-w-xl leading-relaxed">
             Curated curriculum designed by top rankers and educators to accelerate your preparation journey with precision and depth.
@@ -122,16 +122,16 @@ export default function CoursesPage() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between border-b border-ink-800 pb-4">
-        <h2 className="font-display text-xl font-bold text-ink-100 flex items-center gap-2">
-          <BookOpen className="w-5 h-5 text-yellow-500" />
+      <div className="flex items-center justify-between border-b border-ink-600 pb-4">
+        <h2 className="font-display text-xl font-bold text-red-800 flex items-center gap-2">
+          <BookOpen className="w-5 h-5 text-red-500" />
           Available Programs
           <span className="ml-2 px-2 py-0.5 bg-ink-800 text-ink-500 text-[10px] rounded-full font-mono uppercase tracking-widest">{courses.length} Total</span>
         </h2>
       </div>
 
       {courses.length === 0 ? (
-        <div className="text-center py-24 glass-card border-dashed border-ink-800 bg-ink-900/20">
+        <div className="text-center py-24 glass-card border-dashed border-ink-600 bg-ink-900/20">
           <div className="w-20 h-20 bg-ink-800 rounded-full flex items-center justify-center mx-auto mb-6">
             <LockIcon className="w-10 h-10 text-ink-600" />
           </div>
@@ -226,7 +226,7 @@ function CourseCard({ course, onEnroll, isEnrolled, config, onDemo }: {
         <div className={clsx(
           "glass-card overflow-hidden transition-all duration-500 flex flex-col h-full",
           isEnrolled 
-            ? "hover:border-yellow-500/40 hover:shadow-[0_20px_50px_rgba(234,179,8,0.1)]" 
+            ? "hover:border-pink-300/40 hover:shadow-[0_20px_50px_rgba(236,72,153,0.15)]" 
             : "hover:border-ink-600 hover:bg-ink-900/60"
         )}>
           {/* Thumbnail Wrapper */}
@@ -259,14 +259,14 @@ function CourseCard({ course, onEnroll, isEnrolled, config, onDemo }: {
                 <Play className="w-3 h-3 fill-current" />
                 {course.lessonCount || 0} Modules
               </div>
-              <div className="px-2 py-1 bg-yellow-500/20 backdrop-blur-md rounded-lg text-[10px] font-bold text-yellow-400 border border-yellow-500/20 uppercase tracking-widest">
+              <div className="px-2 py-1 bg-red-500/20 backdrop-blur-md rounded-lg text-[10px] font-bold text-red-400 border border-red-500/20 uppercase tracking-widest">
                 {course.subject || 'General'}
               </div>
             </div>
 
             {!isEnrolled && (
               <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <div className="w-12 h-12 rounded-full bg-yellow-500 flex items-center justify-center text-black shadow-xl">
+                <div className="w-12 h-12 rounded-full bg-teal-500 flex items-center justify-center text-white shadow-xl">
                   <LockIcon className="w-5 h-5" />
                 </div>
               </div>
@@ -276,7 +276,7 @@ function CourseCard({ course, onEnroll, isEnrolled, config, onDemo }: {
           <div className="p-5 flex-1 flex flex-col">
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[9px] font-mono font-bold text-ink-500 uppercase tracking-[0.2em]">{course.category || 'Professional'}</span>
+                <span className="text-[9px] font-mono font-bold text-red-8000 uppercase tracking-[0.2em]">{course.category || 'Professional'}</span>
                 {isEnrolled && (
                   <span className="flex items-center gap-1 text-[9px] font-bold text-teal-400 uppercase tracking-widest">
                     <Shield className="w-3 h-3" /> Enrolled
@@ -284,7 +284,7 @@ function CourseCard({ course, onEnroll, isEnrolled, config, onDemo }: {
                 )}
               </div>
               
-              <h3 className="text-base font-display font-bold text-ink-100 leading-tight mb-2 group-hover:text-yellow-500 transition-colors">
+              <h3 className="text-base font-display font-bold text-red-800 leading-tight mb-2 group-hover:text-pink-400 transition-colors">
                 {course.title}
               </h3>
               
@@ -294,19 +294,19 @@ function CourseCard({ course, onEnroll, isEnrolled, config, onDemo }: {
             </div>
             
             {isEnrolled ? (
-              <div className="mt-auto pt-4 border-t border-ink-800/50">
+              <div className="mt-auto pt-4 border-t border-ink-600/50">
                 <div className="flex justify-between items-end mb-2">
                   <div>
                     <p className="text-[9px] font-mono text-ink-500 uppercase tracking-widest mb-1">Your Progress</p>
-                    <p className="text-xs font-bold text-ink-200">
+                    <p className="text-xs font-bold text-red-800">
                       {progress?.completedLessons || 0} <span className="text-ink-500 font-normal">/ {progress?.totalLessons || course.lessonCount} Lessons</span>
                     </p>
                   </div>
-                  <span className="text-sm font-black text-yellow-500">{pct}%</span>
+                  <span className="text-sm font-black text-red-500">{pct}%</span>
                 </div>
-                <div className="h-1.5 w-full bg-ink-950 rounded-full overflow-hidden border border-ink-800/30">
+                <div className="h-1.5 w-full bg-ink-950 rounded-full overflow-hidden border border-ink-600/30">
                   <div 
-                    className="h-full bg-gradient-to-r from-yellow-600 to-yellow-400 transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(234,179,8,0.3)]" 
+                    className="h-full bg-gradient-to-r from-red-600 to-red-400 transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(236,72,153,0.3)]" 
                     style={{ width: `${pct}%` }} 
                   />
                 </div>
@@ -316,7 +316,7 @@ function CourseCard({ course, onEnroll, isEnrolled, config, onDemo }: {
                 <div className="shrink-0">
                   <p className="text-[9px] font-mono text-ink-500 uppercase tracking-widest">Investment</p>
                   <div className="flex items-center gap-2">
-                    <p className="text-lg font-black text-ink-100">
+                    <p className="text-lg font-black text-red-800">
                       {effectivePrice === 0 ? "FREE" : `₹${effectivePrice}`}
                     </p>
                   </div>
@@ -330,14 +330,14 @@ function CourseCard({ course, onEnroll, isEnrolled, config, onDemo }: {
                         e.stopPropagation();
                         onDemo(course.previewVideoId);
                       }}
-                      className="flex-1 px-4 py-3 bg-ink-800 hover:bg-ink-700 text-white font-black rounded-xl transition-all border border-ink-700 flex items-center justify-center gap-2 uppercase text-[10px] tracking-widest"
+                      className="flex-1 px-4 py-3 bg-ink-800 hover:bg-ink-700 text-ink-100 font-black rounded-xl transition-all border border-ink-500 flex items-center justify-center gap-2 uppercase text-[10px] tracking-widest"
                     >
                       <Play className="w-3.5 h-3.5" /> Demo
                     </button>
                   )}
                   <button 
                     onClick={handleEnrollClick}
-                    className="flex-1 px-4 py-3 bg-yellow-500 hover:bg-yellow-400 text-ink-950 font-black rounded-xl transition-all shadow-lg shadow-yellow-500/10 flex items-center justify-center gap-2 uppercase text-[10px] tracking-widest"
+                    className="flex-1 px-4 py-3 bg-red-500 hover:bg-pink-200 text-white font-black rounded-xl transition-all shadow-lg shadow-red-500/10 flex items-center justify-center gap-2 uppercase text-[10px] tracking-widest"
                   >
                     <Crown className="w-3.5 h-3.5" /> Unlock
                   </button>

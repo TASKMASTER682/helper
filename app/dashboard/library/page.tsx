@@ -20,7 +20,7 @@ const SOURCE_TYPES = [
 
 const STATUS_CONFIG = {
   not_started: { label: 'Not Started', color: 'text-ink-500', bg: 'bg-ink-700' },
-  ongoing: { label: 'Ongoing', color: 'text-yellow-400', bg: 'bg-yellow-500' },
+  ongoing: { label: 'Ongoing', color: 'text-red-400', bg: 'bg-red-500' },
   completed: { label: 'Completed', color: 'text-teal-400', bg: 'bg-teal-500' },
 };
 
@@ -103,18 +103,18 @@ export default function LibraryPage() {
         </button>
       </div>
 <div className="flex gap-2 flex-wrap">
-        <button onClick={() => setFilterSubject('')} className={clsx('px-3 py-1.5 rounded-lg text-xs font-mono transition-all', !filterSubject ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40' : 'bg-ink-800 text-ink-400 border border-ink-700 hover:border-ink-600')}>
+        <button onClick={() => setFilterSubject('')} className={clsx('px-3 py-1.5 rounded-lg text-xs font-mono transition-all', !filterSubject ? 'bg-red-500/20 text-red-400 border border-red-500/40' : 'bg-ink-800 text-ink-400 border border-ink-500 hover:border-ink-600')}>
           All
         </button>
         {SUBJECTS.map(s => sources.some(src => src.subject === s) && (
-          <button key={s} onClick={() => setFilterSubject(filterSubject === s ? '' : s)} className={clsx('px-3 py-1.5 rounded-lg text-xs font-mono transition-all', filterSubject === s ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40' : 'bg-ink-800 text-ink-400 border border-ink-700 hover:border-ink-600')}>
+          <button key={s} onClick={() => setFilterSubject(filterSubject === s ? '' : s)} className={clsx('px-3 py-1.5 rounded-lg text-xs font-mono transition-all', filterSubject === s ? 'bg-red-500/20 text-red-400 border border-red-500/40' : 'bg-ink-800 text-ink-400 border border-ink-500 hover:border-ink-600')}>
             {s}
           </button>
         ))}
       </div>
 {showForm && (
-        <div className="glass-card p-6 border border-yellow-500/30 animate-slide-up">
-           <h3 className="font-display text-lg font-semibold mb-4">New Study Resource</h3>
+        <div className="glass-card p-6 border border-red-500/30 animate-slide-up">
+           <h3 className="font-display text-lg font-semibold text-red-800 mb-4">New Study Resource</h3>
            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
              <input
                value={form.title}
@@ -219,23 +219,23 @@ function SourceCard({ source, expanded, onExpand, onUpdateChapter, onDelete }: a
   return (
     <div className={clsx(
       "glass-card overflow-hidden transition-all duration-300",
-      expanded ? "border-ink-600 bg-ink-900/40" : "border-ink-800/50 hover:border-ink-700"
+      expanded ? "border-ink-600 bg-ink-900/40" : "border-ink-600/50 hover:border-ink-500"
     )}>
       <div className="p-4 flex items-center gap-4 cursor-pointer" onClick={onExpand}>
-        <div className="w-10 h-10 rounded-xl bg-ink-950 border border-ink-800 flex items-center justify-center shrink-0">
+        <div className="w-10 h-10 rounded-xl bg-ink-950 border border-ink-600 flex items-center justify-center shrink-0">
           <TypeIcon className="w-5 h-5 text-ink-400" />
         </div>
         
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1.5">
-             <h4 className="text-sm font-bold text-ink-100 truncate">{source.title}</h4>
+             <h4 className="text-sm font-bold text-red-800 truncate">{source.title}</h4>
              <span className="text-[10px] font-mono text-ink-500 uppercase">{source.type}</span>
           </div>
           
           <div className="flex items-center gap-3">
             <div className="flex-1 h-1 bg-ink-950 rounded-full overflow-hidden">
               <div 
-                className={clsx('h-full transition-all duration-700', pct >= 70 ? 'bg-teal-500' : pct >= 40 ? 'bg-yellow-500' : 'bg-deep-500')} 
+                className={clsx('h-full transition-all duration-700', pct >= 70 ? 'bg-teal-500' : pct >= 40 ? 'bg-red-500' : 'bg-deep-500')} 
                 style={{ width: `${pct}%` }} 
               />
             </div>
@@ -249,7 +249,7 @@ function SourceCard({ source, expanded, onExpand, onUpdateChapter, onDelete }: a
       </div>
 
       {expanded && (
-        <div className="border-t border-ink-800/50 bg-ink-950/30 p-4 animate-in fade-in slide-in-from-top-1">
+        <div className="border-t border-ink-600/50 bg-ink-950/30 p-4 animate-in fade-in slide-in-from-top-1">
 <div className="flex items-center justify-between mb-4 px-1">
              <div className="flex gap-4 text-[10px] font-mono text-ink-500">
                 <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3"/> {source.completedChapters}/{source.totalChapters} Units</span>
@@ -257,7 +257,7 @@ function SourceCard({ source, expanded, onExpand, onUpdateChapter, onDelete }: a
              </div>
 <button 
                onClick={(e) => { e.stopPropagation(); onDelete(); }}
-               className="p-2 text-ink-600 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+               className="p-2 text-ink-600 hover:text-pink-400 hover:bg-pink-200/10 rounded-lg transition-all"
                title="Remove Source"
              >
                <Trash2 className="w-4 h-4" />
@@ -270,7 +270,7 @@ function SourceCard({ source, expanded, onExpand, onUpdateChapter, onDelete }: a
                 key={idx} 
                 className={clsx(
                   'flex items-center gap-3 p-2.5 rounded-lg text-[11px] transition-all border', 
-                  ch.status === 'completed' ? 'bg-teal-950/10 border-teal-900/20 opacity-60' : 'bg-ink-900/40 border-ink-800/50 hover:border-ink-700'
+                  ch.status === 'completed' ? 'bg-teal-950/10 border-teal-900/20 opacity-60' : 'bg-ink-900/40 border-ink-600/50 hover:border-ink-500'
                 )}
               >
                 <button 
@@ -281,7 +281,7 @@ function SourceCard({ source, expanded, onExpand, onUpdateChapter, onDelete }: a
                   className="shrink-0 transition-transform active:scale-90"
                 >
                   {ch.status === 'completed' ? <CheckCircle2 className="w-4 h-4 text-teal-500" /> : 
-                   ch.status === 'ongoing' ? <div className="w-4 h-4 rounded-full border-2 border-yellow-500 animate-pulse" /> : 
+                   ch.status === 'ongoing' ? <div className="w-4 h-4 rounded-full border-2 border-red-500 animate-pulse" /> : 
                    <Circle className="w-4 h-4 text-ink-700 hover:text-ink-500" />}
                 </button>
                 
@@ -292,7 +292,7 @@ function SourceCard({ source, expanded, onExpand, onUpdateChapter, onDelete }: a
                 <span className={clsx(
                   'px-1.5 py-0.5 rounded-[4px] text-[9px] font-mono font-bold uppercase tracking-tighter',
                   STATUS_CONFIG[ch.status as keyof typeof STATUS_CONFIG]?.color || 'text-ink-500',
-                  'bg-ink-950/50 border border-ink-800'
+                  'bg-ink-950/50 border border-ink-600'
                 )}>
                   {STATUS_CONFIG[ch.status as keyof typeof STATUS_CONFIG]?.label}
                 </span>

@@ -63,7 +63,7 @@ export default function CountdownCalendar({ targetDate, examName }: CountdownCal
           <h3 className="text-cyan-400 font-mono text-[10px] uppercase tracking-[0.2em] font-bold">
             {examName}
           </h3>
-          <p className="text-3xl font-display font-bold text-white mt-1">
+          <p className="text-3xl font-display font-bold text-ink-100 mt-1">
             {daysLeft} <span className="text-xs font-normal text-slate-400 font-sans tracking-normal uppercase">Days Left</span>
           </p>
         </div>
@@ -74,13 +74,13 @@ export default function CountdownCalendar({ targetDate, examName }: CountdownCal
 
       <div className="space-y-4">
         <div className="flex justify-between items-center mb-2 px-1">
-           <span className="text-[11px] font-bold text-slate-300 uppercase tracking-widest font-mono">
+           <span className="text-[11px] font-bold text-ink-500 uppercase tracking-widest font-mono">
              {format(target, 'MMMM yyyy')}
            </span>
         </div>
 <div className="grid grid-cols-7 gap-1 text-center">
           {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
-            <div key={`weekday-${day}-${i}`} className="text-[10px] font-bold text-slate-500 pb-2">
+            <div key={`weekday-${day}-${i}`} className="text-[10px] font-bold text-ink-500 pb-2">
               {day}
             </div>
           ))}

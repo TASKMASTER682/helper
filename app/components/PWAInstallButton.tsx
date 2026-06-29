@@ -71,7 +71,7 @@ export default function PWAInstallButton() {
 
       {showHelp && (
         <div className="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4" onClick={() => setShowHelp(false)}>
-          <div className="bg-ink-900 border border-ink-700 rounded-xl p-6 max-w-md" onClick={e => e.stopPropagation()}>
+          <div className="bg-ink-900 border border-ink-500 rounded-xl p-6 max-w-md" onClick={e => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-ink-100 mb-4">Install Student Mentor</h3>
             <div className="space-y-3 text-sm text-ink-300">
               <p><strong className="text-teal-400">Chrome/Edge:</strong></p>

@@ -84,7 +84,7 @@ export default function PlanGraph({ planId, plans: propPlans }: PlanGraphProps) 
         <div className="flex gap-4 text-xs">
           <div>
             <span className="text-ink-500">Streak:</span>
-            <span className="ml-1 text-orange-400 font-bold">{planStats.streak}</span>
+            <span className="ml-1 text-red-500 font-bold">{planStats.streak}</span>
           </div>
           <div>
             <span className="text-ink-500">Track:</span>
@@ -94,7 +94,7 @@ export default function PlanGraph({ planId, plans: propPlans }: PlanGraphProps) 
           </div>
           <div>
             <span className="text-ink-500">Today:</span>
-            <span className="ml-1 text-primary font-bold">{Math.round(planStats.todayRatio * 100)}%</span>
+            <span className="ml-1 text-teal-500 font-bold">{Math.round(planStats.todayRatio * 100)}%</span>
           </div>
         </div>
       )}
@@ -104,33 +104,33 @@ export default function PlanGraph({ planId, plans: propPlans }: PlanGraphProps) 
           <AreaChart data={graphData}>
             <defs>
               <linearGradient id="colorRatio" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#14b8a6" stopOpacity={0}/>
               </linearGradient>
             </defs>
             <XAxis 
               dataKey="date" 
               tickFormatter={formatDate}
-              tick={{ fontSize: 10 }}
-              axisLine={{ stroke: '#334155' }}
-              tickLine={{ stroke: '#334155' }}
+              tick={{ fontSize: 10, fill: '#5c4d3c' }}
+              axisLine={{ stroke: '#ded6be' }}
+              tickLine={{ stroke: '#ded6be' }}
             />
             <YAxis 
               domain={[0, 1]} 
               tickFormatter={(v) => `${Math.round(v * 100)}%`}
-              tick={{ fontSize: 10 }}
+              tick={{ fontSize: 10, fill: '#5c4d3c' }}
               axisLine={false}
               tickLine={false}
             />
             <Tooltip 
-              contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', fontSize: '12px' }}
+              contentStyle={{ backgroundColor: '#f3efe3', border: '1px solid #c4b99d', borderRadius: '8px', fontSize: '12px', color: '#1b1510' }}
               labelFormatter={(label) => `Date: ${label}`}
               formatter={(value) => [`${Math.round((value as number) * 100)}%`, 'Completion']}
             />
             <Area 
               type="monotone" 
               dataKey="ratio" 
-              stroke="#8b5cf6" 
+              stroke="#14b8a6" 
               fillOpacity={1} 
               fill="url(#colorRatio)" 
               strokeWidth={2}

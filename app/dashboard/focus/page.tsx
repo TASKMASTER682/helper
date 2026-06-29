@@ -51,13 +51,13 @@ export default function FocusPage() {
         </div>
       </div>
 
-      <div className="glass-card p-6 border border-yellow-500/20">
+      <div className="glass-card p-6 border border-red-500/20">
         <div className="flex items-center gap-4 mb-6">
-          <div className="w-12 h-12 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center">
-            <Clock className="w-6 h-6 text-yellow-500" />
+          <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+            <Clock className="w-6 h-6 text-red-500" />
           </div>
           <div className="flex-1">
-            <h2 className="font-display text-lg font-semibold text-ink-100">Enter Available Time</h2>
+            <h2 className="font-display text-lg font-semibold text-red-800">Enter Available Time</h2>
             <p className="text-ink-500 text-xs">How many hours can you study today?</p>
           </div>
         </div>
@@ -93,10 +93,10 @@ export default function FocusPage() {
           className="space-y-4"
         >
           {hasDeficit && (
-            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
+            <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
               <div>
-                <p className="text-yellow-400 font-medium text-sm">You are behind by {plan.deficit ? Math.round(plan.deficit / 60 * 10) / 10 : 0} hours</p>
+                <p className="text-red-400 font-medium text-sm">You are behind by {plan.deficit ? Math.round(plan.deficit / 60 * 10) / 10 : 0} hours</p>
                 <p className="text-ink-500 text-xs mt-1">
                   Increase daily effort to {plan.shouldIncreaseBy || Math.ceil(totalRequired)} hours to catch up
                 </p>
@@ -110,11 +110,11 @@ export default function FocusPage() {
               <div className="text-[9px] font-mono text-ink-500 uppercase tracking-wider">Required</div>
             </div>
             <div className="glass-card p-4 text-center">
-              <div className="text-2xl font-black text-white">{availableHours}</div>
+              <div className="text-2xl font-black text-red-800">{availableHours}</div>
               <div className="text-[9px] font-mono text-ink-500 uppercase tracking-wider">Available</div>
             </div>
             <div className="glass-card p-4 text-center">
-              <div className="text-2xl font-black text-yellow-500">
+              <div className="text-2xl font-black text-red-500">
                 {plan.allocations?.length || 0}
               </div>
               <div className="text-[9px] font-mono text-ink-500 uppercase tracking-wider">Missions</div>
@@ -133,13 +133,13 @@ export default function FocusPage() {
               plan.allocations?.map((allocation: any, idx: number) => (
                 <div 
                   key={allocation.missionId}
-                  className="glass-card p-4 border border-ink-800 hover:border-yellow-500/30 transition-colors"
+                  className="glass-card p-4 border border-ink-600 hover:border-pink-300/30 transition-colors"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3">
                       <div className={clsx(
                         'w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm',
-                        idx === 0 ? 'bg-yellow-500 text-ink-950' : 'bg-ink-800 text-ink-400'
+                        idx === 0 ? 'bg-teal-500 text-white' : 'bg-ink-800 text-ink-400'
                       )}>
                         {idx + 1}
                       </div>
@@ -159,7 +159,7 @@ export default function FocusPage() {
                   </div>
 
                   {allocation.blocks?.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-ink-800">
+                    <div className="mt-3 pt-3 border-t border-ink-600">
                       <p className="text-[9px] text-ink-600 font-mono mb-2">SESSION BLOCKS</p>
                       <div className="flex gap-2">
                         {allocation.blocks.map((block: number, bIdx: number) => (

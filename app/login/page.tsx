@@ -83,7 +83,7 @@
 //       {/* Sidebar Content */}
 //       <div className="hidden lg:flex flex-col w-1/2 bg-linear-to-br from-ink-800 via-ink-700 to-ink-800 p-12 relative overflow-hidden">
 //         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-//           <div className="absolute top-20 left-20 w-64 h-64 bg-yellow-500/5 rounded-full blur-3xl" />
+//           <div className="absolute top-20 left-20 w-64 h-64 bg-red-500/5 rounded-full blur-3xl" />
 //           <div className="absolute top-24 right-24 w-56 h-56 bg-teal-500/5 rounded-full blur-3xl" />
 //           <div className="absolute bottom-20 right-20 w-48 h-48 bg-deep-500/5 rounded-full blur-3xl" />
 //           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-jade-500/3 rounded-full blur-3xl" />
@@ -91,7 +91,7 @@
 
 //         <div className="relative z-10">
 //           <Link href="/" className="inline-flex items-center gap-3 mb-16">
-//             <div className="w-10 h-10 rounded-xl bg-linear-to-br from-yellow-500 to-teal-500 flex items-center justify-center">
+//             <div className="w-10 h-10 rounded-xl bg-linear-to-br from-red-500 to-teal-500 flex items-center justify-center">
 //               <Brain className="w-6 h-6 text-white" />
 //             </div>
 //             <div>
@@ -102,7 +102,7 @@
 
 //           <h1 className="font-display text-5xl font-bold text-ink-100 leading-tight mb-6">
 //             Your AI<br />
-//             <span className="text-gradient-saffron">UPSC Mentor</span><br />
+//             <span className="text-gradient-pink">UPSC Mentor</span><br />
 //             Never Sleeps.
 //           </h1>
 
@@ -117,7 +117,7 @@
 //               { icon: '📊', title: 'Behavioral Analysis', desc: 'Detects procrastination and avoidance patterns automatically' },
 //               { icon: '⚡', title: 'Zero Decision Fatigue', desc: 'Your daily schedule is generated automatically every night' },
 //             ].map(feature => (
-//               <div key={feature.title} className="flex items-start gap-3 p-3 bg-ink-900/40 border border-ink-800/50 rounded-xl">
+//               <div key={feature.title} className="flex items-start gap-3 p-3 bg-ink-900/40 border border-ink-600/50 rounded-xl">
 //                 <span className="text-2xl">{feature.icon}</span>
 //                 <div>
 //                   <div className="font-semibold text-ink-200 text-sm">{feature.title}</div>
@@ -132,9 +132,9 @@
 //       {/* Form Content */}
 //       <div className="flex-1 flex items-center justify-center p-8">
 //         <div className="w-full max-w-md">
-//           <div className="glass-card p-8 border border-yellow-500/30 shadow-[0_0_28px_rgba(20,184,166,0.08)]">
+//           <div className="glass-card p-8 border border-red-500/30 shadow-[0_0_28px_rgba(20,184,166,0.08)]">
 //             <div className="text-center mb-8">
-//               <Link href="/" className="w-12 h-12 rounded-xl bg-linear-to-br from-yellow-500 to-teal-500 flex items-center justify-center mx-auto mb-4">
+//               <Link href="/" className="w-12 h-12 rounded-xl bg-linear-to-br from-red-500 to-teal-500 flex items-center justify-center mx-auto mb-4">
 //                 <Zap className="w-6 h-6 text-white" />
 //               </Link>
 //               <h2 className="font-display text-2xl font-bold text-ink-100">
@@ -202,14 +202,14 @@
 //               <button
 //                 onClick={handleSubmit}
 //                 disabled={isLoading}
-//                 className="w-full bg-yellow-500 hover:bg-yellow-600 text-ink-900 py-3 font-semibold rounded-xl mt-2 disabled:opacity-50"
+//                 className="w-full bg-red-500 hover:bg-pink-200 text-ink-900 py-3 font-semibold rounded-xl mt-2 disabled:opacity-50"
 //               >
 //                 {isLoading ? 'Processing...' : (isLogin ? 'Sign in' : 'Create Account')}
 //               </button>
 //             </div>
 
-//             <div className="text-center mt-6 pt-6 border-t border-ink-700/50">
-//               <button onClick={() => setIsLogin(!isLogin)} className="text-yellow-400 hover:text-yellow-300 text-sm font-semibold">
+//             <div className="text-center mt-6 pt-6 border-t border-ink-500/50">
+//               <button onClick={() => setIsLogin(!isLogin)} className="text-red-400 hover:text-pink-400 text-sm font-semibold">
 //                 {isLogin ? "Don't have an account? Create one" : "Already registered? Sign in"}
 //               </button>
 //             </div>
@@ -302,32 +302,38 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex">
-      {/* Sidebar - Left Side */}
-      <div className="hidden lg:flex flex-col w-1/2 bg-linear-to-br from-slate-900 via-slate-800 to-slate-950 p-12 relative overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-20 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-20 right-20 w-48 h-48 bg-teal-500/10 rounded-full blur-3xl" />
-        </div>
+    <div className="min-h-screen bg-ink-950 flex relative">
+      {/* Decorative bg elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[5%] w-[40rem] h-[40rem] bg-red-500/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[5%] w-[35rem] h-[35rem] bg-teal-500/5 rounded-full blur-[120px]" />
+        <div className="absolute top-[40%] left-[50%] w-[20rem] h-[20rem] bg-pink-500/5 rounded-full blur-[100px]" />
+      </div>
 
-        <div className="relative z-10">
-          <Link href="/" className="inline-flex items-center gap-3 mb-16">
-            <div className="w-10 h-10 rounded-xl bg-linear-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
-              <Brain className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <div className="text-xl font-bold text-slate-100 tracking-tight">UPSC-POS</div>
-              <div className="text-[10px] font-mono text-slate-500 uppercase tracking-[0.2em]">Personal Operating System</div>
-            </div>
-          </Link>
+      {/* Sidebar - Left Panel */}
+      <div className="hidden lg:flex flex-col w-1/2 p-12 relative">
+        <Link href="/" className="inline-flex items-center gap-3 mb-20">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-lg shadow-red-500/30">
+            <Brain className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <div className="text-xl font-bold text-ink-100 tracking-tight">UPSC-POS</div>
+            <div className="text-[10px] font-mono text-ink-500 uppercase tracking-[0.2em]">Personal Operating System</div>
+          </div>
+        </Link>
 
-          <h1 className="text-5xl font-bold text-slate-100 leading-tight mb-6">
+        <div className="flex-1 flex flex-col justify-center max-w-lg">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-red-500/20 bg-red-500/5 text-red-500 text-[10px] font-mono tracking-[0.2em] uppercase mb-8">
+            <Zap className="w-3 h-3" /> AI-Powered Preparation OS
+          </div>
+
+          <h1 className="text-5xl md:text-6xl font-bold text-ink-50 leading-[1.05] mb-6">
             Your AI<br />
-            <span className="text-transparent bg-clip-text bg-linear-to-r from-orange-400 to-amber-600">UPSC Mentor</span><br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-pink-600">UPSC Mentor</span><br />
             Never Sleeps.
           </h1>
 
-          <p className="text-slate-400 text-lg leading-relaxed mb-12 max-w-md">
+          <p className="text-ink-400 text-lg leading-relaxed mb-14 max-w-md">
             Not just a planner. A decision-making system that manages your entire preparation journey.
           </p>
 
@@ -337,52 +343,59 @@ function LoginForm() {
               { icon: '🧠', title: 'AI Mentor ARJUN', desc: 'Real-time coaching based on your actual performance data' },
               { icon: '⚡', title: 'Zero Decision Fatigue', desc: 'Your daily schedule is generated automatically' },
             ].map(feature => (
-              <div key={feature.title} className="flex items-start gap-3 p-4 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm">
+              <div key={feature.title} className="flex items-start gap-4 p-4 rounded-2xl bg-white/40 border border-ink-600/50 backdrop-blur-sm hover:bg-white/60 transition-colors">
                 <span className="text-2xl">{feature.icon}</span>
                 <div>
-                  <div className="font-semibold text-slate-200 text-sm">{feature.title}</div>
-                  <div className="text-slate-500 text-xs">{feature.desc}</div>
+                  <div className="font-bold text-ink-100 text-sm">{feature.title}</div>
+                  <div className="text-ink-500 text-xs mt-0.5">{feature.desc}</div>
                 </div>
               </div>
             ))}
           </div>
         </div>
+
+        <div className="mt-12 text-[10px] text-ink-500 font-mono uppercase tracking-[0.2em]">
+          &copy; 2026 UPSC-POS v2.0
+        </div>
       </div>
 
-      {/* Form Section - Right Side */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-slate-950">
+      {/* Form Section - Right Panel */}
+      <div className="flex-1 flex items-center justify-center p-6 lg:p-12 relative">
         <div className="w-full max-w-md">
-          <div className="bg-slate-900/50 p-8 rounded-2xl border border-white/10 backdrop-blur-md shadow-2xl">
+          <div className="bg-white/60 backdrop-blur-lg border border-ink-600/40 rounded-3xl p-8 shadow-xl shadow-black/5">
             <div className="text-center mb-8">
-              <div className="w-12 h-12 rounded-xl bg-linear-to-br from-orange-500 to-amber-500 flex items-center justify-center mx-auto mb-4">
-                <Zap className="w-6 h-6 text-white" />
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-red-500/20">
+                <Zap className="w-7 h-7 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-white">
+              <h2 className="text-2xl font-bold text-ink-50">
                 {isLogin ? 'Welcome back' : 'Begin your journey'}
               </h2>
+              <p className="text-ink-500 text-sm mt-1">
+                {isLogin ? 'Sign in to your command center' : 'Create your command center'}
+              </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Full Name</label>
+                    <label className="block text-xs font-bold text-ink-400 uppercase tracking-widest mb-1.5">Full Name</label>
                     <input
                       type="text"
                       required
                       value={form.name}
                       onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
                       placeholder="e.g. Rahul Sharma"
-                      className="w-full bg-slate-800 border border-slate-700 text-white p-2.5 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+                      className="input-field w-full"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">State (India)</label>
+                    <label className="block text-xs font-bold text-ink-400 uppercase tracking-widest mb-1.5">State (India)</label>
                     <select
                       required
                       value={form.state}
                       onChange={e => setForm(p => ({ ...p, state: e.target.value }))}
-                      className="w-full bg-slate-800 border border-slate-700 text-white p-2.5 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
+                      className="input-field w-full"
                     >
                       <option value="">Select your state</option>
                       {INDIAN_STATES_AND_UT.map((state) => (
@@ -394,19 +407,19 @@ function LoginForm() {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Email</label>
+                <label className="block text-xs font-bold text-ink-400 uppercase tracking-widest mb-1.5">Email</label>
                 <input
                   type="email"
                   required
                   value={form.email}
                   onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
                   placeholder="you@example.com"
-                  className="w-full bg-slate-800 border border-slate-700 text-white p-2.5 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+                  className="input-field w-full"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Password</label>
+                <label className="block text-xs font-bold text-ink-400 uppercase tracking-widest mb-1.5">Password</label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
@@ -414,12 +427,12 @@ function LoginForm() {
                     value={form.password}
                     onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
                     placeholder="••••••••"
-                    className="w-full bg-slate-800 border border-slate-700 text-white p-2.5 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+                    className="input-field w-full pr-10"
                   />
                   <button 
                     type="button"
                     onClick={() => setShowPassword(!showPassword)} 
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-500 hover:text-ink-400 transition-colors"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -429,7 +442,7 @@ function LoginForm() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-orange-500/50 text-white py-3 font-bold rounded-xl mt-4 transition-all shadow-lg shadow-orange-500/20"
+                className="w-full bg-red-500 hover:bg-red-600 disabled:bg-red-500/50 text-white py-3.5 font-bold rounded-2xl mt-4 transition-all shadow-lg shadow-red-500/20 active:scale-[0.98]"
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -440,15 +453,19 @@ function LoginForm() {
               </button>
             </form>
 
-            <div className="text-center mt-6 pt-6 border-t border-slate-800">
+            <div className="text-center mt-8 pt-6 border-t border-ink-700/50">
               <button 
                 onClick={() => setIsLogin(!isLogin)} 
-                className="text-orange-400 hover:text-orange-300 text-sm font-medium transition-colors"
+                className="text-red-500 hover:text-red-600 text-sm font-bold transition-colors"
               >
                 {isLogin ? "Don't have an account? Create one" : "Already registered? Sign in"}
               </button>
             </div>
           </div>
+
+          <p className="text-center mt-6 text-[10px] text-ink-500 font-mono uppercase tracking-[0.2em]">
+            Secure Encryption Active &bull; Zero Knowledge Architecture
+          </p>
         </div>
       </div>
     </div>
@@ -458,7 +475,7 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white font-mono gap-4">
+      <div className="min-h-screen bg-ink-950 flex flex-col items-center justify-center text-ink-100 font-mono gap-4">
         <div className="w-12 h-12 border-4 border-orange-500/20 border-t-orange-500 rounded-full animate-spin" />
         <div className="animate-pulse">Initializing OS...</div>
       </div>

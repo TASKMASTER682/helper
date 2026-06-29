@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
-import Sidebar from '../../componets/Sidebar';
+import Sidebar from '../../components/Sidebar';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, token, init, isInitializing } = useAuthStore();
@@ -20,7 +20,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (isInitializing || !user) return (
     <div className="min-h-screen bg-ink-950 flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-saffron-500 border-t-transparent rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 

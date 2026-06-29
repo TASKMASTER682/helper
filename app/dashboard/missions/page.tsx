@@ -103,15 +103,15 @@ export default function MissionsPage() {
   return (
     <div className="space-y-8 animate-fade-in pb-24 max-w-6xl mx-auto">
       {/* Hero Header */}
-      <div className="relative p-8 rounded-3xl overflow-hidden bg-ink-900 border border-ink-800 shadow-2xl">
-        <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-yellow-500/10 to-transparent blur-3xl" />
+      <div className="relative p-8 rounded-3xl overflow-hidden bg-ink-900 border border-ink-600 shadow-2xl">
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-red-500/10 to-transparent blur-3xl" />
         <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-yellow-500/10 rounded-lg">
-                <Target className="w-6 h-6 text-yellow-500" />
+              <div className="p-2 bg-red-500/10 rounded-lg">
+                <Target className="w-6 h-6 text-red-500" />
               </div>
-              <h1 className="text-3xl font-black text-white tracking-tight">Mission Control</h1>
+              <h1 className="text-3xl font-black text-red-800 tracking-tight">Mission Control</h1>
             </div>
             <p className="text-ink-400 text-sm max-w-lg">
               Strategize your preparation with advanced workload allocation. Our AI-driven engine calculates exactly how much you need to study each day to hit your targets.
@@ -119,7 +119,7 @@ export default function MissionsPage() {
           </div>
           <button 
             onClick={() => setShowForm(true)} 
-            className="px-6 py-3 bg-yellow-500 hover:bg-yellow-400 text-ink-950 font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-yellow-500/20"
+            className="px-6 py-3 bg-red-500 hover:bg-pink-200 text-white font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-red-500/20"
           >
             <Plus className="w-5 h-5" /> New Mission
           </button>
@@ -130,19 +130,19 @@ export default function MissionsPage() {
         {/* Left Column: Active Missions */}
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between px-2">
-            <h2 className="text-lg font-bold text-ink-100 flex items-center gap-2">
+            <h2 className="text-lg font-bold text-red-800 flex items-center gap-2">
               Active Operations <span className="text-xs bg-ink-800 text-ink-400 px-2 py-1 rounded-full">{activeMissions.length}</span>
             </h2>
           </div>
 
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
-              <RefreshCw className="w-8 h-8 text-yellow-500 animate-spin" />
+              <RefreshCw className="w-8 h-8 text-red-500 animate-spin" />
               <p className="text-ink-500 font-mono text-xs">Accessing Satellite Uplink...</p>
             </div>
           ) : activeMissions.length === 0 ? (
-            <div className="glass-card p-12 text-center border-dashed border-ink-800 group hover:border-yellow-500/30 transition-all cursor-pointer" onClick={() => setShowForm(true)}>
-              <Target className="w-16 h-16 text-ink-800 mx-auto mb-4 group-hover:text-yellow-500/50 transition-all" />
+            <div className="glass-card p-12 text-center border-dashed border-ink-600 group hover:border-pink-300/30 transition-all cursor-pointer" onClick={() => setShowForm(true)}>
+              <Target className="w-16 h-16 text-ink-800 mx-auto mb-4 group-hover:text-pink-400/50 transition-all" />
               <p className="text-ink-200 font-display text-lg font-bold">No Active Missions Found</p>
               <p className="text-ink-500 text-sm mt-2">Ready to start your journey? Launch your first mission to track progress.</p>
             </div>
@@ -165,14 +165,14 @@ export default function MissionsPage() {
 
         {/* Right Column: Workload Calculator */}
         <div className="space-y-6">
-          <div className="glass-card p-6 border-yellow-500/20 relative overflow-hidden group">
-            <div className="absolute -top-12 -right-12 w-24 h-24 bg-yellow-500/5 rounded-full blur-2xl group-hover:bg-yellow-500/10 transition-all" />
+          <div className="glass-card p-6 border-red-500/20 relative overflow-hidden group">
+            <div className="absolute -top-12 -right-12 w-24 h-24 bg-red-500/5 rounded-full blur-2xl group-hover:bg-pink-200/10 transition-all" />
             
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-yellow-500/10 rounded-lg">
-                <Brain className="w-5 h-5 text-yellow-500" />
+              <div className="p-2 bg-red-500/10 rounded-lg">
+                <Brain className="w-5 h-5 text-red-500" />
               </div>
-              <h3 className="font-bold text-white">Smart Workload</h3>
+              <h3 className="font-bold text-red-800">Smart Workload</h3>
             </div>
 
             <p className="text-xs text-ink-400 mb-6 leading-relaxed">
@@ -187,7 +187,7 @@ export default function MissionsPage() {
                     type="number" 
                     value={availableHours}
                     onChange={(e) => setAvailableHours(e.target.value)}
-                    className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-3 text-white focus:border-yellow-500 transition-all outline-none"
+                    className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-3 text-ink-100 focus:border-red-500 transition-all outline-none"
                     placeholder="e.g., 8"
                   />
                   <Clock className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-600" />
@@ -197,7 +197,7 @@ export default function MissionsPage() {
               <button 
                 onClick={generatePlan}
                 disabled={isGenerating || activeMissions.length === 0}
-                className="w-full py-3 bg-ink-800 hover:bg-yellow-500 hover:text-ink-950 text-yellow-500 font-bold rounded-xl transition-all border border-yellow-500/30 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-3 bg-ink-800 hover:bg-pink-200 hover:text-ink-950 text-red-500 font-bold rounded-xl transition-all border border-red-500/30 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isGenerating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                 Calculate Allocation
@@ -206,16 +206,16 @@ export default function MissionsPage() {
 
             {dailyPlan && (
               <div className="mt-8 space-y-4 animate-slide-up">
-                <div className="p-4 bg-ink-950 rounded-xl border border-ink-800">
+                <div className="p-4 bg-ink-950 rounded-xl border border-ink-600">
                   <div className="text-[10px] text-ink-500 uppercase tracking-wider mb-3">Today's Strategy</div>
                   <div className="space-y-4">
                     {dailyPlan.allocations.map((alloc: any, i: number) => (
                       <div key={i} className="flex items-center justify-between gap-4">
                         <div className="min-w-0">
-                          <div className="text-xs font-bold text-ink-100 truncate">{alloc.missionName}</div>
+                          <div className="text-xs font-bold text-red-800 truncate">{alloc.missionName}</div>
                           <div className="text-[10px] text-ink-600">{alloc.daysLeft} days remaining</div>
                         </div>
-                        <div className="text-sm font-black text-yellow-500 whitespace-nowrap">
+                        <div className="text-sm font-black text-red-500 whitespace-nowrap">
                           {Math.round(alloc.allocatedMinutes / 6) / 10}h
                         </div>
                       </div>
@@ -256,7 +256,7 @@ export default function MissionsPage() {
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-ink-950/80 backdrop-blur-sm" onClick={() => setShowForm(false)} />
-          <div className="relative w-full max-w-lg bg-ink-900 border border-ink-800 rounded-3xl p-8 shadow-2xl animate-scale-in">
+          <div className="relative w-full max-w-lg bg-ink-900 border border-ink-600 rounded-3xl p-8 shadow-2xl animate-scale-in">
             <button 
               onClick={() => setShowForm(false)}
               className="absolute top-6 right-6 p-2 hover:bg-ink-800 rounded-lg transition-all"
@@ -264,7 +264,7 @@ export default function MissionsPage() {
               <X className="w-5 h-5 text-ink-400" />
             </button>
 
-            <h2 className="text-2xl font-black text-white mb-6">Launch New Mission</h2>
+            <h2 className="text-2xl font-black text-red-800 mb-6">Launch New Mission</h2>
             
             <div className="space-y-5">
               <div>
@@ -272,8 +272,8 @@ export default function MissionsPage() {
                 <input 
                   value={form.name} 
                   onChange={e => setForm(p => ({ ...p, name: e.target.value }))} 
-                  placeholder='e.g., Polity Mastery' 
-                  className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-3 text-white focus:border-yellow-500 outline-none transition-all" 
+                   placeholder='e.g., Polity Mastery' 
+                  className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-3 text-ink-100 focus:border-red-500 outline-none transition-all" 
                 />
               </div>
 
@@ -283,7 +283,7 @@ export default function MissionsPage() {
                   <select 
                     value={form.targetType} 
                     onChange={e => setForm(p => ({ ...p, targetType: e.target.value }))} 
-                    className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-3 text-white focus:border-yellow-500 outline-none transition-all"
+                    className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-3 text-ink-100 focus:border-red-500 outline-none transition-all"
                   >
                     <option value="hours">Hours</option>
                     <option value="units">Chapters/Units</option>
@@ -296,7 +296,7 @@ export default function MissionsPage() {
                     value={form.totalTarget} 
                     onChange={e => setForm(p => ({ ...p, totalTarget: e.target.value }))} 
                     placeholder='Total' 
-                    className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-3 text-white focus:border-yellow-500 outline-none transition-all" 
+                    className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-3 text-ink-100 focus:border-red-500 outline-none transition-all" 
                   />
                 </div>
               </div>
@@ -308,7 +308,7 @@ export default function MissionsPage() {
                     type="date" 
                     value={form.startDate} 
                     onChange={e => setForm(p => ({ ...p, startDate: e.target.value }))} 
-                    className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-3 text-white focus:border-yellow-500 outline-none transition-all" 
+                    className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-3 text-ink-100 focus:border-red-500 outline-none transition-all" 
                   />
                 </div>
                 <div>
@@ -317,7 +317,7 @@ export default function MissionsPage() {
                     type="date" 
                     value={form.endDate} 
                     onChange={e => setForm(p => ({ ...p, endDate: e.target.value }))} 
-                    className="w-full bg-ink-950 border border-ink-800 rounded-xl px-4 py-3 text-white focus:border-yellow-500 outline-none transition-all" 
+                    className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-3 text-ink-100 focus:border-red-500 outline-none transition-all" 
                   />
                 </div>
               </div>
@@ -325,7 +325,7 @@ export default function MissionsPage() {
               <button 
                 onClick={handleCreate} 
                 disabled={creating}
-                className="w-full py-4 bg-yellow-500 hover:bg-yellow-400 text-ink-950 font-black rounded-2xl transition-all shadow-lg shadow-yellow-500/20 mt-4 disabled:opacity-50"
+                className="w-full py-4 bg-red-500 hover:bg-pink-200 text-white font-black rounded-2xl transition-all shadow-lg shadow-red-500/20 mt-4 disabled:opacity-50"
               >
                 {creating ? 'Initializing...' : 'Launch Mission'}
               </button>
@@ -383,7 +383,7 @@ function MissionCard({ mission, priority, onPause, onResume, onDelete, onUpdate 
   return (
     <div className={clsx(
       'rounded-3xl border transition-all duration-500 group relative', 
-      isUrgent ? 'border-yellow-500/40 bg-ink-900 shadow-xl shadow-yellow-500/5' : 'border-ink-800 bg-ink-900/60 hover:bg-ink-900'
+      isUrgent ? 'border-red-500/40 bg-ink-900 shadow-xl shadow-red-500/5' : 'border-ink-600 bg-ink-900/60 hover:bg-ink-900'
     )}>
       {/* Status Indicators */}
       <div className="absolute -top-3 left-8 flex items-center gap-2 z-10">
@@ -392,7 +392,7 @@ function MissionCard({ mission, priority, onPause, onResume, onDelete, onUpdate 
             <TrendingUp className="w-3 h-3" /> On Track
           </span>
         ) : (
-          <span className="px-3 py-1 bg-yellow-500 text-ink-950 text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-1.5 shadow-lg">
+          <span className="px-3 py-1 bg-red-500 text-white text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-1.5 shadow-lg">
             <TrendingDown className="w-3 h-3" /> Behind Schedule
           </span>
         )}
@@ -407,10 +407,10 @@ function MissionCard({ mission, priority, onPause, onResume, onDelete, onUpdate 
         <div className="flex items-start justify-between gap-6 mb-8">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-ink-800 rounded-xl group-hover:bg-yellow-500 transition-colors">
-                <Flag className={clsx('w-5 h-5', priority === 1 ? 'text-yellow-500 group-hover:text-ink-950' : 'text-ink-400 group-hover:text-ink-950')} />
+              <div className="p-2 bg-ink-800 rounded-xl group-hover:bg-pink-200 transition-colors">
+                <Flag className={clsx('w-5 h-5', priority === 1 ? 'text-red-500 group-hover:text-ink-950' : 'text-ink-400 group-hover:text-ink-950')} />
               </div>
-              <h3 className="text-xl font-black text-white group-hover:text-yellow-500 transition-colors">{mission.name}</h3>
+              <h3 className="text-xl font-black text-red-800 group-hover:text-pink-400 transition-colors">{mission.name}</h3>
             </div>
             <div className="flex items-center gap-3 pl-11">
               <span className="text-xs font-mono text-ink-500 uppercase tracking-widest">Target: {mission.totalTarget} {mission.targetType}</span>
@@ -421,7 +421,7 @@ function MissionCard({ mission, priority, onPause, onResume, onDelete, onUpdate 
 
           <div className="text-right">
             <div className="flex items-end justify-end gap-1">
-              <span className={clsx('text-4xl font-black font-display leading-none', isUrgent ? 'text-yellow-500' : 'text-white')}>
+              <span className={clsx('text-4xl font-black font-display leading-none', isUrgent ? 'text-red-500' : 'text-ink-100')}>
                 {daysLeft}
               </span>
               <span className="text-xs font-bold text-ink-600 mb-1">Days</span>
@@ -434,20 +434,20 @@ function MissionCard({ mission, priority, onPause, onResume, onDelete, onUpdate 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <div className="text-xs font-black text-ink-100 uppercase tracking-wider">
+              <div className="text-xs font-black text-red-800 uppercase tracking-wider">
                 {mission.completedValue || 0} <span className="text-ink-500 text-[10px]">Units Completed</span>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-black text-white">{progressPercent}%</div>
+              <div className="text-2xl font-black text-red-800">{progressPercent}%</div>
             </div>
           </div>
 
-          <div className="relative h-4 w-full bg-ink-950 rounded-full border border-ink-800 p-1 overflow-hidden shadow-inner">
+          <div className="relative h-4 w-full bg-ink-950 rounded-full border border-ink-600 p-1 overflow-hidden shadow-inner">
             <div 
               className={clsx(
                 "h-full rounded-full transition-all duration-1000 ease-out relative group/bar",
-                onTrack ? "bg-gradient-to-r from-teal-500 to-emerald-400 shadow-[0_0_10px_rgba(20,184,166,0.3)]" : "bg-gradient-to-r from-yellow-600 to-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.3)]"
+                onTrack ? "bg-gradient-to-r from-teal-500 to-emerald-400 shadow-[0_0_10px_rgba(20,184,166,0.3)]" : "bg-gradient-to-r from-red-600 to-red-400 shadow-[0_0_10px_rgba(236,72,153,0.3)]"
               )}
               style={{ width: `${progressPercent}%` }}
             >
@@ -456,13 +456,13 @@ function MissionCard({ mission, priority, onPause, onResume, onDelete, onUpdate 
           </div>
 
           {mission.dailyRequired && (
-            <div className="flex items-center justify-between p-4 bg-ink-950/50 rounded-2xl border border-ink-800">
+            <div className="flex items-center justify-between p-4 bg-ink-950/50 rounded-2xl border border-ink-600">
               <div className="flex items-center gap-3">
                 <Calendar className="w-4 h-4 text-ink-500" />
-                <span className="text-[10px] font-black text-ink-500 uppercase tracking-wider">Daily Mission Target</span>
+                <span className="text-[10px] font-black text-red-8000 uppercase tracking-wider">Daily Mission Target</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-lg font-black text-yellow-500">
+                <span className="text-lg font-black text-red-500">
                   {Math.ceil(mission.dailyRequired * 10) / 10}
                 </span>
                 <span className="text-[10px] font-bold text-ink-600 uppercase tracking-tighter">{mission.targetType}/Day</span>
@@ -472,11 +472,11 @@ function MissionCard({ mission, priority, onPause, onResume, onDelete, onUpdate 
         </div>
 
         {/* Action Panel */}
-        <div className="mt-8 pt-6 border-t border-ink-800 flex flex-wrap items-center gap-4">
+        <div className="mt-8 pt-6 border-t border-ink-600 flex flex-wrap items-center gap-4">
           {!showLogForm ? (
             <button 
               onClick={(e) => { e.stopPropagation(); setShowLogForm(true); }}
-              className="flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3.5 bg-yellow-500 text-ink-950 text-xs font-black rounded-xl hover:bg-yellow-400 transition-all shadow-lg shadow-yellow-500/10"
+              className="flex-1 min-w-[140px] flex items-center justify-center gap-2 py-3.5 bg-red-500 text-white text-xs font-black rounded-xl hover:bg-pink-200 transition-all shadow-lg shadow-red-500/10"
             >
               <Zap className="w-4 h-4" /> Log Progress
             </button>
@@ -492,12 +492,12 @@ function MissionCard({ mission, priority, onPause, onResume, onDelete, onUpdate 
                 value={logValue}
                 onChange={e => setLogValue(e.target.value)}
                 placeholder={`Value in ${mission.targetType}`}
-                className="flex-1 bg-ink-950 border border-yellow-500/50 rounded-xl px-4 py-3 text-xs text-white outline-none focus:ring-1 focus:ring-yellow-500/50"
+                className="flex-1 bg-ink-950 border border-red-500/50 rounded-xl px-4 py-3 text-xs text-ink-100 outline-none focus:ring-1 focus:ring-red-500/50"
               />
               <button 
                 type="submit"
                 disabled={isLogging}
-                className="p-3 bg-teal-500 text-ink-950 rounded-xl hover:bg-teal-400 disabled:opacity-50 transition-all"
+                className="p-3 bg-teal-500 text-white rounded-xl hover:bg-teal-400 disabled:opacity-50 transition-all"
               >
                 {isLogging ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
               </button>
@@ -525,7 +525,7 @@ function MissionCard({ mission, priority, onPause, onResume, onDelete, onUpdate 
               <button 
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onPause(); }}
-                className="p-3.5 bg-ink-800 hover:bg-ink-700 text-ink-400 rounded-xl border border-ink-700 transition-all"
+                className="p-3.5 bg-ink-800 hover:bg-ink-700 text-ink-400 rounded-xl border border-ink-500 transition-all"
                 title="Pause Mission"
               >
                 <Pause className="w-4 h-4" />
@@ -535,7 +535,7 @@ function MissionCard({ mission, priority, onPause, onResume, onDelete, onUpdate 
             <button 
               type="button"
               onClick={(e) => { e.stopPropagation(); onDelete(); }}
-              className="p-3.5 bg-red-500/5 hover:bg-red-500/20 text-red-500 rounded-xl border border-red-500/20 transition-all"
+              className="p-3.5 bg-red-500/5 hover:bg-pink-200/20 text-red-500 rounded-xl border border-red-500/20 transition-all"
               title="Abort Mission"
             >
               <Trash2 className="w-4 h-4" />

@@ -90,7 +90,7 @@ export default function YouTubeCoursesPage() {
       {showForm && (
         <div className="glass-card p-6 border border-red-500/30 animate-slide-up">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-display text-lg font-semibold">Add YouTube Course</h3>
+            <h3 className="font-display text-lg font-semibold text-red-800">Add YouTube Course</h3>
             <button onClick={() => setShowForm(false)} className="text-ink-500 hover:text-ink-300">
               <X className="w-5 h-5" />
             </button>
@@ -175,7 +175,7 @@ function CourseCard({ course, onDelete }: { course: any; onDelete: (e: React.Mou
 
   return (
     <Link href={`/dashboard/youtube/${course._id}`}>
-      <div className="glass-card overflow-hidden transition-all duration-300 hover:border-red-500/30 group">
+      <div className="glass-card overflow-hidden transition-all duration-300 hover:border-pink-300/30 group">
         <div className="relative aspect-video bg-ink-950">
           {course.thumbnail ? (
             <img 
@@ -206,7 +206,7 @@ function CourseCard({ course, onDelete }: { course: any; onDelete: (e: React.Mou
           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <button 
               onClick={onDelete}
-              className="p-1.5 bg-black/60 rounded-lg text-white/80 hover:text-red-400 hover:bg-red-500/20 transition-all"
+              className="p-1.5 bg-black/60 rounded-lg text-white/80 hover:text-pink-400 hover:bg-pink-200/20 transition-all"
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -214,7 +214,7 @@ function CourseCard({ course, onDelete }: { course: any; onDelete: (e: React.Mou
         </div>
         
         <div className="p-4">
-          <h3 className="text-sm font-bold text-ink-100 line-clamp-2 mb-2">
+          <h3 className="text-sm font-bold text-red-800 line-clamp-2 mb-2">
             {course.title}
           </h3>
           
@@ -229,14 +229,12 @@ function CourseCard({ course, onDelete }: { course: any; onDelete: (e: React.Mou
           )}
           
           <div className="flex items-center gap-3 mt-3">
-            <div className="flex-1 h-1.5 bg-ink-950 rounded-full overflow-hidden">
-              <div 
-                className={clsx('h-full transition-all duration-500', 
-                  pct >= 70 ? 'bg-teal-500' : pct >= 40 ? 'bg-yellow-500' : 'bg-red-500'
-                )} 
-                style={{ width: `${pct}%` }} 
-              />
-            </div>
+              <div className="flex-1 h-1.5 bg-ink-950 rounded-full overflow-hidden">
+                <div 
+                  className="h-full transition-all duration-500 bg-teal-400" 
+                  style={{ width: `${pct}%` }} 
+                />
+              </div>
             <span className="text-[11px] font-mono text-ink-400">{pct}%</span>
           </div>
           

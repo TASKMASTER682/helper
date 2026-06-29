@@ -385,10 +385,10 @@ const preventRightClickReact = (e: React.MouseEvent) => {
             onClick={handleSeek}
           >
             <div 
-              className="h-full bg-yellow-500 rounded-full relative"
+              className="h-full bg-red-500 rounded-full relative"
               style={{ width: `${(currentTime / videoDuration) * 100}%` }}
             >
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-yellow-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
           </div>
 
@@ -401,14 +401,14 @@ const preventRightClickReact = (e: React.MouseEvent) => {
                 {playbackRate}x
               </button>
               {showSpeedMenu && (
-                <div className="absolute bottom-full mb-1 left-0 bg-ink-900 rounded shadow-xl border border-ink-700 overflow-hidden z-50">
+                <div className="absolute bottom-full mb-1 left-0 bg-ink-900 rounded shadow-xl border border-ink-500 overflow-hidden z-50">
                   {[0.5, 0.75, 1, 1.25, 1.5, 1.75, 2].map(rate => (
                     <button
                       key={rate}
                       onClick={() => changeSpeed(rate)}
                       className={clsx(
                         'block w-full px-3 py-1.5 text-xs text-left hover:bg-ink-800',
-                        playbackRate === rate ? 'text-yellow-500 font-medium' : 'text-white'
+                        playbackRate === rate ? 'text-red-500 font-medium' : 'text-white'
                       )}
                     >
                       {rate}x
@@ -460,10 +460,10 @@ const preventRightClickReact = (e: React.MouseEvent) => {
         <button
           onClick={markAsComplete}
           disabled={isCompleting}
-          className="absolute top-4 right-4 px-3 py-1.5 bg-yellow-500/90 hover:bg-yellow-500 rounded-lg flex items-center gap-2 transition-colors"
+          className="absolute top-4 right-4 px-3 py-1.5 bg-red-500/90 hover:bg-pink-200 rounded-lg flex items-center gap-2 transition-colors"
         >
           {isCompleting ? (
-            <Loader2 className="w-4 h-4 animate-spin text-ink-950" />
+            <Loader2 className="w-4 h-4 animate-spin text-white" />
           ) : (
             <CheckCircle2 className="w-4 h-4 text-ink-950" />
           )}

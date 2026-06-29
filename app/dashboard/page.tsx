@@ -2,9 +2,9 @@
 import React, { useEffect, useState } from 'react';
 import { scheduleAPI, trackerAPI, missionsAPI, userAPI, plansAPI, ddayAPI, settingsAPI } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
-import CountdownCalendar from '../../componets/CountdownCalender';
-import PlanCalendar from '../../componets/PlanCalendar';
-import PlanGraph from '../../componets/PlanGraph';
+import CountdownCalendar from '../../components/CountdownCalendar';
+import PlanCalendar from '../../components/PlanCalendar';
+import PlanGraph from '../../components/PlanGraph';
 import {
   Calendar, Flame, Trophy, BarChart3, Target,
   CheckCircle2, ChevronLeft, ChevronRight, TrendingUp, Brain, Bell, X
@@ -266,20 +266,16 @@ export default function DashboardPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-ink-500 font-mono text-sm">{format(new Date(), 'EEEE, d MMMM yyyy')}</p>
+          <div className="inline-flex items-center gap-2 bg-crimson-deep text-parchment px-4 py-1.5 rounded-lg shadow-sm shadow-crimson-deep/40">
+            <Calendar className="w-4 h-4 text-parchment/70" />
+            <span className="font-mono text-sm font-medium tracking-wide">{format(new Date(), 'EEEE, d MMMM yyyy')}</span>
+          </div>
           <h1 className="font-display text-3xl font-bold text-ink-100 mt-1">
             Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 17 ? 'Afternoon' : 'Evening'},{' '}
-            <span className="text-yellow-400">{user?.name?.split(' ')[0]}</span>
+            <span className="text-crimson font-semibold">{user?.name?.split(' ')[0]}</span>
           </h1>
         </div>
-        {!isSubmittedToday && (
-          <Link href="/dashboard/tracker">
-            <button className="btn-primary flex items-center gap-2 text-sm shadow-lg shadow-yellow-900/20">
-              <CheckCircle2 className="w-4 h-4" />
-              Submit Today
-            </button>
-          </Link>
-        )}
+        
       </div>
 
       {/* Announcements Carousel/List */}
@@ -289,19 +285,19 @@ export default function DashboardPage() {
             <div 
               key={a._id} 
               className={clsx(
-                "p-4 rounded-2xl border flex items-start gap-4 animate-in slide-in-from-top-4 duration-500",
-                a.type === 'discount' ? "bg-teal-500/10 border-teal-500/20 text-teal-100" :
-                a.type === 'alert' ? "bg-red-500/10 border-red-500/20 text-red-100" :
-                a.type === 'update' ? "bg-blue-500/10 border-blue-500/20 text-blue-100" :
-                "bg-yellow-500/5 border-yellow-500/10 text-yellow-100"
+                "p-4 rounded-2xl border flex items-start gap-4 animate-in slide-in-from-top-4 duration-500 group/announce",
+                a.type === 'discount' ? "bg-teal-500/10 border-teal-500/20" :
+                a.type === 'alert' ? "bg-red-500/10 border-red-500/20" :
+                a.type === 'update' ? "bg-blue-500/10 border-blue-500/20" :
+                "bg-red-500/5 border-red-500/10"
               )}
             >
               <div className={clsx(
                 "p-2 rounded-xl shrink-0",
-                a.type === 'discount' ? "bg-teal-500/20 text-teal-400" :
-                a.type === 'alert' ? "bg-red-500/20 text-red-400" :
-                a.type === 'update' ? "bg-blue-500/20 text-blue-400" :
-                "bg-yellow-500/20 text-yellow-400"
+                a.type === 'discount' ? "bg-teal-500/20 text-teal-600" :
+                a.type === 'alert' ? "bg-red-500/20 text-red-600" :
+                a.type === 'update' ? "bg-blue-500/20 text-blue-600" :
+                "bg-red-500/20 text-red-600"
               )}>
                 <Bell className="w-4 h-4" />
               </div>
@@ -314,9 +310,9 @@ export default function DashboardPage() {
               </div>
               <button 
                 onClick={() => setAnnouncements(prev => prev.filter(item => item._id !== a._id))}
-                className="p-1 hover:bg-white/5 rounded-lg transition-colors"
+                className="p-1 rounded-lg opacity-0 group-hover/announce:opacity-100 transition-opacity hover:bg-white/10"
               >
-                <X className="w-3.5 h-3.5 opacity-30 hover:opacity-100" />
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
           ))}
@@ -333,22 +329,22 @@ export default function DashboardPage() {
           </>
         ) : (
           <>
-            <StatCard icon={<Flame className="w-5 h-5 text-yellow-400" />} label="Plan Streak" value={planStats?.streak || 0} suffix="days" color="yellow" />
-            <StatCard icon={<Trophy className="w-5 h-5 text-teal-400" />} label="On Track" value={planStats ? Math.round(planStats.trackScore * 100) : 0} suffix="%" color="teal" />
-            <StatCard icon={<BarChart3 className="w-5 h-5 text-deep-400" />} label="Today" value={planStats ? Math.round(planStats.todayRatio * 100) : 0} suffix="%" color="deep" />
-            <StatCard icon={<Target className="w-5 h-5 text-purple-400" />} label="Plans" value={plans.length} suffix="active" color="purple" />
+            <StatCard icon={<Flame className="w-5 h-5 text-orange-500" />} label="Plan Streak" value={planStats?.streak || 0} suffix="days" color="yellow" />
+            <StatCard icon={<Trophy className="w-5 h-5 text-emerald-600" />} label="On Track" value={planStats ? Math.round(planStats.trackScore * 100) : 0} suffix="%" color="teal" />
+            <StatCard icon={<BarChart3 className="w-5 h-5 text-blue-600" />} label="Today" value={planStats ? Math.round(planStats.todayRatio * 100) : 0} suffix="%" color="deep" />
+            <StatCard icon={<Target className="w-5 h-5 text-indigo-600" />} label="Plans" value={plans.length} suffix="active" color="purple" />
           </>
         )}
       </div>
 
 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 glass-card p-5">
-          <div className="flex items-center justify-between mb-4 border-b border-ink-800 pb-4">
+        <div className="lg:col-span-2 glass-card p-5 border-teal-500/20">
+          <div className="flex items-center justify-between mb-4 border-b border-ink-600 pb-4">
             <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-yellow-400" />
+              <Calendar className="w-4 h-4 text-teal-500" />
               <h2 className="font-display text-lg font-semibold text-ink-100">Daily Plan</h2>
             </div>
-            <Link href="/dashboard/plans" className="text-xs text-yellow-400 hover:underline">
+            <Link href="/dashboard/plans" className="text-xs text-crimson hover:underline font-medium">
               Manage Plans
             </Link>
           </div>
@@ -368,13 +364,13 @@ export default function DashboardPage() {
             <div className="glass-card p-4">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-sm text-ink-200 flex items-center gap-2">
-                  <Target className="w-4 h-4 text-yellow-400" /> Active Missions
+                  <Target className="w-4 h-4 text-crimson" /> Active Missions
                 </h3>
                 <Link href="/dashboard/missions"><ChevronRight className="w-4 h-4 text-ink-500" /></Link>
               </div>
               <div className="space-y-3">
                 {activeMissions.length === 0 ? (
-                  <p className="text-ink-600 text-xs text-center py-4 italic border border-dashed border-ink-800 rounded-lg">No missions active</p>
+                  <p className="text-ink-600 text-xs text-center py-4 italic border border-dashed border-ink-600 rounded-lg">No missions active</p>
                 ) : (
                   activeMissions.slice(0, 3).map((m: any) => <MissionMiniCard key={m._id} mission={m} />)
                 )}
@@ -389,7 +385,7 @@ export default function DashboardPage() {
           ) : (
             <div className="glass-card p-4">
               <h3 className="font-semibold text-sm text-ink-200 mb-4 flex items-center gap-2">
-                <Target className="w-4 h-4 text-yellow-400" /> Daily Plans
+                <Target className="w-4 h-4 text-crimson" /> Daily Plans
               </h3>
               {plans.length > 0 ? (
                 <div className="space-y-3">
@@ -413,7 +409,7 @@ export default function DashboardPage() {
                         </div>
                         <div className="h-1.5 bg-ink-900 rounded-full overflow-hidden">
                           <div 
-                            className="h-full bg-gradient-to-r from-yellow-500 to-jade-500" 
+                            className="h-full bg-gradient-to-r from-crimson to-jade-500" 
                             style={{ width: `${ratio * 100}%` }} 
                           />
                         </div>
@@ -423,7 +419,7 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div className="h-[80px] flex items-center justify-center text-ink-600 text-xs">
-                  <Link href="/dashboard/plans" className="text-yellow-400 hover:underline">
+                  <Link href="/dashboard/plans" className="text-crimson hover:underline font-medium">
                     + Add Daily Plan
                   </Link>
                 </div>
@@ -438,17 +434,17 @@ export default function DashboardPage() {
               <div className="h-8 bg-ink-900/50 rounded" />
             </div>
           ) : (
-            <div className="glass-card p-4 space-y-3">
+            <div className="glass-card p-4 space-y-3 group/dday">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-sm text-ink-200">D-Day Targets</h3>
                 <div className="flex items-center gap-2">
-                  <button className="btn-ghost text-xs px-2 py-1" onClick={handlePrevTarget} disabled={dDayTargets.length <= 1}>
+                  <button className="btn-ghost text-xs px-2 py-1 opacity-0 group-hover/dday:opacity-100 transition-opacity" onClick={handlePrevTarget} disabled={dDayTargets.length <= 1}>
                     <ChevronLeft className="w-3 h-3" />
                   </button>
                   <span className="text-[10px] text-ink-500 font-mono">
                     {dDayTargets.length === 0 ? '0/0' : `${activeTargetIndex + 1}/${dDayTargets.length}`}
                   </span>
-                  <button className="btn-ghost text-xs px-2 py-1" onClick={handleNextTarget} disabled={dDayTargets.length <= 1}>
+                  <button className="btn-ghost text-xs px-2 py-1 opacity-0 group-hover/dday:opacity-100 transition-opacity" onClick={handleNextTarget} disabled={dDayTargets.length <= 1}>
                     <ChevronRight className="w-3 h-3" />
                   </button>
                 </div>
@@ -474,7 +470,7 @@ export default function DashboardPage() {
                   {savingTarget ? 'Saving...' : 'Save Target'}
                 </button>
                 <button
-                  className="btn-ghost text-xs px-3 py-2"
+                  className="btn-ghost text-xs px-3 py-2 opacity-0 group-hover/dday:opacity-100 transition-opacity"
                   onClick={handleClearTarget}
                   disabled={savingTarget}
                 >
@@ -493,9 +489,9 @@ function StatCard({ icon, label, value, suffix, color }: any) {
   const colorMap: Record<string, string> = {
     yellow: 'yellow-card',
     jade: 'jade-card',
-    deep: 'bg-deep-900/10 border border-deep-700/30 rounded-xl',
-    teal: 'bg-teal-900/10 border border-teal-700/30 rounded-xl',
-    purple: 'bg-purple-900/10 border border-purple-700/30 rounded-xl',
+    deep: 'deep-card',
+    teal: 'teal-card',
+    purple: 'purple-card',
   };
   return (
     <div className={clsx('p-4 transition-transform hover:scale-[1.02]', colorMap[color] || 'glass-card')}>
@@ -516,14 +512,14 @@ function MissionMiniCard({ mission }: { mission: any }) {
   const progress = mission.progressPercent ?? mission.progressPercentage ?? 0;
   
   return (
-    <div className="p-2.5 bg-ink-900/40 border border-ink-800 rounded-lg hover:border-ink-700 transition-colors">
+    <div className="p-2.5 bg-ink-900/40 border border-ink-600 rounded-lg hover:border-ink-500 transition-colors">
       <div className="flex justify-between text-[11px] mb-1.5 font-medium text-ink-200">
         <span className="truncate pr-2">{name}</span>
-        <span className="text-yellow-400 shrink-0">{progress}%</span>
+        <span className="text-ink-100 shrink-0">{progress}%</span>
       </div>
       <div className="w-full h-1 bg-ink-800 rounded-full overflow-hidden">
         <div 
-          className="h-full bg-yellow-500 transition-all duration-500" 
+          className="h-full bg-crimson transition-all duration-500" 
           style={{ width: `${progress}%` }} 
         />
       </div>

@@ -171,10 +171,10 @@ export default function TrackerPage() {
         <p className="text-ink-500 text-sm mt-1 font-mono text-[10px]">Track your daily habits</p>
       </div>
 
-      <div className="glass-card p-6 border border-yellow-500/20">
+      <div className="glass-card p-6 border border-red-500/20">
         <div className="flex items-center gap-3 mb-6">
-          <Calendar className="w-5 h-5 text-yellow-500" />
-          <h2 className="font-display text-lg font-semibold text-ink-100">
+          <Calendar className="w-5 h-5 text-red-500" />
+          <h2 className="font-display text-lg font-semibold text-red-800">
             {format(new Date(), 'EEEE, d MMMM')}
           </h2>
         </div>
@@ -190,7 +190,7 @@ export default function TrackerPage() {
                   'p-4 rounded-xl border-2 transition-all cursor-pointer relative group',
                   isCompleted
                     ? `border-${color}-500/50 bg-${color}-500/10`
-                    : 'border-ink-800 bg-ink-900/30'
+                    : 'border-ink-600 bg-ink-900/30'
                 )}
                 onClick={() => handleToggleHabit(habit.id)}
               >
@@ -220,7 +220,7 @@ export default function TrackerPage() {
                 )}
                 <button
                   onClick={(e) => { e.stopPropagation(); handleRemoveHabit(habit.id); }}
-                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-500/20 rounded"
+                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-pink-200/20 rounded"
                 >
                   <Trash2 className="w-3 h-3 text-red-500" />
                 </button>
@@ -255,9 +255,9 @@ export default function TrackerPage() {
               max="10"
               value={focusScore}
               onChange={(e) => setFocusScore(Number(e.target.value))}
-              className="w-full accent-yellow-500"
+              className="w-full accent-red-500"
             />
-            <div className="text-center text-sm font-bold text-yellow-500 mt-1">{focusScore}/10</div>
+            <div className="text-center text-sm font-bold text-red-500 mt-1">{focusScore}/10</div>
           </div>
           <div>
             <label className="text-xs text-ink-500 mb-2 block">Energy</label>
@@ -309,7 +309,7 @@ export default function TrackerPage() {
         <div className="glass-card p-5">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="w-4 h-4 text-jade-400" />
-            <h3 className="font-semibold text-sm text-ink-200">Last 7 Days</h3>
+            <h3 className="font-semibold text-sm text-red-800">Last 7 Days</h3>
           </div>
           
           <div className="grid grid-cols-7 gap-2">
@@ -321,13 +321,13 @@ export default function TrackerPage() {
                   key={idx}
                   className={clsx(
                     'p-2 rounded-lg text-center',
-                    isToday ? 'bg-yellow-500/20 border border-yellow-500/30' : 'bg-ink-900/30'
+                    isToday ? 'bg-red-500/20 border border-red-500/30' : 'bg-ink-900/30'
                   )}
                 >
                   <div className="text-[10px] text-ink-500 font-mono">
                     {format(date, 'EEE')}
                   </div>
-                  <div className="text-xs font-bold text-ink-200">
+                  <div className="text-xs font-bold text-red-800">
                     {format(date, 'd')}
                   </div>
                   <div className="text-lg font-bold text-jade-400">

@@ -127,23 +127,23 @@ export default function CheckoutModal({ course, onClose, onSuccess }: CheckoutMo
 
   if (loading) return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-      <Loader2 className="w-10 h-10 text-yellow-500 animate-spin" />
+      <Loader2 className="w-10 h-10 text-red-500 animate-spin" />
     </div>
   );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fade-in">
-      <div className="relative w-full max-w-lg glass-card overflow-hidden border-ink-800 shadow-[0_0_100px_rgba(0,0,0,0.5)]">
+      <div className="relative w-full max-w-lg glass-card overflow-hidden border-ink-600 shadow-[0_0_100px_rgba(0,0,0,0.5)]">
         {/* Background Accents */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-500/5 blur-[100px] rounded-full -mr-32 -mt-32" />
+        <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/5 blur-[100px] rounded-full -mr-32 -mt-32" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-500/5 blur-[100px] rounded-full -ml-32 -mb-32" />
 
         <div className="relative z-10 p-8">
           <div className="flex justify-between items-start mb-10">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <div className="p-1.5 bg-yellow-500/10 rounded-lg">
-                  <ShieldCheck className="w-4 h-4 text-yellow-500" />
+                <div className="p-1.5 bg-red-500/10 rounded-lg">
+                  <ShieldCheck className="w-4 h-4 text-red-500" />
                 </div>
                 <span className="text-[10px] font-black text-ink-500 uppercase tracking-[0.2em]">Secure Checkout Gateway</span>
               </div>
@@ -157,8 +157,8 @@ export default function CheckoutModal({ course, onClose, onSuccess }: CheckoutMo
           {step === 'info' && (
             <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
               {/* Course Brief */}
-              <div className="flex gap-4 p-4 bg-ink-950/50 rounded-2xl border border-ink-800/50">
-                <img src={course.thumbnail} className="w-20 h-20 rounded-xl object-cover border border-ink-800" />
+              <div className="flex gap-4 p-4 bg-ink-950/50 rounded-2xl border border-ink-600/50">
+                <img src={course.thumbnail} className="w-20 h-20 rounded-xl object-cover border border-ink-600" />
                 <div className="flex-1">
                   <h3 className="text-sm font-black text-white leading-tight mb-1">{course.title}</h3>
                   <p className="text-[10px] text-ink-500 font-bold uppercase tracking-widest">{course.instructor || 'Academy Expert'}</p>
@@ -182,7 +182,7 @@ export default function CheckoutModal({ course, onClose, onSuccess }: CheckoutMo
                   <button 
                     disabled={processing}
                     onClick={handleRazorpay}
-                    className="w-full py-4 bg-yellow-500 hover:bg-yellow-400 text-ink-950 font-black rounded-2xl transition-all shadow-xl shadow-yellow-500/10 flex items-center justify-center gap-3 uppercase text-xs tracking-[0.2em]"
+                    className="w-full py-4 bg-red-500 hover:bg-pink-200 text-white font-black rounded-2xl transition-all shadow-xl shadow-red-500/10 flex items-center justify-center gap-3 uppercase text-xs tracking-[0.2em]"
                   >
                     {processing ? <Loader2 className="w-5 h-5 animate-spin" /> : <CreditCard className="w-5 h-5" />}
                     Initialize Automated Payment
@@ -196,7 +196,7 @@ export default function CheckoutModal({ course, onClose, onSuccess }: CheckoutMo
                       <MessageSquare className="w-5 h-5" />
                       Contact Admin via Telegram
                     </button>
-                    <div className="p-4 bg-ink-900/50 border border-ink-800 rounded-xl flex gap-3">
+                    <div className="p-4 bg-ink-900/50 border border-ink-600 rounded-xl flex gap-3">
                       <AlertCircle className="w-5 h-5 text-blue-400 shrink-0" />
                       <p className="text-[9px] text-ink-400 font-bold leading-relaxed uppercase tracking-widest">
                         Automated payments are currently offline. Please coordinate with the administrator for manual enrollment and verification.
@@ -207,7 +207,7 @@ export default function CheckoutModal({ course, onClose, onSuccess }: CheckoutMo
               </div>
 
               {/* Footer Trust Markers */}
-              <div className="flex items-center justify-center gap-6 pt-6 border-t border-ink-800/30">
+              <div className="flex items-center justify-center gap-6 pt-6 border-t border-ink-600/30">
                 <div className="flex items-center gap-2 text-[8px] font-black text-ink-600 uppercase tracking-[0.2em]">
                   <LockIcon className="w-3 h-3" /> Encrypted Socket
                 </div>
@@ -220,7 +220,7 @@ export default function CheckoutModal({ course, onClose, onSuccess }: CheckoutMo
 
           {step === 'processing' && (
             <div className="py-20 text-center animate-pulse">
-              <RefreshCw className="w-16 h-16 text-yellow-500 mx-auto mb-8 animate-spin-slow" />
+              <RefreshCw className="w-16 h-16 text-red-500 mx-auto mb-8 animate-spin-slow" />
               <h3 className="text-xl font-black text-white uppercase tracking-widest mb-2">Syncing Transaction</h3>
               <p className="text-xs text-ink-500 font-bold uppercase tracking-widest">Verifying block integrity. Do not close terminal.</p>
             </div>

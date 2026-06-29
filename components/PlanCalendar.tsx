@@ -130,20 +130,20 @@ export default function PlanCalendar({ plans = [], onRefresh }: PlanCalendarProp
               className={clsx(
                 'min-w-[48px] h-16 rounded-2xl flex flex-col items-center justify-center transition-all border relative group',
                 isSelected 
-                  ? 'bg-primary text-white border-primary shadow-xl shadow-primary/30 z-10 scale-105' 
+                  ? 'bg-teal-500 text-white border-teal-500 shadow-xl shadow-teal-500/30 z-10 scale-105' 
                   : isComplete 
-                    ? 'bg-green-500/20 border-green-500/50 text-green-400 hover:bg-green-500/30'
+                    ? 'bg-teal-500/20 border-teal-500/50 text-teal-400 hover:bg-teal-500/30'
                     : isPartial
-                      ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/30'
+                      ? 'bg-red-500/20 border-red-500/50 text-red-400 hover:bg-pink-200/30'
                       : isMissed
-                        ? 'bg-red-500/10 border-red-500/30 text-red-400/70 hover:bg-red-500/20'
-                        : 'bg-ink-900/40 border-ink-800 text-ink-400 hover:border-ink-600',
-                isToday && !isSelected && 'ring-1 ring-yellow-500/50',
+                        ? 'bg-red-500/10 border-red-500/30 text-red-400/70 hover:bg-pink-200/20'
+                        : 'bg-ink-900/40 border-ink-600 text-ink-400 hover:border-ink-600',
+                isToday && !isSelected && 'ring-1 ring-red-500/50',
                 !hasTasks && !isSelected && 'opacity-30'
               )}
             >
               {isToday && (
-                <span className="absolute -top-2 px-1.5 py-0.5 bg-yellow-500 text-[7px] font-bold text-ink-950 rounded-full tracking-tighter">TODAY</span>
+                <span className="absolute -top-2 px-1.5 py-0.5 bg-red-500 text-[7px] font-bold text-white rounded-full tracking-tighter">TODAY</span>
               )}
               <span className="text-[9px] uppercase font-bold opacity-50 mb-1 group-hover:opacity-100 transition-opacity">
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][day.getDay()]}
@@ -175,16 +175,16 @@ export default function PlanCalendar({ plans = [], onRefresh }: PlanCalendarProp
       </div>
 
       <div className="mt-2 flex items-center justify-center gap-4 text-[9px] font-mono text-ink-500 uppercase tracking-widest opacity-60">
-        <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-yellow-500" /> Today</div>
-        <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-green-500" /> Done</div>
+        <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-red-500" /> Today</div>
+        <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-teal-500" /> Done</div>
         <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-red-500" /> Missed</div>
         <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-purple-500" /> Overlap</div>
       </div>
 
-      <div className="border-t border-ink-800/50 pt-4 space-y-4">
+      <div className="border-t border-ink-600/50 pt-4 space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-ink-100 flex items-center gap-2">
-            <span className="w-1.5 h-4 bg-yellow-500 rounded-full" />
+            <span className="w-1.5 h-4 bg-teal-500 rounded-full" />
             {format(new Date(selectedDate), 'dd MMMM, EEEE')}
           </h3>
           <span className="text-[10px] font-mono text-ink-500">
@@ -194,7 +194,7 @@ export default function PlanCalendar({ plans = [], onRefresh }: PlanCalendarProp
 
         <div className="space-y-4">
           {selectedDayInfo.plans.length === 0 ? (
-            <div className="text-center py-8 bg-ink-900/20 rounded-xl border border-dashed border-ink-800">
+            <div className="text-center py-8 bg-ink-900/20 rounded-xl border border-dashed border-ink-600">
               <p className="text-ink-600 text-xs italic">No active plans for this date</p>
             </div>
           ) : (
@@ -214,11 +214,11 @@ export default function PlanCalendar({ plans = [], onRefresh }: PlanCalendarProp
                       key={task._id} 
                       className={clsx(
                         'flex items-center justify-between p-3 rounded-xl border transition-all hover:border-ink-600',
-                        isCompleted ? 'bg-green-500/5 border-green-500/20' : 'bg-ink-900/40 border-ink-800'
+                        isCompleted ? 'bg-teal-500/5 border-teal-500/20' : 'bg-ink-900/40 border-ink-600'
                       )}
                     >
                       <div className="flex-1 min-w-0">
-                        <p className={clsx("text-sm font-medium truncate", isCompleted ? "text-green-400 line-through opacity-50" : "text-ink-100")}>
+                        <p className={clsx("text-sm font-medium truncate", isCompleted ? "text-teal-400 line-through opacity-50" : "text-ink-100")}>
                           {task.taskName}
                         </p>
                       </div>
@@ -228,7 +228,7 @@ export default function PlanCalendar({ plans = [], onRefresh }: PlanCalendarProp
                         className={clsx(
                           'w-8 h-8 rounded-lg flex items-center justify-center transition-all',
                           isCompleted 
-                            ? 'bg-green-500 text-white shadow-lg shadow-green-500/20' 
+                            ? 'bg-teal-500 text-white shadow-lg shadow-teal-500/20' 
                             : 'bg-ink-800 text-ink-500 hover:bg-ink-700',
                           selectedDate < today && 'opacity-50 cursor-not-allowed'
                         )}

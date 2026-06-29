@@ -29,17 +29,17 @@ const QuestionGrid = ({ userAnswers = {} }: QuestionGridProps) => {
     switch (status) {
       case 'correct': return "bg-sky-500/10 border-sky-500/50 text-sky-400";
       case 'wrong': return "bg-red-500/10 border-red-500/50 text-red-400";
-      case 'unattempted': return "bg-ink-800/30 border-ink-700 text-ink-500";
-      default: return "bg-ink-950/50 border-ink-800 text-ink-600";
+      case 'unattempted': return "bg-ink-800/30 border-ink-500 text-ink-500";
+      default: return "bg-ink-950/50 border-ink-600 text-ink-600";
     }
   };
 
   return (
-    <div className="glass-card p-6 mt-8 border border-ink-800/50 bg-ink-900/20 rounded-2xl relative">
+    <div className="glass-card p-6 mt-8 border border-ink-600/50 bg-ink-900/20 rounded-2xl relative">
 <div className="mb-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div>
           <h3 className="text-lg font-bold text-ink-100 flex items-center gap-2">
-            <Filter className="w-5 h-5 text-saffron-500" />
+            <Filter className="w-5 h-5 text-red-500" />
             Performance Breakdown
           </h3>
           <p className="text-[10px] text-ink-500 uppercase tracking-widest mt-1 italic">
@@ -48,7 +48,7 @@ const QuestionGrid = ({ userAnswers = {} }: QuestionGridProps) => {
         </div>
 <div className={clsx(
           "min-h-[70px] rounded-xl border p-4 flex items-center transition-all duration-300 shadow-xl",
-          hoveredQ ? getStatusColorClasses(userAnswers[hoveredQ].status) : "bg-ink-950 border-ink-800 text-ink-600"
+          hoveredQ ? getStatusColorClasses(userAnswers[hoveredQ].status) : "bg-ink-950 border-ink-600 text-ink-600"
         )}>
           {hoveredQ && userAnswers[hoveredQ] ? (
             <div className="flex items-center justify-between w-full gap-4">
@@ -80,14 +80,14 @@ const QuestionGrid = ({ userAnswers = {} }: QuestionGridProps) => {
           )}
         </div>
       </div>
-<div className="flex bg-ink-950 p-1 rounded-xl border border-ink-800 mb-6 self-start inline-flex">
+<div className="flex bg-ink-950 p-1 rounded-xl border border-ink-600 mb-6 self-start inline-flex">
         {(['all', 'correct', 'wrong', 'unattempted'] as const).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
             className={clsx(
               "px-4 py-1.5 rounded-lg text-xs font-bold transition-all capitalize",
-              filter === f ? "bg-saffron-500 text-ink-950 shadow-lg" : "text-ink-500 hover:text-ink-200"
+              filter === f ? "bg-red-500 text-white shadow-lg" : "text-ink-500 hover:text-ink-200"
             )}
           >
             {f === 'unattempted' ? 'Skipped' : f}
@@ -111,9 +111,9 @@ const QuestionGrid = ({ userAnswers = {} }: QuestionGridProps) => {
               className={clsx(
                 "group relative h-12 rounded-xl flex flex-col items-center justify-center border-2 transition-all duration-200 cursor-pointer",
                 isCorrect && "bg-sky-500/10 border-sky-500 text-sky-200 hover:bg-sky-500/20",
-                isWrong && "bg-red-500/10 border-red-500 text-red-400 hover:bg-red-500/20",
-                isSkipped && "bg-ink-900/50 border-ink-800 text-ink-500 hover:bg-ink-800",
-                hoveredQ === num && "scale-110 z-10 shadow-lg ring-2 ring-saffron-500/50"
+                isWrong && "bg-red-500/10 border-red-500 text-red-400 hover:bg-pink-200/20",
+                isSkipped && "bg-ink-900/50 border-ink-600 text-ink-500 hover:bg-ink-800",
+                hoveredQ === num && "scale-110 z-10 shadow-lg ring-2 ring-red-500/50"
               )}
             >
               <span className="text-[10px] opacity-60 mb-0.5 font-mono">{num}</span>

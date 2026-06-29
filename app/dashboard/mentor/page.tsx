@@ -82,7 +82,7 @@ export default function MentorPage() {
   return (
     <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-10rem)] lg:h-[calc(100vh-7rem)] animate-fade-in relative">
 <div className="flex-1 flex flex-col glass-card overflow-hidden h-full">
-<div className="p-4 border-b border-ink-700/50 flex items-center justify-between gap-3 bg-ink-950/50">
+<div className="p-4 border-b border-ink-500/50 flex items-center justify-between gap-3 bg-ink-950/50">
           <div className="flex items-center gap-3">
             <div className="relative">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-deep-600 to-deep-800 flex items-center justify-center">
@@ -91,7 +91,7 @@ export default function MentorPage() {
               <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-teal-500 rounded-full border-2 border-ink-900 animate-pulse-slow" />
             </div>
             <div>
-              <h2 className="font-display text-sm lg:text-base font-bold text-ink-100">ARJUN</h2>
+              <h2 className="font-display text-sm lg:text-base font-bold text-red-800">ARJUN</h2>
               <p className="text-[10px] font-mono text-teal-400 uppercase tracking-wider">AI Mentor · Online</p>
             </div>
           </div>
@@ -113,12 +113,12 @@ export default function MentorPage() {
           {messages.map((msg, i) => (
             <div key={i} className={clsx('flex gap-3', msg.role === 'user' ? 'flex-row-reverse' : 'flex-row')}>
               <div className={clsx('w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5',
-                msg.role === 'user' ? 'bg-yellow-500/20 border border-yellow-500/30' : 'bg-deep-600/30 border border-deep-500/30'
+                msg.role === 'user' ? 'bg-red-500/20 border border-red-500/30' : 'bg-deep-600/30 border border-deep-500/30'
               )}>
-                {msg.role === 'user' ? <User className="w-3.5 h-3.5 text-yellow-400" /> : <Brain className="w-3.5 h-3.5 text-deep-400" />}
+                {msg.role === 'user' ? <User className="w-3.5 h-3.5 text-red-400" /> : <Brain className="w-3.5 h-3.5 text-deep-400" />}
               </div>
               <div className={clsx('max-w-[85%] lg:max-w-[75%] rounded-xl p-3.5', 
-                msg.role === 'user' ? 'bg-yellow-900/30 border border-yellow-700/30' : 'bg-ink-800/60 border border-ink-700/30'
+                msg.role === 'user' ? 'bg-red-900/30 border border-red-700/30' : 'bg-ink-800/60 border border-ink-500/30'
               )}>
                 <p className="text-sm text-ink-200 leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                 <div className="text-[10px] font-mono text-ink-600 mt-2">
@@ -132,7 +132,7 @@ export default function MentorPage() {
               <div className="w-7 h-7 rounded-lg bg-deep-600/30 border border-deep-500/30 flex items-center justify-center">
                 <Brain className="w-3.5 h-3.5 text-deep-400" />
               </div>
-              <div className="bg-ink-800/60 border border-ink-700/30 rounded-xl p-3.5">
+              <div className="bg-ink-800/60 border border-ink-500/30 rounded-xl p-3.5">
                 <div className="flex gap-1">
                   {[0, 1, 2].map(i => (
                     <div key={i} className="w-1.5 h-1.5 bg-deep-400 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
@@ -143,7 +143,7 @@ export default function MentorPage() {
           )}
           <div ref={messagesEndRef} />
         </div>
-<div className="p-4 border-t border-ink-700/50 bg-ink-950/50">
+<div className="p-4 border-t border-ink-500/50 bg-ink-950/50">
           <div className="flex gap-2 max-w-4xl mx-auto w-full">
             <input
               value={input}
@@ -170,7 +170,7 @@ export default function MentorPage() {
 <div className="mt-auto lg:mt-0 bg-ink-950 lg:bg-transparent rounded-t-3xl lg:rounded-none p-6 lg:p-0 space-y-4 max-h-[80vh] overflow-y-auto">
           
           <div className="w-12 h-1 bg-ink-700 rounded-full mx-auto mb-4 lg:hidden" />
-<div className="glass-card p-4 border-ink-700/50 shadow-2xl lg:shadow-none">
+<div className="glass-card p-4 border-ink-500/50 shadow-2xl lg:shadow-none">
             <h3 className="text-[10px] font-mono text-ink-500 uppercase tracking-wider mb-3">Quick Consult</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2">
               {QUICK_PROMPTS.map(prompt => (
@@ -178,7 +178,7 @@ export default function MentorPage() {
                   key={prompt}
                   onClick={() => sendMessage(prompt)}
                   disabled={loading}
-                  className="text-left text-[11px] text-ink-300 hover:text-yellow-400 hover:bg-yellow-500/5 border border-ink-800 hover:border-yellow-500/30 rounded-lg p-2.5 transition-all"
+                  className="text-left text-[11px] text-ink-300 hover:text-pink-400 hover:bg-pink-200/5 border border-ink-600 hover:border-pink-300/30 rounded-lg p-2.5 transition-all"
                 >
                   {prompt}
                 </button>
@@ -210,7 +210,7 @@ export default function MentorPage() {
             <div className="flex flex-wrap lg:flex-col gap-2">
               {['Consistency > Intensity', 'Process over Fantasy', 'Habits build IAS'].map(p => (
                 <div key={p} className="flex items-center gap-2 text-[10px] text-ink-400 bg-ink-900/50 px-2 py-1 rounded-md">
-                  <div className="w-1 h-1 rounded-full bg-yellow-500" />
+                  <div className="w-1 h-1 rounded-full bg-red-500" />
                   {p}
                 </div>
               ))}

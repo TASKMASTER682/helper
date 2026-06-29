@@ -83,7 +83,7 @@ export default function SubscriptionPage() {
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-yellow-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-red-500" />
       </div>
     );
   }
@@ -96,7 +96,7 @@ export default function SubscriptionPage() {
         </Link>
         <div>
           <h1 className="section-title flex items-center gap-2">
-            <Crown className="w-6 h-6 text-yellow-500" />
+            <Crown className="w-6 h-6 text-red-500" />
             Premium Subscription
           </h1>
           <p className="text-ink-500 text-sm mt-1">Unlock all courses and features</p>
@@ -111,7 +111,7 @@ export default function SubscriptionPage() {
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-bold text-lg text-jade-400">Active Subscription</h3>
+                <h3 className="font-bold text-lg text-red-800">Active Subscription</h3>
                 <span className="px-2 py-0.5 bg-jade-500/20 text-jade-400 text-xs font-bold rounded">
                   {status.planName}
                 </span>
@@ -146,13 +146,13 @@ export default function SubscriptionPage() {
               className={clsx(
                 'relative rounded-2xl transition-all duration-300 hover:scale-[1.02]',
                 isPopular 
-                  ? 'glass-card p-6 border-2 border-yellow-500/50 shadow-lg shadow-yellow-500/10' 
+                  ? 'glass-card p-6 border-2 border-red-500/50 shadow-lg shadow-red-500/10' 
                   : 'glass-card p-6'
               )}
             >
               {isPopular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-ink-950 px-4 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                  <div className="bg-gradient-to-r from-red-500 to-red-600 text-ink-950 px-4 py-1 rounded-full text-xs font-bold flex items-center gap-1">
                     <Sparkles className="w-3 h-3" />
                     BEST VALUE
                   </div>
@@ -163,18 +163,18 @@ export default function SubscriptionPage() {
                 <div className={clsx(
                   'w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center',
                   isPopular 
-                    ? 'bg-gradient-to-br from-yellow-500/30 to-yellow-600/20' 
+                    ? 'bg-gradient-to-br from-red-500/30 to-red-600/20' 
                     : 'bg-ink-800/50'
                 )}>
                   {index === 0 ? (
-                    <Star className="w-7 h-7 text-yellow-400" />
+                    <Star className="w-7 h-7 text-red-400" />
                   ) : index === 1 ? (
-                    <Zap className="w-7 h-7 text-yellow-400" />
+                    <Zap className="w-7 h-7 text-red-400" />
                   ) : (
-                    <Crown className="w-7 h-7 text-yellow-400" />
+                    <Crown className="w-7 h-7 text-red-400" />
                   )}
                 </div>
-                <h3 className="font-display text-xl font-bold text-ink-100 mb-1">
+                <h3 className="font-display text-xl font-bold text-red-800 mb-1">
                   {plan.name}
                 </h3>
                 <p className="text-ink-500 text-sm">{plan.description}</p>
@@ -182,7 +182,7 @@ export default function SubscriptionPage() {
 
               <div className="text-center mb-6">
                 <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-3xl font-bold text-ink-100">
+                  <span className="text-3xl font-bold text-red-800">
                     {formatPrice(plan.price)}
                   </span>
                   <span className="text-ink-500 text-sm">/ {plan.duration} {plan.durationUnit}</span>
@@ -194,11 +194,11 @@ export default function SubscriptionPage() {
                   <li key={i} className="flex items-start gap-3 text-sm">
                     <div className={clsx(
                       'w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5',
-                      isPopular ? 'bg-yellow-500/20' : 'bg-ink-800'
+                      isPopular ? 'bg-red-500/20' : 'bg-ink-800'
                     )}>
                       <Check className={clsx(
                         'w-3 h-3',
-                        isPopular ? 'text-yellow-400' : 'text-jade-400'
+                        isPopular ? 'text-red-400' : 'text-jade-400'
                       )} />
                     </div>
                     <span className="text-ink-300">{feature}</span>
@@ -214,8 +214,8 @@ export default function SubscriptionPage() {
                   isCurrentPlan 
                     ? 'bg-jade-500/20 text-jade-400 cursor-not-allowed'
                     : isPopular
-                    ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-ink-950 hover:shadow-lg hover:shadow-yellow-500/30'
-                    : 'bg-ink-800 text-ink-200 hover:bg-ink-700 border border-ink-700'
+                    ? 'bg-gradient-to-r from-red-500 to-red-600 text-ink-950 hover:shadow-lg hover:shadow-pink-400'
+                    : 'bg-ink-800 text-red-800 hover:bg-ink-700 border border-ink-500'
                 )}
               >
                 {isPurchasing ? (
@@ -238,8 +238,8 @@ export default function SubscriptionPage() {
       </div>
 
       <div className="glass-card p-6">
-        <h3 className="font-display text-lg font-semibold text-ink-100 mb-4 flex items-center gap-2">
-          <Shield className="w-5 h-5 text-yellow-400" />
+        <h3 className="font-display text-lg font-semibold text-red-800 mb-4 flex items-center gap-2">
+          <Shield className="w-5 h-5 text-red-400" />
           Secure Learning Environment
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -247,21 +247,21 @@ export default function SubscriptionPage() {
             <div className="w-10 h-10 rounded-lg bg-deep-500/20 flex items-center justify-center mb-3">
               <span className="text-deep-400 text-xl font-bold">1</span>
             </div>
-            <h4 className="font-semibold text-ink-200 mb-1">Single Device Access</h4>
+            <h4 className="font-semibold text-red-800 mb-1">Single Device Access</h4>
             <p className="text-xs text-ink-500">Your account is linked to one device at a time for security</p>
           </div>
           <div className="p-4 bg-ink-900/50 rounded-xl">
             <div className="w-10 h-10 rounded-lg bg-jade-500/20 flex items-center justify-center mb-3">
               <span className="text-jade-400 text-xl font-bold">2</span>
             </div>
-            <h4 className="font-semibold text-ink-200 mb-1">Dynamic Watermarks</h4>
+            <h4 className="font-semibold text-red-800 mb-1">Dynamic Watermarks</h4>
             <p className="text-xs text-ink-500">Your session info is visible on videos to prevent sharing</p>
           </div>
           <div className="p-4 bg-ink-900/50 rounded-xl">
-            <div className="w-10 h-10 rounded-lg bg-saffron-500/20 flex items-center justify-center mb-3">
-              <span className="text-saffron-400 text-xl font-bold">3</span>
+            <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center mb-3">
+              <span className="text-red-400 text-xl font-bold">3</span>
             </div>
-            <h4 className="font-semibold text-ink-200 mb-1">Secure Playback</h4>
+            <h4 className="font-semibold text-red-800 mb-1">Secure Playback</h4>
             <p className="text-xs text-ink-500">Videos play only on our platform with content protection</p>
           </div>
         </div>

@@ -220,7 +220,7 @@ export default function YouTubePlayerPage() {
           <ArrowLeft className="w-5 h-5 text-ink-400" />
         </Link>
         <div className="flex-1 min-w-0">
-          <h1 className="text-lg font-bold text-ink-100 truncate">{course.title}</h1>
+          <h1 className="text-lg font-bold text-red-800 truncate">{course.title}</h1>
           <div className="flex items-center gap-3 text-xs font-mono text-ink-500 mt-1">
             <span className="flex items-center gap-1">
               <Youtube className="w-3 h-3 text-red-500" />
@@ -241,9 +241,7 @@ export default function YouTubePlayerPage() {
       <div className="flex items-center gap-3">
         <div className="flex-1 h-1.5 bg-ink-950 rounded-full overflow-hidden">
           <div 
-            className={clsx('h-full transition-all duration-300', 
-              pct >= 70 ? 'bg-teal-500' : pct >= 40 ? 'bg-yellow-500' : 'bg-red-500'
-            )} 
+            className="h-full transition-all duration-300 bg-teal-500" 
             style={{ width: `${pct}%` }} 
           />
         </div>
@@ -257,10 +255,10 @@ export default function YouTubePlayerPage() {
               <div id="youtube-player" className="w-full h-full" />
             </div>
             
-            <div className="p-4 border-t border-ink-800">
+            <div className="p-4 border-t border-ink-600">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-sm font-bold text-ink-100 mb-1">
+                  <h2 className="text-sm font-bold text-red-800 mb-1">
                     {currentVideo?.title}
                   </h2>
                   {currentVideo?.duration && (
@@ -276,7 +274,7 @@ export default function YouTubePlayerPage() {
                     'px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5',
                     isVideoCompleted(currentVideo?.videoId)
                       ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30'
-                      : 'bg-ink-800 text-ink-300 hover:bg-ink-700 border border-ink-700'
+                      : 'bg-ink-800 text-ink-300 hover:bg-ink-700 border border-ink-500'
                   )}
                 >
                   {isCompleting ? (
@@ -290,7 +288,7 @@ export default function YouTubePlayerPage() {
                 </button>
               </div>
               
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-ink-800">
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-ink-600">
                 <button
                   onClick={goToPrev}
                   disabled={currentVideoIndex === 0}
@@ -315,8 +313,8 @@ export default function YouTubePlayerPage() {
 
         <div className="space-y-4">
           <div className="glass-card">
-            <div className="p-3 border-b border-ink-800">
-              <h3 className="text-xs font-bold text-ink-400 uppercase tracking-wider">
+            <div className="p-3 border-b border-ink-600">
+              <h3 className="text-xs font-bold text-red-800 uppercase tracking-wider">
                 Course Content
               </h3>
             </div>
@@ -330,7 +328,7 @@ export default function YouTubePlayerPage() {
                     key={video.videoId}
                     onClick={() => handleVideoClick(index)}
                     className={clsx(
-                      'p-3 flex items-start gap-3 cursor-pointer transition-all border-b border-ink-800/50',
+                      'p-3 flex items-start gap-3 cursor-pointer transition-all border-b border-ink-600/50',
                       isActive ? 'bg-ink-800/50' : 'hover:bg-ink-900/30'
                     )}
                   >
@@ -341,16 +339,13 @@ export default function YouTubePlayerPage() {
                       {completed ? (
                         <CheckCircle2 className="w-4 h-4 text-teal-500" />
                       ) : isActive ? (
-                        <Play className="w-4 h-4 text-yellow-400" />
+                        <Play className="w-4 h-4 text-red-400" />
                       ) : (
                         <Circle className="w-4 h-4 text-ink-600" />
                       )}
                     </button>
                     <div className="flex-1 min-w-0">
-                      <p className={clsx(
-                        'text-xs line-clamp-2',
-                        completed ? 'text-ink-500' : isActive ? 'text-ink-100' : 'text-ink-400'
-                      )}>
+                      <p className="text-xs line-clamp-2 text-ink-100">
                         {video.title}
                       </p>
                       <span className="text-[10px] font-mono text-ink-600 mt-1 flex items-center gap-1">

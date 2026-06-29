@@ -57,22 +57,22 @@ export default function ProfilePage() {
       </div>
 <div className="glass-card p-5">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-yellow-600 to-yellow-800 flex items-center justify-center">
+          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center">
             <User className="w-7 h-7 text-white" />
           </div>
           <div>
-            <h3 className="font-display text-xl font-semibold text-ink-100">{user?.name}</h3>
+            <h3 className="font-display text-xl font-semibold text-red-800">{user?.name}</h3>
             <p className="text-ink-500 text-sm">{user?.email}</p>
             <div className="flex items-center gap-3 mt-1">
-              <span className="text-xs font-mono text-yellow-400">Streak: {liveStats?.studyStreak ?? user?.stats?.studyStreak ?? 0}d</span>
+              <span className="text-xs font-mono text-red-400">Streak: {liveStats?.studyStreak ?? user?.stats?.studyStreak ?? 0}d</span>
               <span className="text-xs font-mono text-deep-400">Study days: {liveStats?.totalStudyDays ?? user?.stats?.totalStudyDays ?? 0}</span>
             </div>
           </div>
         </div>
       </div>
 <div className="glass-card p-5 space-y-4">
-        <h3 className="font-display text-base font-semibold text-ink-200 flex items-center gap-2">
-          <Target className="w-4 h-4 text-yellow-400" />
+        <h3 className="font-display text-base font-semibold text-red-800 flex items-center gap-2">
+          <Target className="w-4 h-4 text-red-400" />
           Preparation Setup
         </h3>
         <div className="grid grid-cols-2 gap-4">
@@ -126,7 +126,7 @@ export default function ProfilePage() {
         </div>
       </div>
 <div className="glass-card p-5 space-y-4">
-        <h3 className="font-display text-base font-semibold text-ink-200 flex items-center gap-2">
+        <h3 className="font-display text-base font-semibold text-red-800 flex items-center gap-2">
           <Trophy className="w-4 h-4 text-teal-400" />
           Mains Score Targets
         </h3>

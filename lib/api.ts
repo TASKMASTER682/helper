@@ -121,6 +121,7 @@ export const mockTestAPI = {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
   uploadStructured: (data: any) => api.post('/mock-tests/upload-structured', data),
+  uploadStructuredHtml: (data: any) => api.post('/mock-tests/upload-structured-html', data),
   getFilters: () => api.get('/mock-tests/metadata/filters'),
   pollStatus: (id: string) => api.get(`/mock-tests/${id}`),
   submitAttempt: (
@@ -179,6 +180,10 @@ export const adminAPI = {
   updateSubscription: (id: string, data: any) => api.put(`/admin/subscriptions/${id}`, data),
   activateUserSubscription: (userId: string, data: any) => api.post(`/admin/subscriptions/${userId}/activate`, data),
   getSubscriptionStats: () => api.get('/admin/subscription/stats'),
+
+  // Articles (Harvester Integration)
+  loadTodayArticles: (source: string) => api.post(`/admin/articles/load-today/${source}`),
+  loadYesterdayArticles: (source: string) => api.post(`/admin/articles/load-yesterday/${source}`),
 };
 
 export const youtubeCourseAPI = {
