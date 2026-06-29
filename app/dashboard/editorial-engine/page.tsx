@@ -34,6 +34,7 @@ type EditorialItem = {
 
 const TABS = [
   { key: 'today', label: 'Today' },
+  { key: 'yesterday', label: 'Yesterday' },
   { key: '7d', label: '7 Days' },
   { key: '1m', label: '1 Month' },
   { key: '6m', label: '6 Months' },
@@ -132,10 +133,12 @@ export default function EditorialEnginePage() {
     }
   };
 
-  const [selectedWindow, setSelectedWindow] = useState<'today' | '7d' | '1m' | '6m' | 'gt6m'>('today');
+  const [selectedWindow, setSelectedWindow] = useState<'today' | 'yesterday' | '7d' | '1m' | '6m' | 'gt6m'>('today');
   const [analysisFromDB, setAnalysisFromDB] = useState<any>(null);
   const [todayItems, setTodayItems] = useState<EditorialItem[]>([]);
   const [todayItemsLoading, setTodayItemsLoading] = useState(false);
+  const [yesterdayItems, setYesterdayItems] = useState<EditorialItem[]>([]);
+  const [yesterdayItemsLoading, setYesterdayItemsLoading] = useState(false);
   const [lastRunDate, setLastRunDate] = useState<string | null>(null);
 
   useEffect(() => {
@@ -179,6 +182,21 @@ export default function EditorialEnginePage() {
       setTodayItems([]);
     } finally {
       setTodayItemsLoading(false);
+    }
+  };
+
+  const fetchYesterdayItems = async () => {
+    setYesterdayItemsLoading(true);
+    try {
+      const d = new Date();
+      d.setDate(d.getDate() - 1);
+      const yesterdayKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      const res = await api.get(`/editorial-engine/items?createdDate=${yesterdayKey}`);
+      setYesterdayItems(res.data?.items || []);
+    } catch {
+      setYesterdayItems([]);
+    } finally {
+      setYesterdayItemsLoading(false);
     }
   };
 
@@ -293,7 +311,8 @@ export default function EditorialEnginePage() {
               type="button"
               onClick={() => {
                 setSelectedWindow(tab.key as typeof selectedWindow);
-                if (tab.key !== 'today') loadAnalysisForWindow(tab.key);
+                if (tab.key === 'yesterday') fetchYesterdayItems();
+                else if (tab.key !== 'today') loadAnalysisForWindow(tab.key);
               }}
               className={clsx(
                 'px-5 py-3.5 text-sm font-bold whitespace-nowrap transition-all relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-crimson/50',
@@ -347,6 +366,97 @@ export default function EditorialEnginePage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {todayItems.map((item) => (
+                  <article
+                    key={item._id}
+                    className="p-5 rounded-xl border border-ink-600/20 bg-ink-800/40 hover:bg-ink-800/60 transition-colors"
+                  >
+                    <Link
+                      href={`/dashboard/editorial-engine/article/${item._id}`}
+                      className="text-crimson font-bold text-[15px] leading-snug line-clamp-2 hover:text-crimson-deep transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crimson/50 rounded"
+                    >
+                      {item.title}
+                    </Link>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-ink-500 text-xs font-semibold uppercase tracking-wider">
+                        {item.sourceKey}
+                      </span>
+                      <span className="text-ink-600 text-xs" aria-hidden="true">·</span>
+                      <Clock className="w-3.5 h-3.5 text-ink-500" aria-hidden="true" />
+                      <span className="text-ink-500 text-xs">
+                        {item.runDateKey}
+                      </span>
+                    </div>
+                    {item.description && (
+                      <div className="mt-2.5">
+                        <p className={clsx(
+                          'text-ink-400 text-sm leading-relaxed',
+                          !expandedArticles.has(item._id) && 'line-clamp-2'
+                        )}>
+                          {item.description}
+                        </p>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-4 mt-4 pt-3 border-t border-ink-600/10">
+                      <button
+                        onClick={() => openContentEditor(item)}
+                        className="inline-flex items-center gap-1 text-crimson text-xs font-bold uppercase tracking-wider hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crimson/50 rounded px-1"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" aria-hidden="true" /> Edit
+                      </button>
+                      <a
+                        href={item.link}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-ink-400 text-xs font-bold uppercase tracking-wider hover:text-crimson hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crimson/50 rounded px-1"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" /> View
+                      </a>
+                      <button
+                        onClick={() => handleDeleteArticle(item._id)}
+                        className="inline-flex items-center gap-1 text-ink-500 text-xs font-bold uppercase tracking-wider hover:text-crimson hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crimson/50 rounded px-1 ml-auto"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" aria-hidden="true" /> Delete
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : selectedWindow === 'yesterday' ? (
+          <div className="p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-bold text-ink-100 flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-teal" aria-hidden="true" />
+                Yesterday&rsquo;s Articles
+              </h2>
+              <button
+                onClick={() => fetchYesterdayItems()}
+                disabled={yesterdayItemsLoading}
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-crimson hover:text-crimson-deep transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crimson/50 rounded-lg px-2 py-1"
+                aria-label={yesterdayItemsLoading ? 'Refreshing…' : 'Refresh articles'}
+              >
+                <RefreshCw className={clsx('w-3.5 h-3.5', yesterdayItemsLoading && 'animate-spin')} aria-hidden="true" />
+                {yesterdayItemsLoading ? 'Refreshing…' : 'Refresh'}
+              </button>
+            </div>
+
+            {yesterdayItemsLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3" aria-label="Loading articles">
+                <ArticleSkeleton />
+                <ArticleSkeleton />
+                <ArticleSkeleton />
+                <ArticleSkeleton />
+              </div>
+            ) : yesterdayItems.length === 0 ? (
+              <div className="text-center py-12">
+                <FileText className="w-8 h-8 text-ink-500 mx-auto mb-3" aria-hidden="true" />
+                <p className="text-ink-400 text-sm">No articles from yesterday.</p>
+                <p className="text-ink-500 text-xs mt-1">Upload a JSON file to add articles.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {yesterdayItems.map((item) => (
                   <article
                     key={item._id}
                     className="p-5 rounded-xl border border-ink-600/20 bg-ink-800/40 hover:bg-ink-800/60 transition-colors"
