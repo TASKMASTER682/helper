@@ -10,8 +10,8 @@ import {
   ChevronLeft, ChevronRight, Upload, Settings, BarChart3,
   ToggleLeft, ToggleRight, Save, CheckSquare, Square, Eye, Crown, CreditCard, PlayCircle,
   Zap, Clock, TrendingUp, RefreshCw, Filter, MoreVertical, UserPlus, Database, Mail, Calendar,
-  Activity, Video, Layers, Bell, Percent, MessageSquare, Send, Copy,
-  Newspaper, ExternalLink, Code2
+  Activity, Video, Bell, Percent, MessageSquare, Send, Copy,
+  Newspaper, ExternalLink
 } from 'lucide-react';
 import { 
   PlanFormModal, ActivateUserModal, CourseFormModal, LessonFormModal,
@@ -295,15 +295,14 @@ function TestsTab() {
   const [loading, setLoading] = useState(true);
   const [editingTest, setEditingTest] = useState<any>(null);
   const [filters, setFilters] = useState({ subject: '', testType: '', mode: '' });
-  const [showHtmlForm, setShowHtmlForm] = useState(false);
-  const [htmlQuestions, setHtmlQuestions] = useState('');
-  const [htmlSolutions, setHtmlSolutions] = useState('');
-  const [uploadingHtml, setUploadingHtml] = useState(false);
-  const [htmlFormData, setHtmlFormData] = useState({
+  const [showMarkerForm, setShowMarkerForm] = useState(false);
+  const [uploadingMarkers, setUploadingMarkers] = useState(false);
+  const [markerFormData, setMarkerFormData] = useState({
     name: '', testType: 'prelims_gs', totalQuestions: '100',
     durationMinutes: '120', markCorrect: '2.0', markWrong: '-0.66',
     subject: '', year: new Date().getFullYear().toString(),
   });
+  const [markerText, setMarkerText] = useState('');
 
   useEffect(() => { loadTests(); }, [pagination.page, filters]);
 
@@ -334,30 +333,28 @@ function TestsTab() {
     } catch { toast.error('State transition failed'); }
   };
 
-  const handleHtmlUpload = async () => {
-    if (!htmlQuestions.trim()) return toast.error('Paste questions HTML');
-    setUploadingHtml(true);
+  const handleMarkerUpload = async () => {
+    if (!markerText.trim()) return toast.error('Paste structured text with markers');
+    setUploadingMarkers(true);
     try {
       const payload = {
-        ...htmlFormData,
-        totalQuestions: parseInt(htmlFormData.totalQuestions),
-        durationMinutes: parseInt(htmlFormData.durationMinutes),
-        markCorrect: parseFloat(htmlFormData.markCorrect),
-        markWrong: parseFloat(htmlFormData.markWrong),
-        year: parseInt(htmlFormData.year),
-        questionsHtml: htmlQuestions,
-        solutionsHtml: htmlSolutions,
+        ...markerFormData,
+        totalQuestions: parseInt(markerFormData.totalQuestions),
+        durationMinutes: parseInt(markerFormData.durationMinutes),
+        markCorrect: parseFloat(markerFormData.markCorrect),
+        markWrong: parseFloat(markerFormData.markWrong),
+        year: parseInt(markerFormData.year),
+        structuredText: markerText,
       };
-      await mockTestAPI.uploadStructuredHtml(payload);
-      toast.success('HTML test created!');
-      setShowHtmlForm(false);
-      setHtmlQuestions('');
-      setHtmlSolutions('');
+      await mockTestAPI.uploadStructuredMarkers(payload);
+      toast.success('Marker test created!');
+      setShowMarkerForm(false);
+      setMarkerText('');
       loadTests();
     } catch (err: any) {
-      toast.error(err.response?.data?.error || 'HTML upload failed');
+      toast.error(err.response?.data?.error || 'Marker upload failed');
     } finally {
-      setUploadingHtml(false);
+      setUploadingMarkers(false);
     }
   };
 
@@ -391,11 +388,11 @@ function TestsTab() {
         </div>
         <div className="flex items-center gap-3">
           <button
-            onClick={() => setShowHtmlForm(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black uppercase tracking-widest transition-all"
+            onClick={() => setShowMarkerForm(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-black uppercase tracking-widest transition-all"
           >
-            <Code2 className="w-4 h-4" />
-            HTML Upload
+            <Zap className="w-4 h-4" />
+            Marker Upload
           </button>
           <div className="text-[10px] font-black text-ink-600 uppercase tracking-widest">
             Showing {tests.length} of {pagination.total} Records
@@ -520,49 +517,54 @@ function TestsTab() {
         <EditTestModal test={editingTest} onClose={() => setEditingTest(null)} onSave={() => { setEditingTest(null); loadTests(); }} />
       )}
 
-      {showHtmlForm && (
+      {showMarkerForm && (
         <div className="fixed inset-0 bg-ink-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="glass-card p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-lg text-purple-400">HTML Test Upload</h3>
-              <X className="cursor-pointer text-ink-400 hover:text-ink-100" onClick={() => setShowHtmlForm(false)} />
+              <h3 className="font-bold text-lg text-teal-400">Marker-Based Upload</h3>
+              <X className="cursor-pointer text-ink-400 hover:text-ink-100" onClick={() => setShowMarkerForm(false)} />
             </div>
             <div className="space-y-4 mb-4">
               <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold text-red-8000">Questions HTML *</label>
+                <label className="text-[10px] uppercase font-bold text-red-8000">Structured Text with Markers *</label>
                 <textarea
-                  className="input-field w-full h-40 resize-none font-mono text-xs"
-                  placeholder='<div class="ata-question-item" data-question-no="1">...'
-                  value={htmlQuestions}
-                  onChange={(e) => setHtmlQuestions(e.target.value)}
+                  className="input-field w-full h-48 resize-none font-mono text-xs"
+                  placeholder={`[Q] Consider the following statements:\n[ST-START]\n1. Statement 1\n2. Statement 2\n[ST-END]\n[SUB-Q] Which is correct?\n[O_a] Option A\n[O_b] Option B\n[O_c] Option C\n[O_d] Option D\n[ANS] A\n[EXP] Explanation\n[NEXT]`}
+                  value={markerText}
+                  onChange={(e) => setMarkerText(e.target.value)}
                 />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold text-red-8000">Solutions HTML</label>
-                <textarea
-                  className="input-field w-full h-32 resize-none font-mono text-xs"
-                  placeholder='<div class="ata-question-item" data-question-no="1"><div data-answer>A</div>...'
-                  value={htmlSolutions}
-                  onChange={(e) => setHtmlSolutions(e.target.value)}
-                />
+                <details className="mt-1">
+                  <summary className="text-[9px] text-teal-600 font-bold uppercase tracking-widest cursor-pointer hover:text-teal-400 select-none">Markers Guide</summary>
+                  <div className="mt-2 p-3 bg-ink-950 border border-ink-600 rounded-xl text-[9px] font-mono space-y-1 text-ink-400">
+                    <p><span className="text-teal-400">[CONTEXT]</span> Common passage (optional)</p>
+                    <p><span className="text-teal-400">[Q]</span> Core question stem</p>
+                    <p><span className="text-teal-400">[ST-START]...[ST-END]</span> Numbered statements</p>
+                    <p><span className="text-teal-400">[MATCH-START]...[MATCH-END]</span> Match pairs (1. Left : Right)</p>
+                    <p><span className="text-teal-400">[SUB-Q]</span> Interrogation line</p>
+                    <p><span className="text-teal-400">[O_a]...[O_d]</span> Options A-D</p>
+                    <p><span className="text-teal-400">[ANS]</span> Correct letter (A/B/C/D)</p>
+                    <p><span className="text-teal-400">[EXP]</span> Explanation</p>
+                    <p><span className="text-teal-400">[NEXT]</span> Separator between questions</p>
+                  </div>
+                </details>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <input placeholder="Test Name" className="input-field" value={htmlFormData.name} onChange={e => setHtmlFormData({...htmlFormData, name: e.target.value})} />
-                <select className="input-field" value={htmlFormData.testType} onChange={e => setHtmlFormData({...htmlFormData, testType: e.target.value})}>
+                <input placeholder="Test Name" className="input-field" value={markerFormData.name} onChange={e => setMarkerFormData({...markerFormData, name: e.target.value})} />
+                <select className="input-field" value={markerFormData.testType} onChange={e => setMarkerFormData({...markerFormData, testType: e.target.value})}>
                   {TEST_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                 </select>
-                <input type="number" placeholder="Total Questions" className="input-field" value={htmlFormData.totalQuestions} onChange={e => setHtmlFormData({...htmlFormData, totalQuestions: e.target.value})} />
-                <input type="number" placeholder="Duration (min)" className="input-field" value={htmlFormData.durationMinutes} onChange={e => setHtmlFormData({...htmlFormData, durationMinutes: e.target.value})} />
-                <input placeholder="Subject" className="input-field" value={htmlFormData.subject} onChange={e => setHtmlFormData({...htmlFormData, subject: e.target.value})} />
-                <input type="number" placeholder="Year" className="input-field" value={htmlFormData.year} onChange={e => setHtmlFormData({...htmlFormData, year: e.target.value})} />
+                <input type="number" placeholder="Total Questions" className="input-field" value={markerFormData.totalQuestions} onChange={e => setMarkerFormData({...markerFormData, totalQuestions: e.target.value})} />
+                <input type="number" placeholder="Duration (min)" className="input-field" value={markerFormData.durationMinutes} onChange={e => setMarkerFormData({...markerFormData, durationMinutes: e.target.value})} />
+                <input placeholder="Subject" className="input-field" value={markerFormData.subject} onChange={e => setMarkerFormData({...markerFormData, subject: e.target.value})} />
+                <input type="number" placeholder="Year" className="input-field" value={markerFormData.year} onChange={e => setMarkerFormData({...markerFormData, year: e.target.value})} />
               </div>
             </div>
             <button
-              disabled={uploadingHtml}
-              onClick={handleHtmlUpload}
-              className="w-full py-3 flex items-center justify-center gap-2 rounded-xl font-bold transition-all mt-4 bg-purple-600 text-white hover:bg-purple-700"
+              disabled={uploadingMarkers}
+              onClick={handleMarkerUpload}
+              className="w-full py-3 flex items-center justify-center gap-2 rounded-xl font-bold transition-all mt-4 bg-teal-600 text-white hover:bg-teal-500"
             >
-              {uploadingHtml ? <><Loader2 className="animate-spin w-4 h-4" /> Processing...</> : 'Upload HTML Questions'}
+              {uploadingMarkers ? <><Loader2 className="animate-spin w-4 h-4" /> Processing...</> : 'Upload Questions'}
             </button>
           </div>
         </div>
@@ -1151,727 +1153,6 @@ function UsersTab() {
   );
 }
 
-function CreateTestTab_Legacy() {
-  const [questions, setQuestions] = useState<any[]>([]);
-  const [subjects, setSubjects] = useState<string[]>([]);
-  const [selectedSubject, setSelectedSubject] = useState<string>('');
-  const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [creating, setCreating] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [showStructuredForm, setShowStructuredForm] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    subject: '',
-    testType: 'sectional',
-    year: new Date().getFullYear(),
-    durationMinutes: 60,
-    markCorrect: 2.0,
-    markWrong: -0.66,
-  });
-  const [structuredData, setStructuredData] = useState({
-    name: '',
-    testType: 'prelims_gs',
-    totalQuestions: '100',
-    durationMinutes: '120',
-    markCorrect: '2.0',
-    markWrong: '-0.66',
-    subject: '',
-    topics: '',
-    year: new Date().getFullYear().toString(),
-  });
-  const [questionPaperText, setQuestionPaperText] = useState('');
-  const [solutionText, setSolutionText] = useState('');
-  const [allSeries, setAllSeries] = useState<any[]>([]);
-  const [selectedSeriesId, setSelectedSeriesId] = useState('');
-  const [uploadingStructured, setUploadingStructured] = useState(false);
-  const [showHtmlForm, setShowHtmlForm] = useState(false);
-  const [htmlQuestions, setHtmlQuestions] = useState('');
-  const [htmlSolutions, setHtmlSolutions] = useState('');
-  const [uploadingHtml, setUploadingHtml] = useState(false);
-
-  useEffect(() => {
-    loadQuestions();
-    loadSubjects();
-    loadSeries();
-  }, []);
-
-  const loadSubjects = async () => {
-    try {
-      const { data } = await adminAPI.getSubjects();
-      setSubjects(data || []);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const loadSeries = async () => {
-    try {
-      const { data } = await testsAPI.getSeries();
-      setAllSeries(data || []);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleStructuredUpload = async () => {
-    if (!questionPaperText.trim()) {
-      return toast.error('Paste question paper text');
-    }
-    if (!solutionText.trim()) {
-      return toast.error('Paste solution text');
-    }
-
-    setUploadingStructured(true);
-    try {
-      const payload = {
-        name: structuredData.name || `Structured Test ${new Date().toLocaleDateString()}`,
-        testType: structuredData.testType,
-        totalQuestions: parseInt(structuredData.totalQuestions),
-        durationMinutes: parseInt(structuredData.durationMinutes),
-        markCorrect: parseFloat(structuredData.markCorrect),
-        markWrong: parseFloat(structuredData.markWrong),
-        subject: structuredData.subject,
-        topics: structuredData.topics,
-        year: parseInt(structuredData.year),
-        questionPaperText,
-        solutionText,
-        testSeriesId: selectedSeriesId
-      };
-      console.log("[Admin] Uploading structured test with payload:", { 
-        name: payload.name, 
-        testSeriesId: payload.testSeriesId,
-        questionPaperLength: payload.questionPaperText?.length,
-        solutionLength: payload.solutionText?.length
-      });
-      const response = await mockTestAPI.uploadStructured(payload);
-      console.log("[Admin] Upload response:", response);
-      toast.success('Structured test created!');
-      setShowStructuredForm(false);
-      setQuestionPaperText('');
-      setSolutionText('');
-      setStructuredData({
-        name: '',
-        testType: 'prelims_gs',
-        totalQuestions: '100',
-        durationMinutes: '120',
-        markCorrect: '2.0',
-        markWrong: '-0.66',
-        subject: '',
-        topics: '',
-        year: new Date().getFullYear().toString(),
-      });
-    } catch (err: any) {
-      console.error("[Admin] Upload error:", err);
-      console.error("[Admin] Upload error response:", err.response?.data);
-      toast.error(err.response?.data?.error || err.message || 'Upload failed');
-    } finally {
-      setUploadingStructured(false);
-    }
-  };
-
-  const handleHtmlUpload = async () => {
-    if (!htmlQuestions.trim()) {
-      return toast.error('Paste questions HTML');
-    }
-    setUploadingHtml(true);
-    try {
-      const payload = {
-        name: structuredData.name || `HTML Test ${new Date().toLocaleDateString()}`,
-        testType: structuredData.testType,
-        totalQuestions: parseInt(structuredData.totalQuestions),
-        durationMinutes: parseInt(structuredData.durationMinutes),
-        markCorrect: parseFloat(structuredData.markCorrect),
-        markWrong: parseFloat(structuredData.markWrong),
-        subject: structuredData.subject,
-        year: parseInt(structuredData.year),
-        questionsHtml: htmlQuestions,
-        solutionsHtml: htmlSolutions,
-        testSeriesId: selectedSeriesId
-      };
-      await mockTestAPI.uploadStructuredHtml(payload);
-      toast.success('HTML structured test created!');
-      setShowHtmlForm(false);
-      setHtmlQuestions('');
-      setHtmlSolutions('');
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || 'HTML upload failed');
-    } finally {
-      setUploadingHtml(false);
-    }
-  };
-
-  const loadQuestions = async () => {
-    try {
-      setLoading(true);
-      const { data } = await adminAPI.getQuestions({ 
-        limit: 500,
-        subject: selectedSubject || undefined
-      });
-      setQuestions(data.questions || []);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadQuestions();
-  }, [selectedSubject]);
-
-  const toggleQuestion = (id: string) => {
-    setSelectedQuestions(prev => 
-      prev.includes(id) 
-        ? prev.filter(q => q !== id)
-        : [...prev, id]
-    );
-  };
-
-  const toggleAllInSubject = (subject: string) => {
-    const subjectQuestions = questions.filter(q => q.subject === subject);
-    const subjectIds = subjectQuestions.map(q => q._id);
-    const allSelected = subjectIds.every(id => selectedQuestions.includes(id));
-    
-    if (allSelected) {
-      setSelectedQuestions(prev => prev.filter(id => !subjectIds.includes(id)));
-    } else {
-      setSelectedQuestions(prev => [...new Set([...prev, ...subjectIds])]);
-    }
-  };
-
-  const handleCreateTest = async () => {
-    if (selectedQuestions.length === 0) {
-      return toast.error('Please select at least one question');
-    }
-    if (!formData.subject) {
-      return toast.error('Please select a subject for the test');
-    }
-
-    try {
-      setCreating(true);
-      await adminAPI.createTestFromQuestions({
-        ...formData,
-        questionIds: selectedQuestions,
-      });
-      toast.success(`Test created with ${selectedQuestions.length} questions!`);
-      setSelectedQuestions([]);
-      setShowForm(false);
-      setFormData({
-        name: '',
-        subject: '',
-        testType: 'sectional',
-        year: new Date().getFullYear(),
-        durationMinutes: 60,
-        markCorrect: 2.0,
-        markWrong: -0.66,
-      });
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Failed to create test');
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  // Group questions by subject
-  const questionsBySubject = questions.reduce((acc: any, q) => {
-    if (!acc[q.subject]) acc[q.subject] = [];
-    acc[q.subject].push(q);
-    return acc;
-  }, {});
-
-  const allSubjects = Object.keys(questionsBySubject).sort();
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="font-bold text-lg text-red-800">Create Mock Test</h3>
-          <p className="text-sm text-ink-500">Create test from questions or upload structured test</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowStructuredForm(true)}
-            className="btn-primary flex items-center gap-2 bg-teal-600 hover:bg-teal-500"
-          >
-            <Upload className="w-4 h-4" />
-            Structured Upload
-          </button>
-          <button
-            onClick={() => setShowHtmlForm(true)}
-            className="btn-primary flex items-center gap-2 bg-purple-600 hover:bg-purple-500"
-          >
-            <Upload className="w-4 h-4" />
-            HTML Upload
-          </button>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <div>
-          <span className="text-sm text-ink-400">
-            {selectedQuestions.length} questions selected
-          </span>
-          <button 
-            onClick={() => setShowForm(true)} 
-            disabled={selectedQuestions.length === 0}
-            className="btn-primary flex items-center gap-2"
-          >
-            <CheckCircle2 className="w-4 h-4" />
-            Create Test
-          </button>
-        </div>
-      </div>
-
-      <div className="flex gap-2 items-center flex-wrap">
-        <button
-          onClick={() => setSelectedSubject('')}
-          className={clsx(
-            'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
-            !selectedSubject ? 'bg-red-500 text-white' : 'bg-ink-800 text-ink-400'
-          )}
-        >
-          All ({questions.length})
-        </button>
-        {allSubjects.map(subject => (
-          <button
-            key={subject}
-            onClick={() => setSelectedSubject(subject)}
-            className={clsx(
-              'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
-              selectedSubject === subject ? 'bg-red-500 text-white' : 'bg-ink-800 text-ink-400'
-            )}
-          >
-            {subject} ({questionsBySubject[subject]?.length || 0})
-          </button>
-        ))}
-      </div>
-
-      {loading ? (
-        <div className="text-center py-20 text-ink-500">Loading questions...</div>
-      ) : questions.length === 0 ? (
-        <div className="glass-card p-12 text-center border-dashed border-ink-600">
-          <BookOpen className="w-12 h-12 text-ink-800 mx-auto mb-4" />
-          <p className="text-ink-500">No questions found. Upload questions first!</p>
-        </div>
-        ) : (
-        <div className="space-y-4">
-          {!selectedSubject && allSubjects.map(subject => (
-            <div key={subject} className="glass-card p-4">
-              <div className="flex items-center justify-between mb-3">
-                <button
-                  onClick={() => toggleAllInSubject(subject)}
-                  className="flex items-center gap-2 text-sm font-semibold text-red-800 hover:text-ink-50"
-                >
-                  {questionsBySubject[subject].every((q: any) => selectedQuestions.includes(q._id)) ? (
-                    <CheckSquare className="w-4 h-4 text-teal-400" />
-                  ) : (
-                    <Square className="w-4 h-4" />
-                  )}
-                  {subject}
-                </button>
-                <span className="text-xs text-ink-500">
-                  {questionsBySubject[subject].filter((q: any) => selectedQuestions.includes(q._id)).length} / {questionsBySubject[subject].length} selected
-                </span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {questionsBySubject[subject].map((q: any) => (
-                  <div
-                    key={q._id}
-                    onClick={() => toggleQuestion(q._id)}
-                    className={clsx(
-                      'p-3 rounded-lg border cursor-pointer transition-all',
-                      selectedQuestions.includes(q._id)
-                        ? 'bg-teal-500/10 border-teal-500/30'
-                        : 'bg-ink-900/30 border-ink-600 hover:border-ink-600'
-                    )}
-                  >
-                    <div className="flex items-start gap-2">
-                      {selectedQuestions.includes(q._id) ? (
-                        <CheckSquare className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
-                      ) : (
-                        <Square className="w-4 h-4 text-ink-600 shrink-0 mt-0.5" />
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-teal-400">Q{q.questionNumber}</span>
-                          <span className="text-[10px] text-ink-500">{q.year}</span>
-                        </div>
-                        <p className="text-xs text-ink-300 line-clamp-3 mt-1 whitespace-pre-wrap">{cleanHtml(q.text)}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[10px] text-ink-500">
-                            Ans: <span className="text-teal-400 font-bold">{q.correctAnswer}</span>
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-
-          {selectedSubject && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {questions.map((q: any) => (
-                <div
-                  key={q._id}
-                  onClick={() => toggleQuestion(q._id)}
-                  className={clsx(
-                    'p-3 rounded-lg border cursor-pointer transition-all',
-                    selectedQuestions.includes(q._id)
-                      ? 'bg-teal-500/10 border-teal-500/30'
-                      : 'bg-ink-900/30 border-ink-600 hover:border-ink-600'
-                  )}
-                >
-                  <div className="flex items-start gap-2">
-                    {selectedQuestions.includes(q._id) ? (
-                      <CheckSquare className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
-                    ) : (
-                      <Square className="w-4 h-4 text-ink-600 shrink-0 mt-0.5" />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-teal-400">Q{q.questionNumber}</span>
-                        <span className="text-[10px] text-ink-500">{q.year}</span>
-                      </div>
-                      <p className="text-xs text-ink-300 line-clamp-3 mt-1 whitespace-pre-wrap">{cleanHtml(q.text)}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[10px] text-ink-500">
-                          Ans: <span className="text-teal-400 font-bold">{q.correctAnswer}</span>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {showForm && (
-        <div className="fixed inset-0 bg-ink-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass-card p-6 w-full max-w-lg">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-lg text-red-800">Create Mock Test</h3>
-              <X className="cursor-pointer text-ink-400 hover:text-ink-100" onClick={() => setShowForm(false)} />
-            </div>
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs text-ink-500 block mb-1">Test Name</label>
-                <input
-                  value={formData.name}
-                  onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  className="input-field w-full"
-                  placeholder="Auto-generated if empty"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-ink-500 block mb-1">Subject *</label>
-                <select
-                  value={formData.subject}
-                  onChange={e => setFormData({ ...formData, subject: e.target.value })}
-                  className="input-field w-full"
-                  required
-                >
-                  <option value="">Select Subject</option>
-                  {SUBJECTS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-ink-500 block mb-1">Test Type</label>
-                  <select
-                    value={formData.testType}
-                    onChange={e => setFormData({ ...formData, testType: e.target.value })}
-                    className="input-field w-full"
-                  >
-                    {TEST_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs text-ink-500 block mb-1">Year</label>
-                  <input
-                    type="number"
-                    value={formData.year}
-                    onChange={e => setFormData({ ...formData, year: parseInt(e.target.value) })}
-                    className="input-field w-full"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="text-xs text-ink-500 block mb-1">Duration (min)</label>
-                  <input
-                    type="number"
-                    value={formData.durationMinutes}
-                    onChange={e => setFormData({ ...formData, durationMinutes: parseInt(e.target.value) })}
-                    className="input-field w-full"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-ink-500 block mb-1">+ Marks</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={formData.markCorrect}
-                    onChange={e => setFormData({ ...formData, markCorrect: parseFloat(e.target.value) })}
-                    className="input-field w-full"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-ink-500 block mb-1">- Marks</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={formData.markWrong}
-                    onChange={e => setFormData({ ...formData, markWrong: parseFloat(e.target.value) })}
-                    className="input-field w-full"
-                  />
-                </div>
-              </div>
-              <div className="p-3 bg-ink-900 rounded-lg">
-                <span className="text-sm text-ink-300">
-                  <strong className="text-teal-400">{selectedQuestions.length}</strong> questions will be included in this test
-                </span>
-              </div>
-            </div>
-            <div className="flex gap-3 mt-4">
-              <button onClick={handleCreateTest} disabled={creating || !formData.subject} className="btn-primary flex-1">
-                {creating ? 'Creating...' : `Create Test (${selectedQuestions.length} Qs)`}
-              </button>
-              <button onClick={() => setShowForm(false)} className="btn-ghost">Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showStructuredForm && (
-        <div className="fixed inset-0 bg-ink-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass-card p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-lg text-red-800">Structured Test Upload</h3>
-              <X className="cursor-pointer text-ink-400 hover:text-ink-100" onClick={() => setShowStructuredForm(false)} />
-            </div>
-
-            <div className="space-y-4 mb-4">
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold text-red-8000">Question Paper (Raw Text) *</label>
-                <textarea
-                  className="input-field w-full h-32 resize-none font-mono text-xs"
-                  placeholder="Paste full question paper text here..."
-                  value={questionPaperText}
-                  onChange={(e) => setQuestionPaperText(e.target.value)}
-                />
-                <p className="text-[10px] text-ink-600">Intelligent AI will structure this bank</p>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold text-red-8000">Solutions & Answers (Raw Text) *</label>
-                <textarea
-                  className="input-field w-full h-32 resize-none font-mono text-xs"
-                  placeholder="Paste solutions/answers text here..."
-                  value={solutionText}
-                  onChange={(e) => setSolutionText(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="text-[10px] uppercase font-bold text-red-8000">Link to Test Series</label>
-                  <select
-                    className="input-field w-full mt-1"
-                    value={selectedSeriesId}
-                    onChange={e => setSelectedSeriesId(e.target.value)}
-                  >
-                    <option value="">Standalone Test (No Series)</option>
-                    {allSeries.map(s => (
-                      <option key={s._id} value={s._id}>{s.name} - {s.provider}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <input 
-                  placeholder="Test Name" 
-                  className="input-field w-full" 
-                  value={structuredData.name} 
-                  onChange={e => setStructuredData({ ...structuredData, name: e.target.value })} 
-                />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <select 
-                    className="input-field" 
-                    value={structuredData.testType} 
-                    onChange={e => setStructuredData({ ...structuredData, testType: e.target.value })}
-                  >
-                    {TEST_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                  </select>
-                  <input 
-                    type="number" 
-                    placeholder="Total Questions" 
-                    className="input-field" 
-                    value={structuredData.totalQuestions} 
-                    onChange={e => setStructuredData({ ...structuredData, totalQuestions: e.target.value })} 
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-bold text-red-8000">Subject</label>
-                    <select
-                      className="input-field w-full"
-                      value={structuredData.subject}
-                      onChange={e => setStructuredData({ ...structuredData, subject: e.target.value })}
-                    >
-                      <option value="">Select Subject</option>
-                      {SUBJECTS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-bold text-red-8000">Year</label>
-                    <input
-                      type="number"
-                      placeholder="e.g. 2024"
-                      className="input-field w-full"
-                      value={structuredData.year}
-                      onChange={e => setStructuredData({ ...structuredData, year: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase font-bold text-red-8000">Specific Topics</label>
-                  <input 
-                    placeholder="e.g. Parliament, Governor" 
-                    className="input-field w-full" 
-                    value={structuredData.topics} 
-                    onChange={e => setStructuredData({ ...structuredData, topics: e.target.value })} 
-                  />
-                </div>
-              </div>
-            </div>
-
-            <button 
-              disabled={uploadingStructured} 
-              onClick={handleStructuredUpload} 
-              className="w-full py-3 flex items-center justify-center gap-2 rounded-xl font-bold transition-all mt-4 bg-teal-500 text-white hover:bg-teal-600"
-            >
-              {uploadingStructured ? <><Loader2 className="animate-spin w-4 h-4" /> Processing...</> : 'Frame Knowledge Bank'}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {showHtmlForm && (
-        <div className="fixed inset-0 bg-ink-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass-card p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-lg text-purple-400">HTML Structured Upload</h3>
-              <X className="cursor-pointer text-ink-400 hover:text-ink-100" onClick={() => setShowHtmlForm(false)} />
-            </div>
-
-            <div className="space-y-4 mb-4">
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold text-red-8000">Questions HTML *</label>
-                <textarea
-                  className="input-field w-full h-40 resize-none font-mono text-xs"
-                  placeholder='<div class="ata-question-item" data-question-no="1">...'
-                  value={htmlQuestions}
-                  onChange={(e) => setHtmlQuestions(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold text-red-8000">Solutions HTML</label>
-                <textarea
-                  className="input-field w-full h-32 resize-none font-mono text-xs"
-                  placeholder='<div class="ata-question-item" data-question-no="1"><div data-answer>A</div>...'
-                  value={htmlSolutions}
-                  onChange={(e) => setHtmlSolutions(e.target.value)}
-                />
-                <p className="text-[10px] text-ink-600">Use data-answer and data-explanation attributes</p>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="text-[10px] uppercase font-bold text-red-8000">Link to Test Series</label>
-                  <select
-                    className="input-field w-full mt-1"
-                    value={selectedSeriesId}
-                    onChange={e => setSelectedSeriesId(e.target.value)}
-                  >
-                    <option value="">Standalone Test (No Series)</option>
-                    {allSeries.map(s => (
-                      <option key={s._id} value={s._id}>{s.name} - {s.provider}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <input 
-                  placeholder="Test Name" 
-                  className="input-field w-full" 
-                  value={structuredData.name} 
-                  onChange={e => setStructuredData({ ...structuredData, name: e.target.value })} 
-                />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <select 
-                    className="input-field" 
-                    value={structuredData.testType} 
-                    onChange={e => setStructuredData({ ...structuredData, testType: e.target.value })}
-                  >
-                    {TEST_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                  </select>
-                  <input 
-                    type="number" 
-                    placeholder="Total Questions" 
-                    className="input-field" 
-                    value={structuredData.totalQuestions} 
-                    onChange={e => setStructuredData({ ...structuredData, totalQuestions: e.target.value })} 
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-bold text-red-8000">Subject</label>
-                    <select
-                      className="input-field w-full"
-                      value={structuredData.subject}
-                      onChange={e => setStructuredData({ ...structuredData, subject: e.target.value })}
-                    >
-                      <option value="">Select Subject</option>
-                      {SUBJECTS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase font-bold text-red-8000">Year</label>
-                    <input
-                      type="number"
-                      placeholder="e.g. 2024"
-                      className="input-field w-full"
-                      value={structuredData.year}
-                      onChange={e => setStructuredData({ ...structuredData, year: e.target.value })}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <button 
-              disabled={uploadingHtml} 
-              onClick={handleHtmlUpload} 
-              className="w-full py-3 flex items-center justify-center gap-2 rounded-xl font-bold transition-all mt-4 bg-purple-600 text-white hover:bg-purple-700"
-            >
-              {uploadingHtml ? <><Loader2 className="animate-spin w-4 h-4" /> Processing...</> : 'Upload HTML Questions'}
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 function CreateTestTab() {
   const [questions, setQuestions] = useState<any[]>([]);
   const [subjects, setSubjects] = useState<string[]>([]);
@@ -1890,15 +1171,10 @@ function CreateTestTab() {
     topics: '',
     year: new Date().getFullYear().toString(),
   });
-  const [questionPaperText, setQuestionPaperText] = useState('');
-  const [solutionText, setSolutionText] = useState('');
+  const [structuredText, setStructuredText] = useState('');
   const [allSeries, setAllSeries] = useState<any[]>([]);
   const [selectedSeriesId, setSelectedSeriesId] = useState('');
   const [uploadingStructured, setUploadingStructured] = useState(false);
-  const [showHtmlForm, setShowHtmlForm] = useState(false);
-  const [htmlQuestions, setHtmlQuestions] = useState('');
-  const [htmlSolutions, setHtmlSolutions] = useState('');
-  const [uploadingHtml, setUploadingHtml] = useState(false);
 
   useEffect(() => {
     loadQuestions();
@@ -1930,8 +1206,8 @@ function CreateTestTab() {
   };
 
   const handleStructuredUpload = async () => {
-    if (!questionPaperText.trim() || !solutionText.trim()) {
-      return toast.error('Incomplete data streams detected');
+    if (!structuredText.trim()) {
+      return toast.error('Paste structured text with markers');
     }
 
     setUploadingStructured(true);
@@ -1943,48 +1219,17 @@ function CreateTestTab() {
         markCorrect: parseFloat(structuredData.markCorrect),
         markWrong: parseFloat(structuredData.markWrong),
         year: parseInt(structuredData.year),
-        questionPaperText,
-        solutionText,
+        structuredText,
         testSeriesId: selectedSeriesId
       };
-      await mockTestAPI.uploadStructured(payload);
+      await mockTestAPI.uploadStructuredMarkers(payload);
       toast.success('Test node synthesized successfully');
       setShowStructuredForm(false);
-      setQuestionPaperText('');
-      setSolutionText('');
+      setStructuredText('');
     } catch (err: any) {
       toast.error(err.response?.data?.error || 'Synthesis failed');
     } finally {
       setUploadingStructured(false);
-    }
-  };
-
-  const handleHtmlUpload = async () => {
-    if (!htmlQuestions.trim()) {
-      return toast.error('Paste questions HTML');
-    }
-    setUploadingHtml(true);
-    try {
-      const payload = {
-        ...structuredData,
-        totalQuestions: parseInt(structuredData.totalQuestions),
-        durationMinutes: parseInt(structuredData.durationMinutes),
-        markCorrect: parseFloat(structuredData.markCorrect),
-        markWrong: parseFloat(structuredData.markWrong),
-        year: parseInt(structuredData.year),
-        questionsHtml: htmlQuestions,
-        solutionsHtml: htmlSolutions,
-        testSeriesId: selectedSeriesId
-      };
-      await mockTestAPI.uploadStructuredHtml(payload);
-      toast.success('HTML test created!');
-      setShowHtmlForm(false);
-      setHtmlQuestions('');
-      setHtmlSolutions('');
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || 'HTML upload failed');
-    } finally {
-      setUploadingHtml(false);
     }
   };
 
@@ -2003,55 +1248,20 @@ function CreateTestTab() {
             <div className="w-12 h-12 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 mb-6">
               <Zap className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-black text-red-800 uppercase tracking-tight mb-2">Structured Synthesis</h3>
+            <h3 className="text-xl font-black text-red-800 uppercase tracking-tight mb-2">Marker Upload</h3>
             <p className="text-sm text-ink-500 leading-relaxed max-w-[280px]">
-              Upload raw text data to automatically generate full-scale mock tests with AI-powered parsing.
+              Paste text with [Q], [O_a], [ANS], [EXP], [NEXT] markers — no HTML or separate answer key needed.
             </p>
           </div>
         </div>
 
-        <div 
-          onClick={() => setShowHtmlForm(true)}
-          className="group glass-card p-8 border-ink-600 hover:border-purple-500/50 transition-all cursor-pointer relative overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity">
-            <Code2 className="w-20 h-20 text-purple-400" />
-          </div>
-          <div className="relative z-10">
-            <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 mb-6">
-              <Code2 className="w-6 h-6" />
-            </div>
-            <h3 className="text-xl font-black text-red-800 uppercase tracking-tight mb-2">HTML Upload</h3>
-            <p className="text-sm text-ink-500 leading-relaxed max-w-[280px]">
-              Paste questions as HTML with data-* attributes — no AI needed for parsing.
-            </p>
-          </div>
-        </div>
-
-        <div className="group glass-card p-8 border-ink-600 hover:border-pink-300/50 transition-all cursor-not-allowed opacity-60 relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-10">
-            <Layers className="w-20 h-20 text-red-500" />
-          </div>
-          <div className="relative z-10">
-            <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 mb-6">
-              <Layers className="w-6 h-6" />
-            </div>
-            <h3 className="text-xl font-black text-red-800 uppercase tracking-tight mb-2">Manual Constructor</h3>
-            <p className="text-sm text-ink-500 leading-relaxed max-w-[280px]">
-              Select individual nodes from the question database to construct a custom examination pattern.
-            </p>
-            <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-ink-950 border border-ink-600 text-[8px] font-black uppercase tracking-widest text-ink-600">
-              Maintenance Required
-            </div>
-          </div>
-        </div>
       </div>
 
       {showStructuredForm && (
         <div className="animate-slide-up space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-black text-red-800 uppercase tracking-widest flex items-center gap-3">
-              <Settings className="w-4 h-4 text-teal-400" /> Synthesis Parameters
+              <Settings className="w-4 h-4 text-teal-400" /> Marker Upload Parameters
             </h2>
             <button onClick={() => setShowStructuredForm(false)} className="text-xs text-ink-600 hover:text-ink-100 uppercase font-black tracking-widest transition-colors">Abort Launch</button>
           </div>
@@ -2122,152 +1332,71 @@ function CreateTestTab() {
                 className="w-full py-4 bg-teal-500 hover:bg-teal-400 text-ink-950 font-black rounded-2xl transition-all shadow-xl shadow-teal-500/10 uppercase text-xs tracking-[0.2em] flex items-center justify-center gap-3"
               >
                 {uploadingStructured ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-                Initiate Synthesis
+                Parse & Upload
               </button>
             </div>
 
-            <div className="lg:col-span-2 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest">Question Paper Stream</label>
-                    <span className="text-[8px] text-ink-700 font-mono">{questionPaperText.length} Bytes</span>
-                  </div>
-                  <textarea 
-                    value={questionPaperText}
-                    onChange={e => setQuestionPaperText(e.target.value)}
-                    className="w-full h-96 bg-ink-950 border border-ink-600 rounded-2xl p-6 text-xs text-ink-300 font-mono focus:border-teal-500/30 outline-none resize-none shadow-inner"
-                    placeholder="Paste Question Data Here..."
-                  />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest">Solution Matrix</label>
-                    <span className="text-[8px] text-ink-700 font-mono">{solutionText.length} Bytes</span>
-                  </div>
-                  <textarea 
-                    value={solutionText}
-                    onChange={e => setSolutionText(e.target.value)}
-                    className="w-full h-96 bg-ink-950 border border-ink-600 rounded-2xl p-6 text-xs text-ink-300 font-mono focus:border-teal-500/30 outline-none resize-none shadow-inner"
-                    placeholder="Paste Solution Data Here..."
-                  />
-                </div>
+            <div className="lg:col-span-2 space-y-4">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest">Structured Text with Markers</label>
+                <span className="text-[8px] text-ink-700 font-mono">{structuredText.length} Bytes</span>
               </div>
+              <textarea 
+                value={structuredText}
+                onChange={e => setStructuredText(e.target.value)}
+                className="w-full h-96 bg-ink-950 border border-ink-600 rounded-2xl p-6 text-xs text-ink-300 font-mono focus:border-teal-500/30 outline-none resize-none shadow-inner"
+                placeholder={`[CONTEXT] Common passage/paragraph text (If any, else skip)\n[Q] Consider the following statements...\n[ST-START]\n1. Statement 1\n2. Statement 2\n[ST-END]\n[SUB-Q] Which of the statements given above is/are correct?\n[O_a] Option A\n[O_b] Option B\n[O_c] Option C\n[O_d] Option D\n[ANS] A\n[EXP] Explanation text\n[NEXT]`}
+              />
+
+              {/* Markers Legend */}
+              <details className="group">
+                <summary className="text-[10px] font-black text-teal-500 uppercase tracking-widest cursor-pointer hover:text-teal-400 transition-colors select-none">
+                  Markers Reference Guide
+                </summary>
+                <div className="mt-3 p-4 bg-ink-950/70 border border-ink-600 rounded-2xl space-y-2 text-[10px] font-mono leading-relaxed">
+                  <div className="text-ink-500 font-bold uppercase tracking-wider mb-2 pb-2 border-b border-ink-600">Available Markers</div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1.5">
+                    <span className="text-teal-400 font-bold">[CONTEXT]</span>
+                    <span className="text-ink-400">— Common passage (optional, skip if none)</span>
+                    
+                    <span className="text-teal-400 font-bold">[Q]</span>
+                    <span className="text-ink-400">— Core question stem text</span>
+                    
+                    <span className="text-teal-400 font-bold">[ST-START]...[ST-END]</span>
+                    <span className="text-ink-400">— Standard numbered statements (1 per line)</span>
+                    
+                    <span className="text-teal-400 font-bold">[MATCH-START]...[MATCH-END]</span>
+                    <span className="text-ink-400">— Match column pairs (format: "1. Left : Right")</span>
+                    
+                    <span className="text-teal-400 font-bold">[SUB-Q]</span>
+                    <span className="text-ink-400">— The actual interrogation/question line</span>
+                    
+                    <span className="text-teal-400 font-bold">[O_a] [O_b] [O_c] [O_d]</span>
+                    <span className="text-ink-400">— Option texts for A, B, C, D</span>
+                    
+                    <span className="text-teal-400 font-bold">[ANS]</span>
+                    <span className="text-ink-400">— Correct option letter (A/B/C/D only)</span>
+                    
+                    <span className="text-teal-400 font-bold">[EXP]</span>
+                    <span className="text-ink-400">— Detailed explanation text</span>
+                    
+                    <span className="text-teal-400 font-bold">[NEXT]</span>
+                    <span className="text-ink-400">— Separator between questions</span>
+                  </div>
+
+                  <div className="mt-3 pt-2 border-t border-ink-600 text-ink-600">
+                    <span className="font-bold text-ink-500">Rules:</span> Each question block starts after [NEXT]. 
+                    Everything (question, options, answer, explanation) goes in ONE block. 
+                    No separate answer key or solution textarea needed.
+                  </div>
+                </div>
+              </details>
             </div>
           </div>
         </div>
       )}
 
-      {showHtmlForm && (
-        <div className="animate-slide-up space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-black text-red-800 uppercase tracking-widest flex items-center gap-3">
-              <Code2 className="w-4 h-4 text-purple-400" /> HTML Upload Parameters
-            </h2>
-            <button onClick={() => setShowHtmlForm(false)} className="text-xs text-ink-600 hover:text-ink-100 uppercase font-black tracking-widest transition-colors">Abort Launch</button>
-          </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1 space-y-4">
-              <div className="glass-card p-6 border-ink-600 space-y-4">
-                <div>
-                  <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Test Designation</label>
-                  <input 
-                    value={structuredData.name}
-                    onChange={e => setStructuredData({...structuredData, name: e.target.value})}
-                    className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-3 text-sm text-ink-100 focus:border-purple-500/50 outline-none"
-                    placeholder="E.g. Prelims Mock X"
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Target Series</label>
-                  <select 
-                    value={selectedSeriesId}
-                    onChange={e => setSelectedSeriesId(e.target.value)}
-                    className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-3 text-sm text-ink-300 outline-none focus:border-purple-500/50"
-                  >
-                    <option value="">Independent Node</option>
-                    {allSeries.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
-                  </select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Subject</label>
-                    <input 
-                      value={structuredData.subject}
-                      onChange={e => setStructuredData({...structuredData, subject: e.target.value})}
-                      className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-2 text-xs text-ink-100"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Year</label>
-                    <input 
-                      value={structuredData.year}
-                      onChange={e => setStructuredData({...structuredData, year: e.target.value})}
-                      className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-2 text-xs text-ink-100"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Qs Load</label>
-                    <input 
-                      value={structuredData.totalQuestions}
-                      onChange={e => setStructuredData({...structuredData, totalQuestions: e.target.value})}
-                      className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-2 text-xs text-ink-100"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Time (m)</label>
-                    <input 
-                      value={structuredData.durationMinutes}
-                      onChange={e => setStructuredData({...structuredData, durationMinutes: e.target.value})}
-                      className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-2 text-xs text-ink-100"
-                    />
-                  </div>
-                </div>
-              </div>
-              <button 
-                onClick={handleHtmlUpload}
-                disabled={uploadingHtml}
-                className="w-full py-4 bg-purple-500 hover:bg-purple-400 text-ink-950 font-black rounded-2xl transition-all shadow-xl shadow-purple-500/10 uppercase text-xs tracking-[0.2em] flex items-center justify-center gap-3"
-              >
-                {uploadingHtml ? <Loader2 className="w-4 h-4 animate-spin" /> : <Code2 className="w-4 h-4" />}
-                Upload HTML Questions
-              </button>
-            </div>
-
-            <div className="lg:col-span-2 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest">Questions HTML</label>
-                    <span className="text-[8px] text-ink-700 font-mono">{htmlQuestions.length} Bytes</span>
-                  </div>
-                  <textarea 
-                    value={htmlQuestions}
-                    onChange={e => setHtmlQuestions(e.target.value)}
-                    className="w-full h-96 bg-ink-950 border border-ink-600 rounded-2xl p-6 text-xs text-ink-300 font-mono focus:border-purple-500/30 outline-none resize-none shadow-inner"
-                    placeholder='<div class="ata-question-item" data-question-no="1">...'
-                  />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest">Solutions HTML</label>
-                    <span className="text-[8px] text-ink-700 font-mono">{htmlSolutions.length} Bytes</span>
-                  </div>
-                  <textarea 
-                    value={htmlSolutions}
-                    onChange={e => setHtmlSolutions(e.target.value)}
-                    className="w-full h-96 bg-ink-950 border border-ink-600 rounded-2xl p-6 text-xs text-ink-300 font-mono focus:border-purple-500/30 outline-none resize-none shadow-inner"
-                    placeholder='<div class="ata-question-item" data-question-no="1"><div data-answer>A</div>...'
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

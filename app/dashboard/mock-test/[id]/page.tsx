@@ -27,11 +27,21 @@ type Answer = 'A' | 'B' | 'C' | 'D' | null;
 type QStatus = 'not-visited' | 'not-answered' | 'answered' | 'marked' | 'answered-marked';
 type ExamState = 'exam' | 'submitting' | 'result';
 
+interface QuestionStructure {
+  type: 'standard' | 'match_column';
+  context?: string;
+  questionStem?: string;
+  statements?: string[];
+  matchPairs?: Array<{ left: string; right: string }>;
+  subQuestion?: string;
+}
+
 interface Question {
   _id: string;
   questionNumber: number;
   text: string;
   options: { a: string; b: string; c: string; d: string };
+  structure?: QuestionStructure;
 }
 
 const OPTION_KEYS = ['A', 'B', 'C', 'D'] as const;
@@ -176,6 +186,7 @@ export default function ExamPage() {
             questionNumber: q.questionNumber,
             text: q.text,
             options: q.options,
+            structure: q.structure || null,
           }));
           qs.sort((a: Question, b: Question) => a.questionNumber - b.questionNumber);
           setQuestions(qs);
@@ -513,7 +524,66 @@ export default function ExamPage() {
 
               {/* Question Text */}
               <div className="mb-6 md:mb-8 p-5 md:p-6 bg-ink-900/60 rounded-2xl border border-red-500/40 shadow-inner">
-                {currentQ?.text && /<[a-z][\s\S]*>/i.test(currentQ.text) ? (
+                {currentQ?.structure ? (
+                  <div className="w-full flex flex-col space-y-4 font-serif" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                    {/* Context / Common Passage */}
+                    {currentQ.structure.context && (
+                      <div className="w-full p-4 rounded-lg bg-ink-950/40 border-l-4 border-teal-500">
+                        <p className="text-sm text-ink-200 leading-relaxed italic">
+                          {currentQ.structure.context}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Question Stem */}
+                    {currentQ.structure.questionStem && (
+                      <h3 className="text-lg font-bold text-red-800 leading-snug">
+                        {currentQ.structure.questionStem}
+                      </h3>
+                    )}
+
+                    {/* Standard Statements */}
+                    {currentQ.structure.type === 'standard' && currentQ.structure.statements && currentQ.structure.statements.length > 0 && (
+                      <div className="w-full p-4 rounded-lg bg-ink-950/30 border-l-4 border-red-800 space-y-1.5">
+                        {currentQ.structure.statements.map((stmt, si) => (
+                          <div key={si} className="flex items-start gap-3 text-sm text-ink-100">
+                            <span className="text-red-800 font-bold shrink-0 min-w-[28px]">{si + 1}.</span>
+                            <span className="leading-relaxed">{stmt}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Match Column Pairs */}
+                    {currentQ.structure.type === 'match_column' && currentQ.structure.matchPairs && currentQ.structure.matchPairs.length > 0 && (
+                      <div className="w-full overflow-x-auto rounded-lg border border-ink-600">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="bg-ink-950/50">
+                              <th className="text-left px-4 py-2.5 text-red-800 font-bold text-xs uppercase tracking-wider border-b border-ink-600 w-1/2">List I</th>
+                              <th className="text-left px-4 py-2.5 text-red-800 font-bold text-xs uppercase tracking-wider border-b border-ink-600 w-1/2">List II</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {currentQ.structure.matchPairs.map((pair, pi) => (
+                              <tr key={pi} className="border-b border-ink-700/40 last:border-0">
+                                <td className="px-4 py-2.5 text-ink-100 font-medium">{pair.left}</td>
+                                <td className="px-4 py-2.5 text-ink-300">{pair.right}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                    {/* Sub Question (interrogation line) */}
+                    {currentQ.structure.subQuestion && (
+                      <p className="text-sm text-ink-200 font-medium italic leading-relaxed pt-2 border-t border-ink-700/40">
+                        {currentQ.structure.subQuestion}
+                      </p>
+                    )}
+                  </div>
+                ) : currentQ?.text && /<[a-z][\s\S]*>/i.test(currentQ.text) ? (
                   <div className="text-ink-100 text-[14px] md:text-[15px] leading-relaxed font-medium ai-content" dangerouslySetInnerHTML={{ __html: currentQ.text }} />
                 ) : (
                   <p className="text-ink-100 text-sm md:text-base leading-relaxed whitespace-pre-wrap font-medium">

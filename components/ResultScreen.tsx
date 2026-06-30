@@ -350,7 +350,51 @@ export default function ResultScreen({
 
                             {item.questionText && (
                             <div className="mb-4 p-4 rounded-xl border-2 border-red-800/50" style={{ backgroundColor: '#efe7d4' }}>
-                              {/<[a-z][\s\S]*>/i.test(item.questionText) ? (
+                              {item.structure ? (
+                                <div className="w-full flex flex-col space-y-3 font-serif" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+                                  {item.structure.context && (
+                                    <div className="w-full p-3 rounded-lg bg-ink-950/40 border-l-4 border-teal-500">
+                                      <p className="text-[13px] text-ink-200 leading-relaxed italic">{item.structure.context}</p>
+                                    </div>
+                                  )}
+                                  {item.structure.questionStem && (
+                                    <h3 className="text-[15px] font-bold text-red-800 leading-snug">{item.structure.questionStem}</h3>
+                                  )}
+                                  {item.structure.type === 'standard' && item.structure.statements?.length > 0 && (
+                                    <div className="w-full p-3 rounded-lg bg-ink-950/30 border-l-4 border-red-800 space-y-1">
+                                      {item.structure.statements.map((stmt: string, si: number) => (
+                                        <div key={si} className="flex items-start gap-2 text-[13px] text-ink-100">
+                                          <span className="text-red-800 font-bold shrink-0 min-w-[24px]">{si + 1}.</span>
+                                          <span className="leading-relaxed">{stmt}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                  {item.structure.type === 'match_column' && item.structure.matchPairs?.length > 0 && (
+                                    <div className="w-full overflow-x-auto rounded-lg border border-ink-600">
+                                      <table className="w-full text-[13px]">
+                                        <thead>
+                                          <tr className="bg-ink-950/50">
+                                            <th className="text-left px-3 py-2 text-red-800 font-bold text-[10px] uppercase tracking-wider border-b border-ink-600 w-1/2">List I</th>
+                                            <th className="text-left px-3 py-2 text-red-800 font-bold text-[10px] uppercase tracking-wider border-b border-ink-600 w-1/2">List II</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {item.structure.matchPairs.map((pair: { left: string; right: string }, pi: number) => (
+                                            <tr key={pi} className="border-b border-ink-700/40 last:border-0">
+                                              <td className="px-3 py-2 text-ink-100 font-medium">{pair.left}</td>
+                                              <td className="px-3 py-2 text-ink-300">{pair.right}</td>
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  )}
+                                  {item.structure.subQuestion && (
+                                    <p className="text-[13px] text-ink-200 font-medium italic leading-relaxed pt-2 border-t border-ink-700/40">{item.structure.subQuestion}</p>
+                                  )}
+                                </div>
+                              ) : /<[a-z][\s\S]*>/i.test(item.questionText) ? (
                                 <div className="text-[14px] text-ink-100 leading-relaxed font-medium ai-content" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.questionText) }} />
                               ) : (
                                 <p className="text-[14px] text-ink-100 leading-relaxed font-medium whitespace-pre-wrap">{item.questionText}</p>

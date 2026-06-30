@@ -120,8 +120,7 @@ export const mockTestAPI = {
     api.post('/mock-tests/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
-  uploadStructured: (data: any) => api.post('/mock-tests/upload-structured', data),
-  uploadStructuredHtml: (data: any) => api.post('/mock-tests/upload-structured-html', data),
+  uploadStructuredMarkers: (data: any) => api.post('/mock-tests/upload-structured-markers', data),
   getFilters: () => api.get('/mock-tests/metadata/filters'),
   pollStatus: (id: string) => api.get(`/mock-tests/${id}`),
   submitAttempt: (
@@ -162,7 +161,6 @@ export const adminAPI = {
   getTests: (params?: any) => api.get('/admin/tests', { params }),
   updateTest: (id: string, data: any) => api.put(`/admin/tests/${id}`, data),
   updateAnswerKey: (id: string, answerKey: Record<string, string>) => api.put(`/admin/tests/${id}/answer-key`, { answerKey }),
-  createTestFromQuestions: (data: any) => api.post('/admin/create-test-from-questions', data),
   
   // Users
   getUsers: (params?: any) => api.get('/admin/users', { params }),
