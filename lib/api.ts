@@ -169,6 +169,10 @@ export const adminAPI = {
   // Subjects
   getSubjects: () => api.get('/admin/subjects'),
   
+  // Compose
+  createTestFromQuestions: (data: any) => api.post('/admin/create-test-from-questions', data),
+  autoGenerateTest: (data: any) => api.post('/admin/auto-generate-test', data),
+  
   // Subscriptions - Admin
   getSubscriptionPlans: () => api.get('/admin/subscription/plans'),
   createSubscriptionPlan: (data: any) => api.post('/admin/subscription/plans', data),
@@ -243,6 +247,11 @@ export const settingsAPI = {
   deleteAnnouncement: (id: string) => api.delete(`/settings/announcements/${id}`),
   manualEnroll: (data: { userId: string; courseId: string; amount: number }) => 
     api.post('/settings/manual-enroll', data),
+};
+
+export const quizAPI = {
+  generate: (params: { count: number; subject?: string; type?: string }) =>
+    api.get('/quiz/generate', { params }),
 };
 
 export const paymentsAPI = {

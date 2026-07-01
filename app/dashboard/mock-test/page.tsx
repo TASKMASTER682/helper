@@ -16,9 +16,10 @@ import toast from 'react-hot-toast';
 import clsx from 'clsx';
 
 const SUBJECTS_LIST = [
-  'History', 'Geography', 'Polity', 'Economy', 'Environment',
-  'Science & Technology', 'Current Affairs', 'Internal Security',
-  'Ethics', 'CSAT', 'International Relations', 'Social Issues'
+  'Modern History', 'Ancient History', 'Medieval History', 'Art & Culture',
+  'Physical Geography', 'Indian Geography', 'World Geography',
+  'Polity', 'Economy', 'Environment & Ecology', 'Science & Technology',
+  'IR And Mapping', 'Current Affairs', 'CSAT'
 ];
 
 type Status = 'uploading' | 'processing' | 'ready' | 'error';

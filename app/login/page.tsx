@@ -302,38 +302,38 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-ink-950 flex relative">
+    <div className="relative paper-bg grain-fixed min-h-screen text-ink selection:bg-crimson/20 flex">
       {/* Decorative bg elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[5%] w-[40rem] h-[40rem] bg-red-500/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[5%] w-[35rem] h-[35rem] bg-teal-500/5 rounded-full blur-[120px]" />
-        <div className="absolute top-[40%] left-[50%] w-[20rem] h-[20rem] bg-pink-500/5 rounded-full blur-[100px]" />
+        <div className="absolute top-[-10%] left-[5%] w-[40rem] h-[40rem] bg-crimson/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[5%] w-[35rem] h-[35rem] bg-teal/5 rounded-full blur-[120px]" />
+        <div className="absolute top-[40%] left-[50%] w-[20rem] h-[20rem] bg-gold/5 rounded-full blur-[100px]" />
       </div>
 
       {/* Sidebar - Left Panel */}
       <div className="hidden lg:flex flex-col w-1/2 p-12 relative">
         <Link href="/" className="inline-flex items-center gap-3 mb-20">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-lg shadow-red-500/30">
-            <Brain className="w-6 h-6 text-white" />
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-crimson to-crimson-deep flex items-center justify-center shadow-lg shadow-crimson-deep/30">
+            <Brain className="w-6 h-6 text-cream" />
           </div>
           <div>
-            <div className="text-xl font-bold text-ink-100 tracking-tight">UPSC-POS</div>
-            <div className="text-[10px] font-mono text-ink-500 uppercase tracking-[0.2em]">Personal Operating System</div>
+            <div className="text-xl font-bold text-ink tracking-tight">UPSC-POS</div>
+            <div className="text-[10px] font-mono text-ink-mute uppercase tracking-[0.2em]">Personal Operating System</div>
           </div>
         </Link>
 
         <div className="flex-1 flex flex-col justify-center max-w-lg">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-red-500/20 bg-red-500/5 text-red-500 text-[10px] font-mono tracking-[0.2em] uppercase mb-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-crimson/20 bg-crimson/5 text-crimson text-[10px] font-mono tracking-[0.2em] uppercase mb-8">
             <Zap className="w-3 h-3" /> AI-Powered Preparation OS
           </div>
 
-          <h1 className="text-5xl md:text-6xl font-bold text-ink-50 leading-[1.05] mb-6">
+          <h1 className="display-hero text-5xl md:text-6xl text-ink leading-[0.98] mb-6">
             Your AI<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-pink-600">UPSC Mentor</span><br />
+            <span className="italic text-crimson">UPSC Mentor</span><br />
             Never Sleeps.
           </h1>
 
-          <p className="text-ink-400 text-lg leading-relaxed mb-14 max-w-md">
+          <p className="text-ink-mute text-lg leading-relaxed mb-14 max-w-md">
             Not just a planner. A decision-making system that manages your entire preparation journey.
           </p>
 
@@ -343,18 +343,18 @@ function LoginForm() {
               { icon: '🧠', title: 'AI Mentor ARJUN', desc: 'Real-time coaching based on your actual performance data' },
               { icon: '⚡', title: 'Zero Decision Fatigue', desc: 'Your daily schedule is generated automatically' },
             ].map(feature => (
-              <div key={feature.title} className="flex items-start gap-4 p-4 rounded-2xl bg-white/40 border border-ink-600/50 backdrop-blur-sm hover:bg-white/60 transition-colors">
+              <div key={feature.title} className="flex items-start gap-4 p-4 rounded-2xl parchment transition-colors">
                 <span className="text-2xl">{feature.icon}</span>
                 <div>
-                  <div className="font-bold text-ink-100 text-sm">{feature.title}</div>
-                  <div className="text-ink-500 text-xs mt-0.5">{feature.desc}</div>
+                  <div className="font-bold text-ink text-sm">{feature.title}</div>
+                  <div className="text-ink-mute text-xs mt-0.5">{feature.desc}</div>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="mt-12 text-[10px] text-ink-500 font-mono uppercase tracking-[0.2em]">
+        <div className="mt-12 text-[10px] text-ink-mute font-mono uppercase tracking-[0.2em]">
           &copy; 2026 UPSC-POS v2.0
         </div>
       </div>
@@ -362,15 +362,15 @@ function LoginForm() {
       {/* Form Section - Right Panel */}
       <div className="flex-1 flex items-center justify-center p-6 lg:p-12 relative">
         <div className="w-full max-w-md">
-          <div className="bg-white/60 backdrop-blur-lg border border-ink-600/40 rounded-3xl p-8 shadow-xl shadow-black/5">
+          <div className="parchment rounded-3xl p-8 shadow-xl shadow-black/5">
             <div className="text-center mb-8">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-red-500/20">
-                <Zap className="w-7 h-7 text-white" />
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-crimson to-crimson-deep flex items-center justify-center mx-auto mb-5 shadow-lg shadow-crimson-deep/20">
+                <Zap className="w-7 h-7 text-cream" />
               </div>
-              <h2 className="text-2xl font-bold text-ink-50">
+              <h2 className="text-2xl font-bold text-ink">
                 {isLogin ? 'Welcome back' : 'Begin your journey'}
               </h2>
-              <p className="text-ink-500 text-sm mt-1">
+              <p className="text-ink-mute text-sm mt-1">
                 {isLogin ? 'Sign in to your command center' : 'Create your command center'}
               </p>
             </div>
@@ -379,7 +379,7 @@ function LoginForm() {
               {!isLogin && (
                 <>
                   <div>
-                    <label className="block text-xs font-bold text-ink-400 uppercase tracking-widest mb-1.5">Full Name</label>
+                    <label className="label-text">Full Name</label>
                     <input
                       type="text"
                       required
@@ -390,7 +390,7 @@ function LoginForm() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-ink-400 uppercase tracking-widest mb-1.5">State (India)</label>
+                    <label className="label-text">State (India)</label>
                     <select
                       required
                       value={form.state}
@@ -407,7 +407,7 @@ function LoginForm() {
               )}
 
               <div>
-                <label className="block text-xs font-bold text-ink-400 uppercase tracking-widest mb-1.5">Email</label>
+                <label className="label-text">Email</label>
                 <input
                   type="email"
                   required
@@ -419,7 +419,7 @@ function LoginForm() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-ink-400 uppercase tracking-widest mb-1.5">Password</label>
+                <label className="label-text">Password</label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
@@ -432,7 +432,7 @@ function LoginForm() {
                   <button 
                     type="button"
                     onClick={() => setShowPassword(!showPassword)} 
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-500 hover:text-ink-400 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-mute hover:text-ink transition-colors"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -442,28 +442,28 @@ function LoginForm() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-red-500 hover:bg-red-600 disabled:bg-red-500/50 text-white py-3.5 font-bold rounded-2xl mt-4 transition-all shadow-lg shadow-red-500/20 active:scale-[0.98]"
+                className="btn-primary w-full py-3.5 rounded-2xl mt-4 text-center text-sm active:scale-[0.98] disabled:opacity-50"
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span className="w-4 h-4 border-2 border-cream/30 border-t-cream rounded-full animate-spin" />
                     Processing...
                   </span>
                 ) : (isLogin ? 'Sign in' : 'Create Account')}
               </button>
             </form>
 
-            <div className="text-center mt-8 pt-6 border-t border-ink-700/50">
+            <div className="text-center mt-8 pt-6 border-t border-[rgba(168,138,78,0.25)]">
               <button 
                 onClick={() => setIsLogin(!isLogin)} 
-                className="text-red-500 hover:text-red-600 text-sm font-bold transition-colors"
+                className="text-crimson hover:text-crimson-deep text-sm font-bold transition-colors"
               >
                 {isLogin ? "Don't have an account? Create one" : "Already registered? Sign in"}
               </button>
             </div>
           </div>
 
-          <p className="text-center mt-6 text-[10px] text-ink-500 font-mono uppercase tracking-[0.2em]">
+          <p className="text-center mt-6 text-[10px] text-ink-mute font-mono uppercase tracking-[0.2em]">
             Secure Encryption Active &bull; Zero Knowledge Architecture
           </p>
         </div>
@@ -475,8 +475,8 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-ink-950 flex flex-col items-center justify-center text-ink-100 font-mono gap-4">
-        <div className="w-12 h-12 border-4 border-orange-500/20 border-t-orange-500 rounded-full animate-spin" />
+      <div className="min-h-screen paper-bg grain-fixed flex flex-col items-center justify-center text-ink font-mono gap-4">
+        <div className="w-12 h-12 border-4 border-crimson/20 border-t-crimson rounded-full animate-spin" />
         <div className="animate-pulse">Initializing OS...</div>
       </div>
     }>
@@ -484,13 +484,3 @@ export default function LoginPage() {
     </Suspense>
   );
 }
-
-
-
-
-
-
-
-
-
-

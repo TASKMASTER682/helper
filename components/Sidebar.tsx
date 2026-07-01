@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Target, BarChart3, MessageCircle,
   FlaskConical, User, LogOut, Flame, Trophy, Zap, Brain, FileSearch, 
-  ChevronRight, Menu, X, Shield, Youtube, File, Play, Calendar
+  ChevronRight, Menu, X, Shield, Youtube, File, Play, Calendar, Activity
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
@@ -27,6 +27,7 @@ const navItems = [
     ]
   },
   { href: '/dashboard/mentor', icon: MessageCircle, label: 'AI Mentor' },
+  { href: '/dashboard/quiz', icon: Activity, label: 'Rapid Quiz' },
   { href: '/dashboard/editorial-engine', icon: Brain, label: 'Editorial Engine' },
   { href: '/dashboard/profile', icon: User, label: 'Profile' },
 ];
@@ -68,7 +69,7 @@ export default function Sidebar() {
 
   return (
     <>
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#5C2536] border-b border-[#FFB6C1]/20 px-4 flex items-center justify-between z-50">
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#5C2536] border-b border-[#FFB6C1]/20 px-4 flex items-center justify-between z-[100]">
         <div className="flex items-center gap-2">
           <Brain className="w-6 h-6 text-[#FAF7EE]" />
           <span className="font-display font-bold text-[#FAF7EE]">UPSC-POS</span>

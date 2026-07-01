@@ -11,7 +11,7 @@ import {
   ToggleLeft, ToggleRight, Save, CheckSquare, Square, Eye, Crown, CreditCard, PlayCircle,
   Zap, Clock, TrendingUp, RefreshCw, Filter, MoreVertical, UserPlus, Database, Mail, Calendar,
   Activity, Video, Bell, Percent, MessageSquare, Send, Copy,
-  Newspaper, ExternalLink
+  Newspaper, ExternalLink, Brain
 } from 'lucide-react';
 import { 
   PlanFormModal, ActivateUserModal, CourseFormModal, LessonFormModal,
@@ -21,9 +21,10 @@ import toast from 'react-hot-toast';
 import clsx from 'clsx';
 
 const SUBJECTS_LIST = [
-  'History', 'Geography', 'Polity', 'Economy', 'Environment',
-  'Science & Technology', 'Current Affairs', 'Internal Security',
-  'Ethics', 'CSAT', 'International Relations', 'Social Issues'
+  'Modern History', 'Ancient History', 'Medieval History', 'Art & Culture',
+  'Physical Geography', 'Indian Geography', 'World Geography',
+  'Polity', 'Economy', 'Environment & Ecology', 'Science & Technology',
+  'IR And Mapping', 'Current Affairs', 'CSAT'
 ];
 
 const TEST_TYPES = [
@@ -295,14 +296,6 @@ function TestsTab() {
   const [loading, setLoading] = useState(true);
   const [editingTest, setEditingTest] = useState<any>(null);
   const [filters, setFilters] = useState({ subject: '', testType: '', mode: '' });
-  const [showMarkerForm, setShowMarkerForm] = useState(false);
-  const [uploadingMarkers, setUploadingMarkers] = useState(false);
-  const [markerFormData, setMarkerFormData] = useState({
-    name: '', testType: 'prelims_gs', totalQuestions: '100',
-    durationMinutes: '120', markCorrect: '2.0', markWrong: '-0.66',
-    subject: '', year: new Date().getFullYear().toString(),
-  });
-  const [markerText, setMarkerText] = useState('');
 
   useEffect(() => { loadTests(); }, [pagination.page, filters]);
 
@@ -333,31 +326,6 @@ function TestsTab() {
     } catch { toast.error('State transition failed'); }
   };
 
-  const handleMarkerUpload = async () => {
-    if (!markerText.trim()) return toast.error('Paste structured text with markers');
-    setUploadingMarkers(true);
-    try {
-      const payload = {
-        ...markerFormData,
-        totalQuestions: parseInt(markerFormData.totalQuestions),
-        durationMinutes: parseInt(markerFormData.durationMinutes),
-        markCorrect: parseFloat(markerFormData.markCorrect),
-        markWrong: parseFloat(markerFormData.markWrong),
-        year: parseInt(markerFormData.year),
-        structuredText: markerText,
-      };
-      await mockTestAPI.uploadStructuredMarkers(payload);
-      toast.success('Marker test created!');
-      setShowMarkerForm(false);
-      setMarkerText('');
-      loadTests();
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Marker upload failed');
-    } finally {
-      setUploadingMarkers(false);
-    }
-  };
-
   return (
     <div className="space-y-6">
       {/* Control Bar */}
@@ -386,17 +354,8 @@ function TestsTab() {
             </select>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowMarkerForm(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-black uppercase tracking-widest transition-all"
-          >
-            <Zap className="w-4 h-4" />
-            Marker Upload
-          </button>
-          <div className="text-[10px] font-black text-ink-600 uppercase tracking-widest">
-            Showing {tests.length} of {pagination.total} Records
-          </div>
+        <div className="text-[10px] font-black text-ink-600 uppercase tracking-widest">
+          Showing {tests.length} of {pagination.total} Records
         </div>
       </div>
 
@@ -517,58 +476,6 @@ function TestsTab() {
         <EditTestModal test={editingTest} onClose={() => setEditingTest(null)} onSave={() => { setEditingTest(null); loadTests(); }} />
       )}
 
-      {showMarkerForm && (
-        <div className="fixed inset-0 bg-ink-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass-card p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-lg text-teal-400">Marker-Based Upload</h3>
-              <X className="cursor-pointer text-ink-400 hover:text-ink-100" onClick={() => setShowMarkerForm(false)} />
-            </div>
-            <div className="space-y-4 mb-4">
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold text-red-8000">Structured Text with Markers *</label>
-                <textarea
-                  className="input-field w-full h-48 resize-none font-mono text-xs"
-                  placeholder={`[Q] Consider the following statements:\n[ST-START]\n1. Statement 1\n2. Statement 2\n[ST-END]\n[SUB-Q] Which is correct?\n[O_a] Option A\n[O_b] Option B\n[O_c] Option C\n[O_d] Option D\n[ANS] A\n[EXP] Explanation\n[NEXT]`}
-                  value={markerText}
-                  onChange={(e) => setMarkerText(e.target.value)}
-                />
-                <details className="mt-1">
-                  <summary className="text-[9px] text-teal-600 font-bold uppercase tracking-widest cursor-pointer hover:text-teal-400 select-none">Markers Guide</summary>
-                  <div className="mt-2 p-3 bg-ink-950 border border-ink-600 rounded-xl text-[9px] font-mono space-y-1 text-ink-400">
-                    <p><span className="text-teal-400">[CONTEXT]</span> Common passage (optional)</p>
-                    <p><span className="text-teal-400">[Q]</span> Core question stem</p>
-                    <p><span className="text-teal-400">[ST-START]...[ST-END]</span> Numbered statements</p>
-                    <p><span className="text-teal-400">[MATCH-START]...[MATCH-END]</span> Match pairs (1. Left : Right)</p>
-                    <p><span className="text-teal-400">[SUB-Q]</span> Interrogation line</p>
-                    <p><span className="text-teal-400">[O_a]...[O_d]</span> Options A-D</p>
-                    <p><span className="text-teal-400">[ANS]</span> Correct letter (A/B/C/D)</p>
-                    <p><span className="text-teal-400">[EXP]</span> Explanation</p>
-                    <p><span className="text-teal-400">[NEXT]</span> Separator between questions</p>
-                  </div>
-                </details>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <input placeholder="Test Name" className="input-field" value={markerFormData.name} onChange={e => setMarkerFormData({...markerFormData, name: e.target.value})} />
-                <select className="input-field" value={markerFormData.testType} onChange={e => setMarkerFormData({...markerFormData, testType: e.target.value})}>
-                  {TEST_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                </select>
-                <input type="number" placeholder="Total Questions" className="input-field" value={markerFormData.totalQuestions} onChange={e => setMarkerFormData({...markerFormData, totalQuestions: e.target.value})} />
-                <input type="number" placeholder="Duration (min)" className="input-field" value={markerFormData.durationMinutes} onChange={e => setMarkerFormData({...markerFormData, durationMinutes: e.target.value})} />
-                <input placeholder="Subject" className="input-field" value={markerFormData.subject} onChange={e => setMarkerFormData({...markerFormData, subject: e.target.value})} />
-                <input type="number" placeholder="Year" className="input-field" value={markerFormData.year} onChange={e => setMarkerFormData({...markerFormData, year: e.target.value})} />
-              </div>
-            </div>
-            <button
-              disabled={uploadingMarkers}
-              onClick={handleMarkerUpload}
-              className="w-full py-3 flex items-center justify-center gap-2 rounded-xl font-bold transition-all mt-4 bg-teal-600 text-white hover:bg-teal-500"
-            >
-              {uploadingMarkers ? <><Loader2 className="animate-spin w-4 h-4" /> Processing...</> : 'Upload Questions'}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -726,7 +633,7 @@ function SeriesTab() {
 
 
 function SeriesFormModal({ onClose, onSave }: { onClose: () => void; onSave: () => void }) {
-  const [form, setForm] = useState({ name: '', provider: '', type: 'prelims_gs', totalTests: 0 });
+  const [form, setForm] = useState({ name: '', provider: '', type: 'prelims_gs' });
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -759,22 +666,13 @@ function SeriesFormModal({ onClose, onSave }: { onClose: () => void; onSave: () 
             className="input-field w-full"
             placeholder="Provider"
           />
-          <div className="grid grid-cols-2 gap-3">
-            <select
-              value={form.type}
-              onChange={e => setForm({ ...form, type: e.target.value })}
-              className="input-field"
-            >
-              {SERIES_TYPES.map(t => <option key={t} value={t}>{t.toUpperCase()}</option>)}
-            </select>
-            <input
-              type="number"
-              value={form.totalTests}
-              onChange={e => setForm({ ...form, totalTests: parseInt(e.target.value) })}
-              className="input-field"
-              placeholder="Total Tests"
-            />
-          </div>
+          <select
+            value={form.type}
+            onChange={e => setForm({ ...form, type: e.target.value })}
+            className="input-field"
+          >
+            {SERIES_TYPES.map(t => <option key={t} value={t}>{t.toUpperCase()}</option>)}
+          </select>
         </div>
         <div className="flex gap-3 mt-4">
           <button onClick={handleSave} disabled={saving || !form.name} className="btn-primary flex-1">
@@ -792,7 +690,6 @@ function EditSeriesModal({ series, onClose, onSave }: { series: any; onClose: ()
     name: series.name,
     provider: series.provider || '',
     type: series.type,
-    totalTests: series.totalTests || 0,
   });
   const [saving, setSaving] = useState(false);
 
@@ -829,22 +726,13 @@ function EditSeriesModal({ series, onClose, onSave }: { series: any; onClose: ()
             className="input-field w-full"
             placeholder="Provider"
           />
-          <div className="grid grid-cols-2 gap-3">
-            <select
-              value={form.type}
-              onChange={e => setForm({ ...form, type: e.target.value })}
-              className="input-field"
-            >
-              {SERIES_TYPES.map(t => <option key={t} value={t}>{t.toUpperCase()}</option>)}
-            </select>
-            <input
-              type="number"
-              value={form.totalTests}
-              onChange={e => setForm({ ...form, totalTests: parseInt(e.target.value) })}
-              className="input-field"
-              placeholder="Total Tests"
-            />
-          </div>
+          <select
+            value={form.type}
+            onChange={e => setForm({ ...form, type: e.target.value })}
+            className="input-field"
+          >
+            {SERIES_TYPES.map(t => <option key={t} value={t}>{t.toUpperCase()}</option>)}
+          </select>
         </div>
         <div className="flex gap-3 mt-4">
           <button onClick={handleSave} disabled={saving} className="btn-primary flex-1">
@@ -1163,18 +1051,30 @@ function CreateTestTab() {
   const [structuredData, setStructuredData] = useState({
     name: '',
     testType: 'prelims_gs',
-    totalQuestions: '100',
     durationMinutes: '120',
     markCorrect: '2.0',
     markWrong: '-0.66',
     subject: '',
-    topics: '',
     year: new Date().getFullYear().toString(),
+    type: '',
   });
   const [structuredText, setStructuredText] = useState('');
   const [allSeries, setAllSeries] = useState<any[]>([]);
   const [selectedSeriesId, setSelectedSeriesId] = useState('');
   const [uploadingStructured, setUploadingStructured] = useState(false);
+  const [showComposeForm, setShowComposeForm] = useState(false);
+  const [composeData, setComposeData] = useState({
+    name: '', testType: 'sectional', durationMinutes: '60',
+    markCorrect: '2.0', markWrong: '-0.66', subject: '', year: new Date().getFullYear().toString(),
+  });
+  const [composing, setComposing] = useState(false);
+  const [showAutoForm, setShowAutoForm] = useState(false);
+  const [autoData, setAutoData] = useState({
+    totalQuestions: '50',
+    dateFrom: '', dateTo: '',
+    subjectDistribution: Object.fromEntries(SUBJECTS_LIST.map(s => [s, ''])),
+  });
+  const [autoGenerating, setAutoGenerating] = useState(false);
 
   useEffect(() => {
     loadQuestions();
@@ -1205,6 +1105,64 @@ function CreateTestTab() {
     finally { setLoading(false); }
   };
 
+  const handleComposeSubmit = async () => {
+    if (selectedQuestions.length === 0) return toast.error('Select at least one question');
+    setComposing(true);
+    try {
+      await adminAPI.createTestFromQuestions({
+        ...composeData,
+        durationMinutes: parseInt(composeData.durationMinutes),
+        markCorrect: parseFloat(composeData.markCorrect),
+        markWrong: parseFloat(composeData.markWrong),
+        year: parseInt(composeData.year),
+        questionIds: selectedQuestions,
+        testSeriesId: selectedSeriesId
+      });
+      toast.success(`Test created with ${selectedQuestions.length} questions`);
+      setShowComposeForm(false);
+      setComposeData({
+        name: '', testType: 'sectional', durationMinutes: '60',
+        markCorrect: '2.0', markWrong: '-0.66', subject: '', year: new Date().getFullYear().toString(),
+      });
+      setSelectedQuestions([]);
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Composition failed');
+    } finally {
+      setComposing(false);
+    }
+  };
+
+  const handleAutoSubmit = async () => {
+    const total = parseInt(autoData.totalQuestions);
+    if (!total || total < 1) return toast.error('Enter a valid question count');
+    const dist = autoData.subjectDistribution;
+    const percentages = SUBJECTS_LIST.map(s => Number(dist[s]) || 0);
+    if (percentages.some(p => p < 0)) return toast.error('Percentages cannot be negative');
+    const totalPct = percentages.reduce((a, b) => a + b, 0);
+    if (totalPct === 0) return toast.error('Set at least one subject percentage');
+    setAutoGenerating(true);
+    try {
+      await adminAPI.autoGenerateTest({
+        ...composeData,
+        totalQuestions: total,
+        subjectDistribution: dist,
+        dateFrom: autoData.dateFrom || undefined,
+        dateTo: autoData.dateTo || undefined,
+        durationMinutes: parseInt(composeData.durationMinutes),
+        markCorrect: parseFloat(composeData.markCorrect),
+        markWrong: parseFloat(composeData.markWrong),
+        year: parseInt(composeData.year),
+        testSeriesId: selectedSeriesId,
+      });
+      toast.success(`Test generated with ${total} questions`);
+      setShowAutoForm(false);
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Auto-generation failed');
+    } finally {
+      setAutoGenerating(false);
+    }
+  };
+
   const handleStructuredUpload = async () => {
     if (!structuredText.trim()) {
       return toast.error('Paste structured text with markers');
@@ -1214,7 +1172,6 @@ function CreateTestTab() {
     try {
       const payload = {
         ...structuredData,
-        totalQuestions: parseInt(structuredData.totalQuestions),
         durationMinutes: parseInt(structuredData.durationMinutes),
         markCorrect: parseFloat(structuredData.markCorrect),
         markWrong: parseFloat(structuredData.markWrong),
@@ -1255,6 +1212,42 @@ function CreateTestTab() {
           </div>
         </div>
 
+        <div 
+          onClick={() => setShowComposeForm(true)}
+          className="group glass-card p-8 border-ink-600 hover:border-blue-500/50 transition-all cursor-pointer relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity">
+            <BookOpen className="w-20 h-20 text-blue-400" />
+          </div>
+          <div className="relative z-10">
+            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 mb-6">
+              <BookOpen className="w-6 h-6" />
+            </div>
+            <h3 className="text-xl font-black text-red-800 uppercase tracking-tight mb-2">Compose Test</h3>
+            <p className="text-sm text-ink-500 leading-relaxed max-w-[280px]">
+              Select individual questions from the database to construct a custom test.
+            </p>
+          </div>
+        </div>
+
+        <div 
+          onClick={() => setShowAutoForm(true)}
+          className="group glass-card p-8 border-ink-600 hover:border-purple-500/50 transition-all cursor-pointer relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-30 transition-opacity">
+            <Brain className="w-20 h-20 text-purple-400" />
+          </div>
+          <div className="relative z-10">
+            <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 mb-6">
+              <Brain className="w-6 h-6" />
+            </div>
+            <h3 className="text-xl font-black text-red-800 uppercase tracking-tight mb-2">Auto Generate</h3>
+            <p className="text-sm text-ink-500 leading-relaxed max-w-[280px]">
+              Set subject distribution, date range, and question count — questions are picked randomly.
+            </p>
+          </div>
+        </div>
+
       </div>
 
       {showStructuredForm && (
@@ -1291,12 +1284,16 @@ function CreateTestTab() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Subject</label>
-                    <input 
-                      value={structuredData.subject}
-                      onChange={e => setStructuredData({...structuredData, subject: e.target.value})}
-                      className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-2 text-xs text-ink-100"
-                    />
+                    <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Question Type</label>
+                    <select
+                      value={structuredData.type}
+                      onChange={e => setStructuredData({...structuredData, type: e.target.value})}
+                      className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-2 text-xs text-ink-100 outline-none"
+                    >
+                      <option value="">None</option>
+                      <option value="pyq">PYQ</option>
+                      <option value="non-pyq">Non-PYQ</option>
+                    </select>
                   </div>
                   <div>
                     <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Year</label>
@@ -1307,23 +1304,13 @@ function CreateTestTab() {
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Qs Load</label>
-                    <input 
-                      value={structuredData.totalQuestions}
-                      onChange={e => setStructuredData({...structuredData, totalQuestions: e.target.value})}
-                      className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-2 text-xs text-ink-100"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Time (m)</label>
-                    <input 
-                      value={structuredData.durationMinutes}
-                      onChange={e => setStructuredData({...structuredData, durationMinutes: e.target.value})}
-                      className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-2 text-xs text-ink-100"
-                    />
-                  </div>
+                <div>
+                  <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2 block">Time (m)</label>
+                  <input 
+                    value={structuredData.durationMinutes}
+                    onChange={e => setStructuredData({...structuredData, durationMinutes: e.target.value})}
+                    className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-2 text-xs text-ink-100"
+                  />
                 </div>
               </div>
               <button 
@@ -1378,6 +1365,9 @@ function CreateTestTab() {
                     <span className="text-teal-400 font-bold">[ANS]</span>
                     <span className="text-ink-400">— Correct option letter (A/B/C/D only)</span>
                     
+                    <span className="text-teal-400 font-bold">[SUBJ]</span>
+                    <span className="text-ink-400">— Subject name (e.g. Polity, History)</span>
+                    
                     <span className="text-teal-400 font-bold">[EXP]</span>
                     <span className="text-ink-400">— Detailed explanation text</span>
                     
@@ -1394,6 +1384,201 @@ function CreateTestTab() {
               </details>
             </div>
           </div>
+        </div>
+      )}
+
+      {showComposeForm && (
+        <div className="animate-slide-up space-y-6 mt-8">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-black text-red-800 uppercase tracking-widest flex items-center gap-3">
+              <Target className="w-4 h-4 text-blue-400" /> Compose Test from Question Bank
+            </h2>
+            <button onClick={() => setShowComposeForm(false)} className="text-xs text-ink-600 hover:text-ink-100 uppercase font-black tracking-widest transition-colors">Abort Launch</button>
+          </div>
+
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="w-48">
+              <label className="block text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2">Filter by Subject</label>
+              <select value={selectedSubject} onChange={e => setSelectedSubject(e.target.value)} className="w-full px-4 py-3 bg-ink-900 border border-ink-600 rounded-xl text-sm text-ink-100 focus:border-blue-500/50 outline-none transition-colors">
+                <option value="">All Subjects</option>
+                {SUBJECTS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div className="pt-6">
+              <button onClick={() => { setSelectedQuestions(questions.filter(q => !selectedSubject || q.subject === selectedSubject).map(q => q._id)); }} className="px-4 py-3 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-400 hover:bg-blue-500/20 transition-all text-xs font-black uppercase tracking-widest">
+                Select All Filtered
+              </button>
+            </div>
+            <div className="pt-6 ml-auto">
+              <span className="text-xs text-ink-600 font-mono">{selectedQuestions.length} / {questions.length} selected</span>
+            </div>
+          </div>
+
+          <div className="max-h-80 overflow-y-auto space-y-2 border border-ink-600 rounded-xl p-4">
+            {questions.filter(q => !selectedSubject || q.subject === selectedSubject).map(q => (
+              <div key={q._id} className="glass-card p-4 border-ink-600 hover:border-blue-500/20 transition-all flex items-start gap-4">
+                <button onClick={() => setSelectedQuestions(prev => prev.includes(q._id) ? prev.filter(id => id !== q._id) : [...prev, q._id])} className="mt-1 shrink-0">
+                  {selectedQuestions.includes(q._id)
+                    ? <CheckSquare className="w-5 h-5 text-blue-400" />
+                    : <Square className="w-5 h-5 text-ink-600" />}
+                </button>
+                <div className="min-w-0 space-y-1">
+                  <p className="text-sm text-ink-200 whitespace-pre-wrap">{q.text}</p>
+                  {q.structure?.statements?.length > 0 && (
+                    <div className="space-y-0.5 mt-1 ml-4">
+                      {q.structure.statements.map((st: string, i: number) => (
+                        <p key={i} className="text-sm text-ink-300">{i + 1}. {st}</p>
+                      ))}
+                    </div>
+                  )}
+                  {q.structure?.subQuestion && (
+                    <p className="text-sm text-ink-200 mt-1 italic">{q.structure.subQuestion}</p>
+                  )}
+                  <div className="flex items-center gap-3 mt-2">
+                    <span className="text-[10px] font-mono text-ink-600 bg-ink-800 px-2 py-0.5 rounded-md">{q.subject || 'Uncategorized'}</span>
+                    {q.type && <span className="text-[10px] font-mono text-ink-600 bg-ink-800 px-2 py-0.5 rounded-md uppercase">{q.type}</span>}
+                  </div>
+                </div>
+              </div>
+            ))}
+            {questions.filter(q => !selectedSubject || q.subject === selectedSubject).length === 0 && (
+              <p className="text-sm text-ink-600 text-center py-8">No questions found.</p>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div>
+              <label className="block text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2">Test Name</label>
+              <input value={composeData.name} onChange={e => setComposeData(p => ({...p, name: e.target.value}))} placeholder="e.g., Custom History Sectional" className="w-full px-4 py-3 bg-ink-900 border border-ink-600 rounded-xl text-sm text-ink-100 placeholder:text-ink-700 focus:border-blue-500/50 outline-none transition-colors" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2">Subject</label>
+              <select value={composeData.subject} onChange={e => setComposeData(p => ({...p, subject: e.target.value}))} className="w-full px-4 py-3 bg-ink-900 border border-ink-600 rounded-xl text-sm text-ink-100 focus:border-blue-500/50 outline-none transition-colors">
+                <option value="">General Studies</option>
+                {SUBJECTS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2">Test Type</label>
+              <select value={composeData.testType} onChange={e => setComposeData(p => ({...p, testType: e.target.value}))} className="w-full px-4 py-3 bg-ink-900 border border-ink-600 rounded-xl text-sm text-ink-100 focus:border-blue-500/50 outline-none transition-colors">
+                <option value="sectional">Sectional</option>
+                <option value="prelims_gs">Prelims GS</option>
+                <option value="subject_specific">Subject Specific</option>
+                <option value="full_mock">Full Mock</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2">Duration (minutes)</label>
+              <input value={composeData.durationMinutes} onChange={e => setComposeData(p => ({...p, durationMinutes: e.target.value}))} className="w-full px-4 py-3 bg-ink-900 border border-ink-600 rounded-xl text-sm text-ink-100 placeholder:text-ink-700 focus:border-blue-500/50 outline-none transition-colors" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2">Correct Mark</label>
+              <input value={composeData.markCorrect} onChange={e => setComposeData(p => ({...p, markCorrect: e.target.value}))} className="w-full px-4 py-3 bg-ink-900 border border-ink-600 rounded-xl text-sm text-ink-100 placeholder:text-ink-700 focus:border-blue-500/50 outline-none transition-colors" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2">Wrong Mark</label>
+              <input value={composeData.markWrong} onChange={e => setComposeData(p => ({...p, markWrong: e.target.value}))} className="w-full px-4 py-3 bg-ink-900 border border-ink-600 rounded-xl text-sm text-ink-100 placeholder:text-ink-700 focus:border-blue-500/50 outline-none transition-colors" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2">Year</label>
+              <input value={composeData.year} onChange={e => setComposeData(p => ({...p, year: e.target.value}))} className="w-full px-4 py-3 bg-ink-900 border border-ink-600 rounded-xl text-sm text-ink-100 placeholder:text-ink-700 focus:border-blue-500/50 outline-none transition-colors" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2">Series (optional)</label>
+              <select value={selectedSeriesId} onChange={e => setSelectedSeriesId(e.target.value)} className="w-full px-4 py-3 bg-ink-900 border border-ink-600 rounded-xl text-sm text-ink-100 focus:border-blue-500/50 outline-none transition-colors">
+                <option value="">— None —</option>
+                {allSeries.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <button onClick={handleComposeSubmit} disabled={composing || selectedQuestions.length === 0} className="px-6 py-3 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-400 hover:bg-blue-500/20 disabled:opacity-30 transition-all text-xs font-black uppercase tracking-widest">
+            {composing ? 'Creating…' : `Create Test with ${selectedQuestions.length} Questions`}
+          </button>
+        </div>
+      )}
+
+      {showAutoForm && (
+        <div className="animate-slide-up space-y-6 mt-8">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-black text-red-800 uppercase tracking-widest flex items-center gap-3">
+              <Brain className="w-4 h-4 text-purple-400" /> Auto Generate Test
+            </h2>
+            <button onClick={() => setShowAutoForm(false)} className="text-xs text-ink-600 hover:text-ink-100 uppercase font-black tracking-widest transition-colors">Abort Launch</button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div>
+              <label className="block text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2">Total Questions</label>
+              <input type="number" min={1} max={200} value={autoData.totalQuestions} onChange={e => setAutoData(p => ({...p, totalQuestions: e.target.value}))} className="w-full px-4 py-3 bg-ink-900 border border-ink-600 rounded-xl text-sm text-ink-100 focus:border-purple-500/50 outline-none transition-colors" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2">From Date (created)</label>
+              <input type="date" value={autoData.dateFrom} onChange={e => setAutoData(p => ({...p, dateFrom: e.target.value}))} className="w-full px-4 py-3 bg-ink-900 border border-ink-600 rounded-xl text-sm text-ink-100 focus:border-purple-500/50 outline-none transition-colors" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2">To Date (created)</label>
+              <input type="date" value={autoData.dateTo} onChange={e => setAutoData(p => ({...p, dateTo: e.target.value}))} className="w-full px-4 py-3 bg-ink-900 border border-ink-600 rounded-xl text-sm text-ink-100 focus:border-purple-500/50 outline-none transition-colors" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2">Test Name</label>
+              <input value={composeData.name} onChange={e => setComposeData(p => ({...p, name: e.target.value}))} placeholder="e.g., Auto Gen Mock #1" className="w-full px-4 py-3 bg-ink-900 border border-ink-600 rounded-xl text-sm text-ink-100 placeholder:text-ink-700 focus:border-purple-500/50 outline-none transition-colors" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2">Test Type</label>
+              <select value={composeData.testType} onChange={e => setComposeData(p => ({...p, testType: e.target.value}))} className="w-full px-4 py-3 bg-ink-900 border border-ink-600 rounded-xl text-sm text-ink-100 focus:border-purple-500/50 outline-none transition-colors">
+                <option value="sectional">Sectional</option>
+                <option value="prelims_gs">Prelims GS</option>
+                <option value="subject_specific">Subject Specific</option>
+                <option value="full_mock">Full Mock</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2">Duration (minutes)</label>
+              <input value={composeData.durationMinutes} onChange={e => setComposeData(p => ({...p, durationMinutes: e.target.value}))} className="w-full px-4 py-3 bg-ink-900 border border-ink-600 rounded-xl text-sm text-ink-100 placeholder:text-ink-700 focus:border-purple-500/50 outline-none transition-colors" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2">Correct Mark</label>
+              <input value={composeData.markCorrect} onChange={e => setComposeData(p => ({...p, markCorrect: e.target.value}))} className="w-full px-4 py-3 bg-ink-900 border border-ink-600 rounded-xl text-sm text-ink-100 placeholder:text-ink-700 focus:border-purple-500/50 outline-none transition-colors" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2">Wrong Mark</label>
+              <input value={composeData.markWrong} onChange={e => setComposeData(p => ({...p, markWrong: e.target.value}))} className="w-full px-4 py-3 bg-ink-900 border border-ink-600 rounded-xl text-sm text-ink-100 placeholder:text-ink-700 focus:border-purple-500/50 outline-none transition-colors" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2">Year</label>
+              <input value={composeData.year} onChange={e => setComposeData(p => ({...p, year: e.target.value}))} className="w-full px-4 py-3 bg-ink-900 border border-ink-600 rounded-xl text-sm text-ink-100 placeholder:text-ink-700 focus:border-purple-500/50 outline-none transition-colors" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black text-ink-600 uppercase tracking-widest mb-2">Series (optional)</label>
+              <select value={selectedSeriesId} onChange={e => setSelectedSeriesId(e.target.value)} className="w-full px-4 py-3 bg-ink-900 border border-ink-600 rounded-xl text-sm text-ink-100 focus:border-purple-500/50 outline-none transition-colors">
+                <option value="">— None —</option>
+                {allSeries.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <label className="block text-[10px] font-black text-ink-600 uppercase tracking-widest">Subject Distribution (%)</label>
+              <span className="text-xs font-mono text-ink-600">{Object.values(autoData.subjectDistribution).filter(Boolean).reduce((a: number, b: string) => a + Number(b), 0)}% / 100%</span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 max-h-60 overflow-y-auto border border-ink-600 rounded-xl p-4">
+              {SUBJECTS_LIST.map(sub => (
+                <div key={sub} className="flex items-center gap-2 bg-ink-900/50 px-3 py-2 rounded-lg">
+                  <span className="text-[10px] text-ink-300 min-w-0 truncate flex-1">{sub}</span>
+                  <input type="number" min={0} max={100} value={autoData.subjectDistribution[sub] || ''} onChange={e => setAutoData(p => ({...p, subjectDistribution: {...p.subjectDistribution, [sub]: e.target.value}}))} className="w-14 bg-ink-950 border border-ink-600 rounded-md px-2 py-1 text-xs text-ink-100 text-center outline-none focus:border-purple-500/50" />
+                </div>
+              ))}
+              <button onClick={() => { const even = Math.floor(100 / SUBJECTS_LIST.length); const rem = 100 - even * SUBJECTS_LIST.length; const dist: Record<string, string> = {}; SUBJECTS_LIST.forEach((s, i) => { dist[s] = String(i === 0 ? even + rem : even); }); setAutoData(p => ({...p, subjectDistribution: dist})); }} className="text-[10px] text-purple-400 hover:text-purple-300 uppercase font-black tracking-widest transition-colors col-span-full text-center pt-2">
+                Distribute Evenly
+              </button>
+            </div>
+          </div>
+
+          <button onClick={handleAutoSubmit} disabled={autoGenerating || !autoData.totalQuestions || Number(autoData.totalQuestions) < 1} className="px-6 py-3 bg-purple-500/10 border border-purple-500/20 rounded-xl text-purple-400 hover:bg-purple-500/20 disabled:opacity-30 transition-all text-xs font-black uppercase tracking-widest">
+            {autoGenerating ? 'Generating…' : `Generate Test (${autoData.totalQuestions || 0} questions)`}
+          </button>
         </div>
       )}
 
