@@ -16,6 +16,8 @@ interface Lesson {
   title: string;
   description: string;
   videoId: string;
+  telegramChannel?: string;
+  telegramMsgId?: string;
   duration: string;
   order: number;
   isCompleted: boolean;
@@ -139,7 +141,7 @@ export default function CoursePlayerPage() {
       if (data.viewsRemaining !== undefined) {
         toast(`Views remaining: ${data.viewsRemaining}`, { icon: 'ℹ️' });
       }
-      setVideoId(data.videoId);
+      setVideoId(data.videoId || '');
     } catch (err: any) {
       if (err.response?.data?.viewLimitReached) {
         toast.error('Maximum view limit reached for this lesson');
@@ -310,16 +312,30 @@ export default function CoursePlayerPage() {
               <div className="relative group">
                 <div className="absolute -inset-1 bg-gradient-to-r from-red-500/15 to-teal-500/15 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                 <div className="relative bg-black rounded-2xl overflow-hidden shadow-2xl ring-1 ring-ink-800/60">
-                  <ProtectedVideoPlayer
-                    courseId={courseId}
-                    lessonId={currentLesson._id}
-                    initialVideoId={videoId}
-                    title={currentLesson.title}
-                    duration={currentLesson.duration}
-                    isAlreadyCompleted={currentLesson.isCompleted}
-                    onVideoEnd={handleVideoEnd}
-                    onComplete={handleLessonComplete}
-                  />
+                  {videoId ? (
+                    <ProtectedVideoPlayer
+                      courseId={courseId}
+                      lessonId={currentLesson._id}
+                      initialVideoId={videoId}
+                      title={currentLesson.title}
+                      duration={currentLesson.duration}
+                      isAlreadyCompleted={currentLesson.isCompleted}
+                      onVideoEnd={handleVideoEnd}
+                      onComplete={handleLessonComplete}
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full bg-ink-950 min-h-[300px]">
+                      <div className="text-center p-8">
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-ink-800 flex items-center justify-center">
+                          <svg className="w-8 h-8 text-ink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <h3 className="text-ink-300 text-lg font-semibold mb-2">Video Unavailable</h3>
+                        <p className="text-ink-500 text-sm max-w-sm">This video source is being configured. Please check back later.</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               

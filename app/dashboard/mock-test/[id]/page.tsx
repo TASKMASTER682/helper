@@ -529,7 +529,7 @@ export default function ExamPage() {
                     {/* Context / Common Passage */}
                     {currentQ.structure.context && (
                       <div className="w-full p-4 rounded-lg bg-ink-950/40 border-l-4 border-teal-500">
-                        <p className="text-sm text-ink-200 leading-relaxed italic">
+                        <p className="text-base text-ink-200 leading-relaxed italic">
                           {currentQ.structure.context}
                         </p>
                       </div>
@@ -546,7 +546,7 @@ export default function ExamPage() {
                     {currentQ.structure.type === 'standard' && currentQ.structure.statements && currentQ.structure.statements.length > 0 && (
                       <div className="w-full p-4 rounded-lg bg-ink-950/30 border-l-4 border-red-800 space-y-1.5">
                         {currentQ.structure.statements.map((stmt, si) => (
-                          <div key={si} className="flex items-start gap-3 text-sm text-ink-100">
+                          <div key={si} className="flex items-start gap-3 text-base text-ink-100">
                             <span className="text-red-800 font-bold shrink-0 min-w-[28px]">{si + 1}.</span>
                             <span className="leading-relaxed">{stmt}</span>
                           </div>
@@ -578,7 +578,7 @@ export default function ExamPage() {
 
                     {/* Sub Question (interrogation line) */}
                     {currentQ.structure.subQuestion && (
-                      <p className="text-sm text-ink-200 font-medium italic leading-relaxed pt-2 border-t border-ink-700/40">
+                      <p className="text-base text-ink-200 font-medium italic leading-relaxed pt-2 border-t border-ink-700/40">
                         {currentQ.structure.subQuestion}
                       </p>
                     )}

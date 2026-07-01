@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
 import { quizAPI } from '@/lib/api';
@@ -275,8 +275,28 @@ function QuizSession({ config, onBack }: { config: { count: number; subject: str
           <div className="h-full bg-crimson rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
         </div>
 
-        <div className="mb-6">
+        <div className="mb-6 space-y-2">
           <p className="text-ink text-base md:text-lg font-medium leading-relaxed">{q.text}</p>
+          {q.structure?.statements?.length > 0 && (
+            <div className="space-y-0.5 ml-4">
+              {q.structure.statements.map((st: string, i: number) => (
+                <p key={i} className="text-ink text-sm md:text-base leading-relaxed">{i + 1}. {st}</p>
+              ))}
+            </div>
+          )}
+          {q.structure?.subQuestion && (
+            <p className="text-ink text-base md:text-lg font-medium leading-relaxed italic">{q.structure.subQuestion}</p>
+          )}
+          {q.structure?.matchPairs?.length > 0 && (
+            <div className="grid grid-cols-2 gap-x-8 gap-y-1 mt-2 ml-4">
+              {q.structure.matchPairs.map((mp: { left: string; right: string }, i: number) => (
+                <React.Fragment key={i}>
+                  <p className="text-sm text-ink">{i + 1}. {mp.left}</p>
+                  <p className="text-sm text-ink">{mp.right}</p>
+                </React.Fragment>
+              ))}
+            </div>
+          )}
           {q.subject && <span className="inline-block mt-2 text-[10px] font-bold text-ink-mute uppercase tracking-widest px-2 py-1 bg-ink-600/20 rounded">{q.subject}</span>}
         </div>
 

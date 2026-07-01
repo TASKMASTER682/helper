@@ -1,8 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { adminAPI, coursesAPI } from '@/lib/api';
+import { adminAPI, coursesAPI, telegramVideoAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { X, Video, BookOpen, Clock, Layers, Shield, PlayCircle, Eye, Trash2, Edit2, Plus, Crown, Upload } from 'lucide-react';
+import { X, Video, BookOpen, Clock, Layers, Shield, PlayCircle, Eye, Trash2, Edit2, Plus, Crown, Upload, Send } from 'lucide-react';
 
 export function PlanFormModal({ onClose, onSave }: { onClose: () => void; onSave: () => void }) {
   const [form, setForm] = useState({ name: '', price: 0, duration: 1, durationUnit: 'month', description: '', features: [''] });
@@ -281,20 +281,72 @@ export function LessonFormModal({ courseId, lesson, onClose, onSave }: { courseI
     title: lesson?.title || '',
     description: lesson?.description || '',
     videoId: lesson?.videoId || '',
+    telegramChannel: lesson?.telegramChannel || '',
+    telegramMsgId: lesson?.telegramMsgId || '',
+    telegramUrl: '',
     thumbnail: lesson?.thumbnail || '',
     order: lesson?.order || 0,
     isPreview: lesson?.isPreview || false
   });
   const [saving, setSaving] = useState(false);
+  const [sourceType, setSourceType] = useState<'youtube' | 'telegram'>(
+    lesson?.telegramChannel ? 'telegram' : lesson ? 'youtube' : 'telegram'
+  );
+
+  const handleTelegramUrlChange = async (url: string) => {
+    setForm({...form, telegramUrl: url});
+    if (url.includes('t.me/')) {
+      try {
+        const { data } = await telegramVideoAPI.parseTgUrl(url);
+        if (data) {
+          setForm(prev => ({
+            ...prev,
+            telegramUrl: url,
+            telegramChannel: data.channel,
+            telegramMsgId: data.msgId,
+            videoId: ''
+          }));
+        }
+      } catch {
+        // Invalid URL, clear fields
+        setForm(prev => ({...prev, telegramUrl: url, telegramChannel: '', telegramMsgId: ''}));
+      }
+    }
+  };
 
   const handleSave = async () => {
+    if (!form.title.trim()) {
+      toast.error('Lesson title is required');
+      return;
+    }
+    if (sourceType === 'telegram' && !form.telegramChannel) {
+      toast.error('Please paste a valid Telegram video link');
+      return;
+    }
+    if (sourceType === 'youtube' && !form.videoId.trim()) {
+      toast.error('YouTube Video ID is required');
+      return;
+    }
     try {
       setSaving(true);
+      const payload: Record<string, any> = {
+        title: form.title.trim(),
+        description: form.description,
+        thumbnail: form.thumbnail,
+        order: form.order,
+        isPreview: form.isPreview,
+      };
+      if (sourceType === 'telegram') {
+        payload.telegramChannel = form.telegramChannel;
+        payload.telegramMsgId = form.telegramMsgId;
+      } else {
+        payload.videoId = form.videoId;
+      }
       if (lesson) {
-        await coursesAPI.updateLesson(lesson._id, form);
+        await coursesAPI.updateLesson(lesson._id, payload);
         toast.success('Video node reconfigured');
       } else {
-        await coursesAPI.createLesson(courseId, form);
+        await coursesAPI.createLesson(courseId, payload);
         toast.success('Video node appended');
       }
       onSave();
@@ -312,13 +364,56 @@ export function LessonFormModal({ courseId, lesson, onClose, onSave }: { courseI
         
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest">Lesson Title</label>
-            <input value={form.title} onChange={e => setForm({...form, title: e.target.value})} className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-3 text-sm text-ink-100 focus:border-blue-500/50 outline-none" />
+            <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest">Lesson Title <span className="text-red-500">*</span></label>
+            <input value={form.title} onChange={e => setForm({...form, title: e.target.value})} className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-3 text-sm text-ink-100 focus:border-blue-500/50 outline-none" placeholder="e.g. Introduction to Polity" />
           </div>
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest">Video ID (e.g. dQw4w9WgXcQ)</label>
-            <input value={form.videoId} onChange={e => setForm({...form, videoId: e.target.value})} className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-3 text-sm text-ink-100 focus:border-blue-500/50 outline-none" placeholder="YouTube/Vimeo Video ID" />
+
+          <div className="flex gap-2 p-1 bg-ink-950 rounded-xl border border-ink-600">
+            <button
+              onClick={() => setSourceType('telegram')}
+              className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                sourceType === 'telegram'
+                  ? 'bg-blue-500 text-white shadow-lg'
+                  : 'text-ink-500 hover:text-ink-100'
+              }`}
+            >
+              <Send className="w-3 h-3 inline mr-1" /> Telegram
+            </button>
+            <button
+              onClick={() => setSourceType('youtube')}
+              className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                sourceType === 'youtube'
+                  ? 'bg-blue-500 text-white shadow-lg'
+                  : 'text-ink-500 hover:text-ink-100'
+              }`}
+            >
+              <PlayCircle className="w-3 h-3 inline mr-1" /> YouTube
+            </button>
           </div>
+
+          {sourceType === 'telegram' ? (
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest">Telegram Video Link</label>
+              <input
+                value={form.telegramUrl}
+                onChange={e => handleTelegramUrlChange(e.target.value)}
+                className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-3 text-sm text-ink-100 focus:border-blue-500/50 outline-none"
+                placeholder="https://t.me/channel_name/123"
+              />
+              {form.telegramChannel && form.telegramMsgId && (
+                <div className="p-3 bg-teal-500/10 border border-teal-500/20 rounded-xl">
+                  <p className="text-[10px] text-teal-400 font-bold uppercase tracking-widest">
+                    Channel: {form.telegramChannel} &middot; Msg: {form.telegramMsgId}
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest">YouTube Video ID</label>
+              <input value={form.videoId} onChange={e => setForm({...form, videoId: e.target.value})} className="w-full bg-ink-950 border border-ink-600 rounded-xl px-4 py-3 text-sm text-ink-100 focus:border-blue-500/50 outline-none" placeholder="e.g. dQw4w9WgXcQ" />
+            </div>
+          )}
           <div className="space-y-2">
             <label className="text-[10px] font-black text-ink-600 uppercase tracking-widest block mb-2">Lesson Thumbnail (Optional)</label>
             <div className="flex flex-col gap-4">

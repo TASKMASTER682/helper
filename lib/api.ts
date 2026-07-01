@@ -263,3 +263,10 @@ export const paymentsAPI = {
     courseId: string;
   }) => api.post('/payments/verify-payment', data),
 };
+
+export const telegramVideoAPI = {
+  getTgLink: (channel: string, msgId: string) =>
+    api.get(`/videos/get-tg-link?channel=${encodeURIComponent(channel)}&msgId=${encodeURIComponent(msgId)}`),
+  parseTgUrl: (url: string) =>
+    api.post('/videos/parse-tg-url', { url }),
+};
