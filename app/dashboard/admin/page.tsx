@@ -11,7 +11,7 @@ import {
   ToggleLeft, ToggleRight, Save, CheckSquare, Square, Eye, Crown, CreditCard, PlayCircle,
   Zap, Clock, TrendingUp, RefreshCw, Filter, MoreVertical, UserPlus, Database, Mail, Calendar,
   Activity, Video, Bell, Percent, MessageSquare, Send, Copy,
-  Newspaper, ExternalLink, Brain
+  Newspaper, ExternalLink, Brain, Download
 } from 'lucide-react';
 import { 
   PlanFormModal, ActivateUserModal, CourseFormModal, LessonFormModal,
@@ -2019,6 +2019,11 @@ function ArticlesTab() {
 
   const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
   const [results, setResults] = useState<Record<string, { success: boolean; count?: number; date?: string; error?: string }>>({});
+  const [exporting, setExporting] = useState(false);
+  const [exportWindows, setExportWindows] = useState<Record<string, boolean>>({ '7d': true, '1m': true, '6m': true, 'gt6m': true });
+  const [importing, setImporting] = useState(false);
+  const [importJson, setImportJson] = useState('');
+  const [importWindow, setImportWindow] = useState('7d');
 
   const runScrape = async (source: string, mode: 'today' | 'yesterday') => {
     const key = `${source}-${mode}`;
@@ -2164,6 +2169,184 @@ function ArticlesTab() {
             </div>
           );
         })}
+      </div>
+
+      {/* Export & Import Analysis */}
+      <div className="space-y-4">
+        {/* Export Card */}
+        <div className="bg-ink-900/50 p-6 rounded-3xl border border-ink-600">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-violet-500/10 rounded-2xl shrink-0">
+              <Download className="w-6 h-6 text-violet-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-black text-red-800 uppercase tracking-tight">Export Analysis</h3>
+              <p className="text-ink-500 text-xs font-bold uppercase tracking-widest mt-1 mb-4">
+                Select windows and download Excel with articles + prompt for external AI
+              </p>
+
+              <div className="flex flex-wrap gap-3 mb-4">
+                {(['7d', '1m', '6m', 'gt6m'] as const).map((w) => (
+                  <label
+                    key={w}
+                    className={clsx(
+                      "flex items-center gap-2 px-4 py-2.5 rounded-xl border cursor-pointer transition-all text-xs font-bold uppercase tracking-wider",
+                      exportWindows[w]
+                        ? 'bg-violet-500/10 border-violet-500/30 text-violet-400'
+                        : 'bg-ink-800/30 border-ink-600/20 text-ink-500 hover:border-ink-500/30'
+                    )}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={exportWindows[w]}
+                      onChange={() => setExportWindows(prev => ({ ...prev, [w]: !prev[w] }))}
+                      className="sr-only"
+                    />
+                    {exportWindows[w] ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
+                    {w === '7d' ? 'Last 7 Days' : w === '1m' ? 'Last 1 Month' : w === '6m' ? 'Last 6 Months' : '> 6 Months'}
+                  </label>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-end">
+                <button
+                  onClick={async () => {
+                    const selected = Object.entries(exportWindows).filter(([,v]) => v).map(([k]) => k);
+                    if (!selected.length) { toast.error('Select at least one window'); return; }
+                    setExporting(true);
+                    try {
+                      const res = await adminAPI.exportAnalysis(selected);
+                      const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `upsc-analysis-export-${new Date().toISOString().slice(0, 10)}.xlsx`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                      toast.success('Excel downloaded — use with external AI');
+                    } catch (err: any) {
+                      toast.error(err?.response?.data?.error || err?.message || 'Export failed');
+                    } finally {
+                      setExporting(false);
+                    }
+                  }}
+                  disabled={exporting}
+                  className={clsx(
+                    "py-3 px-6 rounded-2xl font-black text-xs uppercase tracking-widest transition-all duration-200 flex items-center gap-2",
+                    exporting
+                      ? 'bg-ink-800 text-ink-500 cursor-not-allowed'
+                      : 'bg-violet-500/10 text-violet-400 border border-violet-500/20 hover:bg-violet-500/20 hover:border-violet-500/40 active:scale-[0.97]'
+                  )}
+                >
+                  {exporting ? <><Loader2 className="w-4 h-4 animate-spin" /> Exporting...</> : <><Download className="w-4 h-4" /> Export Excel</>}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Import Card */}
+        <div className="bg-ink-900/50 p-6 rounded-3xl border border-ink-600">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-emerald-500/10 rounded-2xl shrink-0">
+              <Upload className="w-6 h-6 text-emerald-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-black text-red-800 uppercase tracking-tight">Import AI Results</h3>
+              <p className="text-ink-500 text-xs font-bold uppercase tracking-widest mt-1 mb-3">
+                Paste the JSON returned by your external AI here
+              </p>
+
+              {/* Window type selector — same style as export */}
+              <div className="flex flex-wrap gap-3 mb-4">
+                {(['7d', '1m', '6m', 'gt6m'] as const).map((w) => (
+                  <label
+                    key={w}
+                    className={clsx(
+                      "flex items-center gap-2 px-4 py-2.5 rounded-xl border cursor-pointer transition-all text-xs font-bold uppercase tracking-wider",
+                      importWindow === w
+                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                        : 'bg-ink-800/30 border-ink-600/20 text-ink-500 hover:border-ink-500/30'
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name="importWindow"
+                      checked={importWindow === w}
+                      onChange={() => setImportWindow(w)}
+                      className="sr-only"
+                    />
+                    {w === '7d' ? 'Last 7 Days' : w === '1m' ? 'Last 1 Month' : w === '6m' ? 'Last 6 Months' : '> 6 Months'}
+                  </label>
+                ))}
+              </div>
+
+              <textarea
+                value={importJson}
+                onChange={(e) => setImportJson(e.target.value)}
+                placeholder={`[\n  {\n    "_id": ["id1", "id2", "id3"],\n    "category": "Governance & Economy",\n    "topicLabel": "Digital Public Infrastructure",\n    "subTopics": ["Ayushman Bharat", "SHE-LEAPS"],\n    "frequency": 3,\n    "rationale": "..."\n  }\n]`}
+                className="w-full h-32 bg-ink-950 border border-ink-600/20 rounded-xl p-4 text-ink-200 text-sm font-mono leading-relaxed resize-y focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 mb-3"
+                spellCheck={false}
+              />
+              {/* Hidden file input */}
+              <input
+                type="file"
+                accept=".json"
+                id="json-upload"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = () => setImportJson(reader.result as string);
+                  reader.readAsText(file);
+                }}
+              />
+              <div className="flex items-center justify-end gap-2">
+                <label
+                  htmlFor="json-upload"
+                  className="text-[10px] font-bold uppercase tracking-widest text-ink-500 hover:text-ink-300 cursor-pointer transition-colors"
+                >
+                  or upload .json file
+                </label>
+                <span className="text-ink-600 text-[10px]">|</span>
+                <span className="text-ink-500 text-[10px] font-bold uppercase tracking-wider">
+                  Expects grouped JSON: _id array, category, topicLabel, subTopics[], frequency, rationale
+                </span>
+                <button
+                  onClick={async () => {
+                    const raw = importJson.replace(/^\uFEFF/, '').trim();
+                    if (!raw) { toast.error('Paste JSON first'); return; }
+                    let parsed;
+                    try { parsed = JSON.parse(raw); } catch (e) { toast.error('Invalid JSON: ' + String(e) + ' — first 50 chars: ' + JSON.stringify(raw.slice(0, 50))); return; }
+                    if (!Array.isArray(parsed)) { toast.error('JSON must be an array'); return; }
+                    setImporting(true);
+                    try {
+                      const { data } = await adminAPI.importAnalysis(parsed, importWindow);
+                      if (data.success) {
+                        toast.success(`Imported: ${data.message}`);
+                        setImportJson('');
+                      }
+                    } catch (err: any) {
+                      toast.error(err?.response?.data?.error || err?.message || 'Import failed');
+                    } finally {
+                      setImporting(false);
+                    }
+                  }}
+                  disabled={importing}
+                  className={clsx(
+                    "py-3 px-6 rounded-2xl font-black text-xs uppercase tracking-widest transition-all duration-200 flex items-center gap-2",
+                    importing
+                      ? 'bg-ink-800 text-ink-500 cursor-not-allowed'
+                      : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 hover:border-emerald-500/40 active:scale-[0.97]'
+                  )}
+                >
+                  {importing ? <><Loader2 className="w-4 h-4 animate-spin" /> Importing...</> : <><Upload className="w-4 h-4" /> Import</>}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Link to Editorial Engine */}

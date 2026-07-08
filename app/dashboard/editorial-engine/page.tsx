@@ -7,7 +7,7 @@ import {
   Upload, RefreshCw, FileText, ExternalLink, Edit3,
   BarChart3, BookOpen, Quote, X, Save, Loader2,
   ChevronDown, ChevronUp, AlertCircle, CheckCircle2,
-  Newspaper, Brain, Clock, Trash2
+  Newspaper, Brain, Clock, Trash2, MapPin
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { default as api } from '@/lib/api';
@@ -39,6 +39,7 @@ const TABS = [
   { key: '1m', label: '1 Month' },
   { key: '6m', label: '6 Months' },
   { key: 'gt6m', label: '>6 Months' },
+  { key: 'jk', label: 'J&K' },
 ] as const;
 
 function ArticleSkeleton() {
@@ -128,18 +129,22 @@ export default function EditorialEnginePage() {
     try {
       await api.delete(`/editorial-engine/items/${id}`);
       setTodayItems((prev) => prev.filter((i) => i._id !== id));
+      setYesterdayItems((prev) => prev.filter((i) => i._id !== id));
+      setJkItems((prev) => prev.filter((i) => i._id !== id));
     } catch (e: any) {
       alert('Failed to delete: ' + (e?.message || String(e)));
     }
   };
 
-  const [selectedWindow, setSelectedWindow] = useState<'today' | 'yesterday' | '7d' | '1m' | '6m' | 'gt6m'>('today');
+  const [selectedWindow, setSelectedWindow] = useState<'today' | 'yesterday' | '7d' | '1m' | '6m' | 'gt6m' | 'jk'>('today');
   const [analysisFromDB, setAnalysisFromDB] = useState<any>(null);
   const [todayItems, setTodayItems] = useState<EditorialItem[]>([]);
   const [todayItemsLoading, setTodayItemsLoading] = useState(false);
   const [yesterdayItems, setYesterdayItems] = useState<EditorialItem[]>([]);
   const [yesterdayItemsLoading, setYesterdayItemsLoading] = useState(false);
   const [lastRunDate, setLastRunDate] = useState<string | null>(null);
+  const [jkItems, setJkItems] = useState<EditorialItem[]>([]);
+  const [jkItemsLoading, setJkItemsLoading] = useState(false);
 
   useEffect(() => {
     if (user?.role !== 'admin') {
@@ -191,12 +196,24 @@ export default function EditorialEnginePage() {
       const d = new Date();
       d.setDate(d.getDate() - 1);
       const yesterdayKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-      const res = await api.get(`/editorial-engine/items?createdDate=${yesterdayKey}`);
+      const res = await api.get(`/editorial-engine/items?dateKey=${yesterdayKey}`);
       setYesterdayItems(res.data?.items || []);
     } catch {
       setYesterdayItems([]);
     } finally {
       setYesterdayItemsLoading(false);
+    }
+  };
+
+  const fetchJKItems = async () => {
+    setJkItemsLoading(true);
+    try {
+      const res = await api.get('/editorial-engine/items/jk');
+      setJkItems(res.data?.items || []);
+    } catch {
+      setJkItems([]);
+    } finally {
+      setJkItemsLoading(false);
     }
   };
 
@@ -312,6 +329,7 @@ export default function EditorialEnginePage() {
               onClick={() => {
                 setSelectedWindow(tab.key as typeof selectedWindow);
                 if (tab.key === 'yesterday') fetchYesterdayItems();
+                else if (tab.key === 'jk') fetchJKItems();
                 else if (tab.key !== 'today') loadAnalysisForWindow(tab.key);
               }}
               className={clsx(
@@ -514,6 +532,102 @@ export default function EditorialEnginePage() {
               </div>
             )}
           </div>
+        ) : selectedWindow === 'jk' ? (
+          <div className="p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-bold text-ink-100 flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-amber-500" aria-hidden="true" />
+                Jammu &amp; Kashmir — All Related Articles
+              </h2>
+              <button
+                onClick={() => fetchJKItems()}
+                disabled={jkItemsLoading}
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-crimson hover:text-crimson-deep transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crimson/50 rounded-lg px-2 py-1"
+                aria-label={jkItemsLoading ? 'Refreshing…' : 'Refresh articles'}
+              >
+                <RefreshCw className={clsx('w-3.5 h-3.5', jkItemsLoading && 'animate-spin')} aria-hidden="true" />
+                {jkItemsLoading ? 'Refreshing…' : 'Refresh'}
+              </button>
+            </div>
+
+            {jkItemsLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3" aria-label="Loading articles">
+                <ArticleSkeleton />
+                <ArticleSkeleton />
+                <ArticleSkeleton />
+                <ArticleSkeleton />
+              </div>
+            ) : jkItems.length === 0 ? (
+              <div className="text-center py-12">
+                <MapPin className="w-8 h-8 text-ink-500 mx-auto mb-3" aria-hidden="true" />
+                <p className="text-ink-400 text-sm">No J&amp;K-related articles found.</p>
+                <p className="text-ink-500 text-xs mt-1">Articles with J&amp;K mentions in headings or title will appear here.</p>
+              </div>
+            ) : (
+              <>
+                <p className="text-ink-500 text-xs font-bold uppercase tracking-widest mb-3">
+                  {jkItems.length} article{jkItems.length !== 1 && 's'} found
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {jkItems.map((item) => (
+                    <article
+                      key={item._id}
+                      className="p-5 rounded-xl border border-amber-500/10 bg-ink-800/40 hover:bg-ink-800/60 transition-colors"
+                    >
+                      <Link
+                        href={`/dashboard/editorial-engine/article/${item._id}`}
+                        className="text-crimson font-bold text-[15px] leading-snug line-clamp-2 hover:text-crimson-deep transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crimson/50 rounded"
+                      >
+                        {item.title}
+                      </Link>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-ink-500 text-xs font-semibold uppercase tracking-wider">
+                          {item.sourceKey}
+                        </span>
+                        <span className="text-ink-600 text-xs" aria-hidden="true">·</span>
+                        <Clock className="w-3.5 h-3.5 text-ink-500" aria-hidden="true" />
+                        <span className="text-ink-500 text-xs">
+                          {item.runDateKey}
+                        </span>
+                      </div>
+                      {item.description && (
+                        <div className="mt-2.5">
+                          <p className={clsx(
+                            'text-ink-400 text-sm leading-relaxed',
+                            !expandedArticles.has(item._id) && 'line-clamp-2'
+                          )}>
+                            {item.description}
+                          </p>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-4 mt-4 pt-3 border-t border-ink-600/10">
+                        <button
+                          onClick={() => openContentEditor(item)}
+                          className="inline-flex items-center gap-1 text-crimson text-xs font-bold uppercase tracking-wider hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crimson/50 rounded px-1"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" aria-hidden="true" /> Edit
+                        </button>
+                        <a
+                          href={item.link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-ink-400 text-xs font-bold uppercase tracking-wider hover:text-crimson hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crimson/50 rounded px-1"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" /> View
+                        </a>
+                        <button
+                          onClick={() => handleDeleteArticle(item._id)}
+                          className="inline-flex items-center gap-1 text-ink-500 text-xs font-bold uppercase tracking-wider hover:text-crimson hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crimson/50 rounded px-1 ml-auto"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" aria-hidden="true" /> Delete
+                        </button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         ) : (
           <div className="p-5">
             <h2 className="font-bold text-ink-100 flex items-center gap-2 mb-4">
@@ -542,8 +656,21 @@ export default function EditorialEnginePage() {
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
                           <h3 className="text-ink-100 font-bold text-lg leading-snug break-words">
-                            {topic.topicLabel}
+                            {(() => {
+                              const firstLink = topic.comprehensiveLinks?.[0];
+                              const href = firstLink?._id
+                                ? `/dashboard/editorial-engine/article/${firstLink._id}`
+                                : firstLink?.link || null;
+                              return href
+                                ? <Link href={href} className="hover:text-crimson hover:underline transition-colors">{topic.topicLabel}</Link>
+                                : topic.topicLabel;
+                            })()}
                           </h3>
+                          {topic.category && (
+                            <span className="inline-block px-2.5 py-0.5 rounded-full bg-crimson/10 text-crimson text-[10px] font-bold uppercase tracking-wider mt-1">
+                              {topic.category}
+                            </span>
+                          )}
                           <div className="flex items-center gap-2 mt-2">
                             <Brain className="w-4 h-4 text-ink-500" aria-hidden="true" />
                             <span className="text-ink-400 text-base">
@@ -568,15 +695,31 @@ export default function EditorialEnginePage() {
                           </div>
                           <ul className="space-y-2.5">
                             {topic.comprehensiveLinks.slice(0, 4).map((l: any, i: number) => (
-                              <li key={`${l.link}-${i}`}>
-                                <a
-                                  href={l.link}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="text-crimson text-[15px] font-semibold leading-snug line-clamp-2 hover:text-crimson-deep hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crimson/50 rounded"
-                                >
-                                  {l.title || 'Untitled'}
-                                </a>
+                              <li key={`${l._id || l.link}-${i}`}>
+                                <div className="flex items-start justify-between gap-2">
+                                  {l._id ? (
+                                    <Link
+                                      href={`/dashboard/editorial-engine/article/${l._id}`}
+                                      className="text-crimson text-[15px] font-semibold leading-snug line-clamp-2 hover:text-crimson-deep hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crimson/50 rounded flex-1 min-w-0"
+                                    >
+                                      {l.title || 'Untitled'}
+                                    </Link>
+                                  ) : (
+                                    <span className="text-ink-300 text-[15px] font-semibold leading-snug line-clamp-2 flex-1 min-w-0">
+                                      {l.title || 'Untitled'}
+                                    </span>
+                                  )}
+                                  {l.link && (
+                                    <a
+                                      href={l.link}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="shrink-0 inline-flex items-center gap-1 text-ink-500 text-[10px] font-bold uppercase tracking-wider hover:text-crimson transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crimson/50 rounded px-1.5 py-0.5 mt-0.5"
+                                    >
+                                      <ExternalLink className="w-3 h-3" aria-hidden="true" />
+                                    </a>
+                                  )}
+                                </div>
                                 {l.sourceKey && (
                                   <span className="text-ink-500 text-xs uppercase mt-0.5 block">
                                     {l.sourceKey}
@@ -593,6 +736,16 @@ export default function EditorialEnginePage() {
                           <Quote className="w-3.5 h-3.5 text-ink-500 inline mr-1" aria-hidden="true" />
                           {topic.rationale}
                         </p>
+                      )}
+
+                      {Array.isArray(topic.subTopics) && topic.subTopics.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {topic.subTopics.map((st: string, i: number) => (
+                            <span key={i} className="px-2 py-0.5 rounded-md bg-ink-700/30 text-ink-400 text-[10px] font-semibold">
+                              {st}
+                            </span>
+                          ))}
+                        </div>
                       )}
                     </div>
                   ))}

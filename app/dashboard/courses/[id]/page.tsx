@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { coursesAPI, subscriptionAPI } from '@/lib/api';
 import ProtectedVideoPlayer from '@/components/ProtectedVideoPlayer';
+import TelegramVideoPlayer from '@/components/TelegramVideoPlayer';
 import DevToolsGuard from '@/components/DevToolsGuard';
 import { 
   Play, BookOpen, Clock, CheckCircle2, Circle, 
@@ -51,6 +52,8 @@ export default function CoursePlayerPage() {
   const [error, setError] = useState<string | null>(null);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [videoId, setVideoId] = useState<string>('');
+  const [telegramChannel, setTelegramChannel] = useState<string>('');
+  const [telegramMsgId, setTelegramMsgId] = useState<string>('');
   const [videoLoading, setVideoLoading] = useState(true);
   const [showSidebar, setShowSidebar] = useState(true);
 
@@ -136,12 +139,16 @@ export default function CoursePlayerPage() {
       if (data.viewLimitReached) {
         toast.error('Maximum view limit reached for this lesson');
         setVideoId('');
+        setTelegramChannel('');
+        setTelegramMsgId('');
         return;
       }
       if (data.viewsRemaining !== undefined) {
         toast(`Views remaining: ${data.viewsRemaining}`, { icon: 'ℹ️' });
       }
       setVideoId(data.videoId || '');
+      setTelegramChannel(data.telegramChannel || '');
+      setTelegramMsgId(data.telegramMsgId || '');
     } catch (err: any) {
       if (err.response?.data?.viewLimitReached) {
         toast.error('Maximum view limit reached for this lesson');
@@ -312,7 +319,19 @@ export default function CoursePlayerPage() {
               <div className="relative group">
                 <div className="absolute -inset-1 bg-gradient-to-r from-red-500/15 to-teal-500/15 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                 <div className="relative bg-black rounded-2xl overflow-hidden shadow-2xl ring-1 ring-ink-800/60">
-                  {videoId ? (
+                  {telegramChannel && telegramMsgId ? (
+                    <TelegramVideoPlayer
+                      courseId={courseId}
+                      lessonId={currentLesson._id}
+                      channel={telegramChannel}
+                      msgId={telegramMsgId}
+                      title={currentLesson.title}
+                      duration={currentLesson.duration}
+                      isAlreadyCompleted={currentLesson.isCompleted}
+                      onVideoEnd={handleVideoEnd}
+                      onComplete={handleLessonComplete}
+                    />
+                  ) : videoId ? (
                     <ProtectedVideoPlayer
                       courseId={courseId}
                       lessonId={currentLesson._id}

@@ -186,6 +186,9 @@ export const adminAPI = {
   // Articles (Harvester Integration)
   loadTodayArticles: (source: string) => api.post(`/admin/articles/load-today/${source}`),
   loadYesterdayArticles: (source: string) => api.post(`/admin/articles/load-yesterday/${source}`),
+  runAnalysis: () => api.post('/admin/articles/run-analysis'),
+  exportAnalysis: (windows: string[]) => api.post('/admin/articles/export-analysis', { windows }, { responseType: 'blob' }),
+  importAnalysis: (results: any[], windowType?: string) => api.post('/admin/articles/import-analysis', { results, windowType }),
 };
 
 export const youtubeCourseAPI = {
