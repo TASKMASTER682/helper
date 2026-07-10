@@ -82,14 +82,11 @@ export default function EditorialEnginePage() {
     });
   };
   const [editingItem, setEditingItem] = useState<EditorialItem | null>(null);
-  const [editSpeech, setEditSpeech] = useState('');
   const [editKeyPointers, setEditKeyPointers] = useState('');
   const [savingContent, setSavingContent] = useState(false);
-  const [generatingSpeech, setGeneratingSpeech] = useState(false);
 
   const openContentEditor = (item: EditorialItem) => {
     setEditingItem(item);
-    setEditSpeech(item.speechContent || '');
     setEditKeyPointers(item.keyPointersContent || '');
   };
 
@@ -98,7 +95,6 @@ export default function EditorialEnginePage() {
     setSavingContent(true);
     try {
       await api.put(`/editorial-engine/items/${editingItem._id}/content`, {
-        speechContent: editSpeech,
         keyPointersContent: editKeyPointers
       });
       setEditingItem(null);
@@ -106,21 +102,6 @@ export default function EditorialEnginePage() {
       alert('Failed to save: ' + (e?.message || String(e)));
     } finally {
       setSavingContent(false);
-    }
-  };
-
-  const generateSpeech = async () => {
-    if (!editingItem || !editKeyPointers) return;
-    setGeneratingSpeech(true);
-    try {
-      const res = await api.post(`/editorial-engine/items/${editingItem._id}/generate-speech`);
-      if (res.data?.speechContent) {
-        setEditSpeech(res.data.speechContent);
-      }
-    } catch (e: any) {
-      alert('Failed to generate speech: ' + (e?.response?.data?.error || e?.message || String(e)));
-    } finally {
-      setGeneratingSpeech(false);
     }
   };
 
@@ -789,30 +770,6 @@ export default function EditorialEnginePage() {
 
             {/* Body */}
             <div className="flex-1 overflow-y-auto p-5 space-y-5 custom-scrollbar">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label htmlFor="edit-speech" className="text-ink-400 text-xs font-bold uppercase tracking-wider">
-                    Speech (HTML)
-                  </label>
-                  {!editSpeech && (
-                    <button
-                      onClick={generateSpeech}
-                      disabled={generatingSpeech || !editKeyPointers}
-                      className="text-[10px] font-bold uppercase tracking-wider text-teal hover:underline disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal/50 rounded px-1"
-                    >
-                      {generatingSpeech ? 'Generating…' : 'Generate from Key Pointers'}
-                    </button>
-                  )}
-                </div>
-                <textarea
-                  id="edit-speech"
-                  value={editSpeech}
-                  onChange={(e) => setEditSpeech(e.target.value)}
-                  className="w-full h-40 bg-ink-900 border border-ink-600/20 rounded-xl p-4 text-ink-200 text-sm font-mono leading-relaxed resize-y focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crimson/50"
-                  placeholder="<p>Speech content here…</p>"
-                  spellCheck={false}
-                />
-              </div>
               <div>
                 <label htmlFor="edit-key-pointers" className="text-ink-400 text-xs font-bold uppercase tracking-wider block mb-2">
                   Key Pointers for Mains (HTML)

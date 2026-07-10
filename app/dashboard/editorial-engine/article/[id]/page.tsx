@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Mic, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, BookOpen, Copy, Check, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
 type Article = {
@@ -14,9 +14,45 @@ type Article = {
   sourceKey: string;
   runDateKey: string;
   publishedAt: string | null;
-  speechContent: string;
   keyPointersContent: string;
 };
+
+const PROMPT_TEMPLATE = `# Role & Objective
+You are an expert UPSC Civil Services Examination Evaluator and Core Content Strategist. Your task is to write a highly structured, marks-fetching Mains Model Answer for the provided question. The answer must avoid dense paragraphs and focus on high scannability, concise representations, and easily crammable elements.
+
+---
+
+# Core Structuring Rules
+
+1. **Demand of the Question (Brief Breakdown):**
+   - Before starting the answer, write 2 lines explicitly identifying the core directives (e.g., Discuss, Critically Analyze, Evaluate) and the exact sub-parts the question is implicitly asking for.
+
+2. **Introduction (Max 40-50 words):**
+   - Provide the most appropriate type of introduction for this specific question. Choose ONLY ONE approach that fits best: (Data/Fact-based) OR (Recent Current Affairs Context) OR (Constitutional/Definition-based).
+
+3. **Core Body Sections (Broken into Appropriate Parts):**
+   - Break the body strictly into sub-headings derived directly from the question's demand.
+   - **Pointer Representation Rule:** DO NOT write long explanations for points. Write a crisp, 1-line bold pointer, followed immediately by a short representation or an example/case study in parentheses.
+   - *Example Format:* **Digital Divide:** Impedes equitable online education (e.g., ASER Report showing only 20% rural kids had smartphones).
+
+4. **Integrated Data & Sources:**
+   - Embed authentic statistics, reports, or indices with explicit sources (e.g., NITI Aayog, Economic Survey, NCRB, UN reports) directly within the points to substantiate arguments.
+
+5. **Visual / Diagram / Schematic Idea:**
+   - Provide a clear, textual blueprint or description of a diagram (e.g., Hub-and-Spoke model, Flowchart, 2x2 Matrix, or Formula) that the aspirant can physically draw in the exam copy to fetch extra marks.
+
+6. **Crammable Way Forward & Conclusion (Max 40-50 words):**
+   - Provide a forward-looking, visionary, or constitutionally aligned (Preamble/DPSP/Fundamental Duties) conclusion that is crisp and ready to memorize.
+
+---
+
+# Tone & Vocabulary
+- Lucid, professional, and bureaucratic. Avoid overly flowery English or complex jargon. Maximize the use of high-yielding keywords (e.g., Minimum Government Maximum Governance, Cooperative Federalism, Inclusivity).
+
+---
+
+# The UPSC Question to Answer:
+[INSERT QUESTION HERE]`;
 
 export default function ArticleDetailPage() {
   const params = useParams();
@@ -24,43 +60,32 @@ export default function ArticleDetailPage() {
   const { user } = useAuthStore();
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
-  const [speaking, setSpeaking] = useState(false);
-  const [generatingSpeech, setGeneratingSpeech] = useState(false);
-  const [speechOpen, setSpeechOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [promptOpen, setPromptOpen] = useState(false);
 
-  const readAloud = () => {
-    if (!article?.speechContent) return;
-    if ('speechSynthesis' in window) {
-      if (speaking) {
-        window.speechSynthesis.cancel();
-        setSpeaking(false);
-        return;
-      }
-      const stripped = article.speechContent.replace(/<[^>]*>/g, '');
-      const utterance = new SpeechSynthesisUtterance(stripped);
-      utterance.rate = 0.9;
-      utterance.pitch = 1;
-      utterance.lang = 'en-IN';
-      utterance.onend = () => setSpeaking(false);
-      utterance.onerror = () => setSpeaking(false);
-      window.speechSynthesis.speak(utterance);
-      setSpeaking(true);
-    }
+  const extractQuestion = (html: string): string => {
+    const stripped = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    // Try to find text after "Mains Practice Question" or "Q."
+    const qMatch = stripped.match(/Mains Practice Question[:\s]*([\s\S]*?)(?=\n\s*\n|$)/);
+    if (qMatch) return qMatch[1].trim();
+    const qMatch2 = stripped.match(/Q\.[\s]*[""']?([^""']+)/);
+    if (qMatch2) return qMatch2[1].trim();
+    return stripped.slice(0, 300) + '...';
   };
 
-  const generateSpeech = async () => {
-    if (!article) return;
-    setGeneratingSpeech(true);
+  const getFullPrompt = (): string => {
+    if (!article?.keyPointersContent) return PROMPT_TEMPLATE;
+    const question = extractQuestion(article.keyPointersContent);
+    return PROMPT_TEMPLATE.replace('[INSERT QUESTION HERE]', question);
+  };
+
+  const copyPrompt = async () => {
     try {
-      const { default: api } = await import('@/lib/api');
-      const res = await api.post(`/editorial-engine/items/${article._id}/generate-speech`);
-      if (res.data?.speechContent) {
-        setArticle({ ...article, speechContent: res.data.speechContent });
-      }
-    } catch (e: any) {
-      alert('Failed: ' + (e?.response?.data?.error || e?.message || String(e)));
-    } finally {
-      setGeneratingSpeech(false);
+      await navigator.clipboard.writeText(getFullPrompt());
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      alert('Failed to copy. Select and copy manually.');
     }
   };
 
@@ -143,69 +168,6 @@ export default function ArticleDetailPage() {
         </div>
       </div>
 
-      {/* Speech Section */}
-      <div className="bg-ink-900 border border-ink-600/20 rounded-2xl p-6 mb-6">
-        <div className="flex items-start justify-between pb-4 border-b border-ink-600/20">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-crimson-deep flex items-center justify-center shadow-sm shadow-crimson-deep/30">
-              <Mic className="w-4 h-4 text-parchment" />
-            </div>
-            <div>
-              <h2 className="font-display text-lg font-bold text-ink-100">Speech Practice</h2>
-              <p className="text-ink-400 text-xs">Read aloud to practice your articulation</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {article.speechContent && (
-              <button
-                onClick={readAloud}
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold active:scale-95 transition-all ${
-                  speaking
-                    ? 'bg-crimson text-white animate-pulse shadow-sm shadow-crimson/40'
-                    : 'bg-crimson/10 text-crimson border border-crimson/30 hover:bg-crimson/20'
-                }`}
-              >
-                <Mic className="w-4 h-4" />
-                {speaking ? 'Stop' : 'Read Aloud'}
-              </button>
-            )}
-            <button
-              onClick={() => setSpeechOpen(!speechOpen)}
-              className="p-2 rounded-lg text-ink-400 hover:text-ink-100 hover:bg-ink-800/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-crimson/50"
-              aria-label={speechOpen ? 'Collapse speech' : 'Expand speech'}
-            >
-              {speechOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
-        <div
-          className={`mt-5 overflow-hidden transition-all duration-300 ease-in-out ${
-            speechOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0 mt-0'
-          }`}
-        >
-            {article.speechContent ? (
-              <div
-                className="text-ink-200 text-base leading-relaxed space-y-3 [&_h1]:text-crimson [&_h1]:text-xl [&_h1]:font-bold [&_h2]:text-crimson [&_h2]:text-lg [&_h2]:font-bold [&_h3]:text-crimson-deep [&_h3]:font-bold [&_h3]:text-base [&_a]:text-crimson [&_a]:font-semibold [&_a:hover]:underline [&_strong]:text-ink-100 [&_strong]:font-bold [&_blockquote]:border-l-4 [&_blockquote]:border-crimson [&_blockquote]:pl-4 [&_blockquote]:text-ink-400 [&_blockquote]:italic [&_blockquote]:my-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:text-ink-200 [&_li]:my-1 [&_code]:text-teal [&_code]:text-xs [&_code]:bg-ink-950 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_hr]:border-ink-600/20 [&_p]:my-2 [&_img]:rounded-xl [&_img]:border [&_img]:border-ink-600/20 [&_table]:w-full [&_table]:border-collapse [&_th]:text-ink-100 [&_th]:font-bold [&_th]:border [&_th]:border-ink-600/20 [&_th]:p-2 [&_th]:bg-ink-950 [&_td]:border [&_td]:border-ink-600/20 [&_td]:p-2 [&_td]:text-ink-200"
-                dangerouslySetInnerHTML={{ __html: article.speechContent }}
-              />
-            ) : (
-              <div>
-                <p className="text-ink-400 text-sm italic mb-3">No speech content added yet.</p>
-                {article.keyPointersContent && (
-                  <button
-                    onClick={generateSpeech}
-                    disabled={generatingSpeech}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-teal/10 text-teal border border-teal/30 hover:bg-teal/20 active:scale-95 disabled:opacity-50 transition-all"
-                  >
-                    <Mic className="w-4 h-4" />
-                    {generatingSpeech ? 'Generating...' : 'Generate Speech from Key Pointers'}
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-      </div>
-
       {/* Key Pointers Section */}
       <div className="bg-ink-900 border border-ink-600/20 rounded-2xl p-6 mb-6">
         <div className="flex items-center gap-3 mb-5 pb-4 border-b border-ink-600/20">
@@ -226,6 +188,45 @@ export default function ArticleDetailPage() {
           <p className="text-ink-400 text-sm italic">No key pointers added yet.</p>
         )}
       </div>
+
+      {/* Ready Prompt Section */}
+      {article.keyPointersContent && (
+        <div className="bg-ink-900 border border-ink-600/20 rounded-2xl p-6 mb-6">
+          <div className="flex items-start justify-between pb-4 border-b border-ink-600/20 mb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-blue-500/20 flex items-center justify-center shadow-sm shadow-blue-500/20">
+                <ExternalLink className="w-4 h-4 text-blue-400" />
+              </div>
+              <div>
+                <h2 className="font-display text-lg font-bold text-ink-100">Ready Prompt for AI</h2>
+                <p className="text-ink-400 text-xs">Copy this prompt and use with any external AI to generate a model answer</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPromptOpen(!promptOpen)}
+                className="p-2 rounded-lg text-ink-400 hover:text-ink-100 hover:bg-ink-800/50 transition-colors"
+                aria-label={promptOpen ? 'Collapse prompt' : 'Expand prompt'}
+              >
+                {promptOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </button>
+              <button
+                onClick={copyPrompt}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-blue-500/10 text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 active:scale-95 transition-all"
+              >
+                {copied ? <><Check className="w-4 h-4" /> Copied</> : <><Copy className="w-4 h-4" /> Copy</>}
+              </button>
+            </div>
+          </div>
+          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+            promptOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
+          }`}>
+            <pre className="bg-ink-950 border border-ink-600/10 rounded-xl p-4 text-ink-300 text-xs font-mono leading-relaxed whitespace-pre-wrap overflow-auto max-h-[600px] select-all">
+              {getFullPrompt()}
+            </pre>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
