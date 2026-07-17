@@ -5,7 +5,8 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Target, BarChart3, MessageCircle,
   FlaskConical, User, LogOut, Flame, Trophy, Zap, Brain, FileSearch, 
-  ChevronRight, Menu, X, Shield, Youtube, File, Play, Calendar, Activity
+  ChevronRight, Menu, X, Shield, Youtube, File, Play, Calendar, Activity,
+  Newspaper
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
@@ -29,6 +30,7 @@ const navItems = [
   { href: '/dashboard/mentor', icon: MessageCircle, label: 'AI Mentor' },
   { href: '/dashboard/quiz', icon: Activity, label: 'Rapid Quiz' },
   { href: '/dashboard/editorial-engine', icon: Brain, label: 'Editorial Engine' },
+  { href: '/dashboard/prelims-news', icon: Newspaper, label: 'Prelims News' },
   { href: '/dashboard/profile', icon: User, label: 'Profile' },
 ];
 

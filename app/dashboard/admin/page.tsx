@@ -2024,6 +2024,8 @@ function ArticlesTab() {
   const [importing, setImporting] = useState(false);
   const [importJson, setImportJson] = useState('');
   const [importWindow, setImportWindow] = useState('7d');
+  const [prelimsLoading, setPrelimsLoading] = useState('');
+  const [prelimsResult, setPrelimsResult] = useState('');
 
   const runScrape = async (source: string, mode: 'today' | 'yesterday') => {
     const key = `${source}-${mode}`;
@@ -2169,6 +2171,75 @@ function ArticlesTab() {
             </div>
           );
         })}
+      </div>
+
+      {/* Prelims Section */}
+      <div className="mb-6 p-6 bg-ink-900/30 border border-ink-600 rounded-3xl">
+        <div className="flex items-start gap-4">
+          <div className="p-3 bg-amber-500/10 rounded-2xl shrink-0">
+            <Newspaper className="w-6 h-6 text-amber-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg font-black text-amber-400 uppercase tracking-tight">Prelims Current Affairs</h3>
+            <p className="text-ink-500 text-xs font-bold uppercase tracking-widest mt-1 mb-4">
+              Scrape UPSC prelims news from Vajiram
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={async () => {
+                  setPrelimsLoading('today');
+                  try {
+                    const { data } = await adminAPI.loadTodayPrelims();
+                    if (data.success) {
+                      toast.success(`${data.savedCount} prelims articles loaded for today`);
+                      setPrelimsResult(`Today: ${data.savedCount} articles`);
+                    }
+                  } catch (err: any) {
+                    toast.error(err?.response?.data?.error || err?.message || 'Failed');
+                    setPrelimsResult('Error');
+                  } finally {
+                    setPrelimsLoading('');
+                  }
+                }}
+                disabled={prelimsLoading !== ''}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 disabled:opacity-50 transition-all active:scale-[0.97]"
+              >
+                {prelimsLoading === 'today' ? <><Loader2 className="w-4 h-4 animate-spin" /> Loading...</> : <><Newspaper className="w-4 h-4" /> Load Today</>}
+              </button>
+              <button
+                onClick={async () => {
+                  setPrelimsLoading('yesterday');
+                  try {
+                    const { data } = await adminAPI.loadYesterdayPrelims();
+                    if (data.success) {
+                      toast.success(`${data.savedCount} prelims articles loaded for yesterday`);
+                      setPrelimsResult(`Yesterday: ${data.savedCount} articles`);
+                    }
+                  } catch (err: any) {
+                    toast.error(err?.response?.data?.error || err?.message || 'Failed');
+                    setPrelimsResult('Error');
+                  } finally {
+                    setPrelimsLoading('');
+                  }
+                }}
+                disabled={prelimsLoading !== ''}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-ink-800 text-ink-300 border border-ink-600 hover:bg-ink-700 disabled:opacity-50 transition-all active:scale-[0.97]"
+              >
+                {prelimsLoading === 'yesterday' ? <><Loader2 className="w-4 h-4 animate-spin" /> Loading...</> : <><Clock className="w-4 h-4" /> Load Yesterday</>}
+              </button>
+              <Link
+                href="/dashboard/prelims-news"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-ink-800 text-ink-300 border border-ink-600 hover:bg-ink-700 transition-all"
+              >
+                <Newspaper className="w-4 h-4" />
+                View Prelims News
+              </Link>
+            </div>
+            {prelimsResult && (
+              <p className="text-ink-500 text-xs mt-2 font-semibold">{prelimsResult}</p>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Export & Import Analysis */}

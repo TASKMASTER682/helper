@@ -189,6 +189,10 @@ export const adminAPI = {
   runAnalysis: () => api.post('/admin/articles/run-analysis'),
   exportAnalysis: (windows: string[]) => api.post('/admin/articles/export-analysis', { windows }, { responseType: 'blob' }),
   importAnalysis: (results: any[], windowType?: string) => api.post('/admin/articles/import-analysis', { results, windowType }),
+
+  // Prelims
+  loadTodayPrelims: () => api.post('/prelims/load-today'),
+  loadYesterdayPrelims: () => api.post('/prelims/load-yesterday'),
 };
 
 export const youtubeCourseAPI = {
